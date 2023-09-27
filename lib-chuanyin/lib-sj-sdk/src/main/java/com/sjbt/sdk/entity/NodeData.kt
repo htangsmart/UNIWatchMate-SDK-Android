@@ -23,7 +23,7 @@ class NodeData(
             val nodeData = NodeData()
             nodeData.urn = ByteArray(4)
             bytes.get(nodeData.urn)
-            if (type != RequestType.REQ_TYPE_READ.ordinal) {
+            if (type != RequestType.REQ_TYPE_READ.type) {
                 nodeData.dataFmt = DataFormat.values()[bytes.get().toInt()]
                 nodeData.dataLen = bytes.short
                 nodeData.data = ByteArray(nodeData.dataLen.toInt())
@@ -38,11 +38,11 @@ class NodeData(
     }
 
     fun toBytes(reqest_type:Int): ByteArray {
-        val size = 4 + (if (reqest_type != RequestType.REQ_TYPE_READ.ordinal) 3 + data.size else 0)
+        val size = 4 + (if (reqest_type != RequestType.REQ_TYPE_READ.type) 3 + data.size else 0)
         val bytes:ByteBuffer = ByteBuffer.allocate( size)
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         bytes.put(urn)
-        if (reqest_type != RequestType.REQ_TYPE_READ.ordinal ) {
+        if (reqest_type != RequestType.REQ_TYPE_READ.type ) {
             bytes.put(dataFmt.ordinal.toByte())
             bytes.putShort(dataLen)
             for (item in data) {
@@ -81,14 +81,12 @@ enum class ErrorCode {
     ERR_CODE_INVALID_ITEM_DATA_URN,
 }
 
-enum class RequestType{
-    REQ_TYPE_READ,
-    REQ_TYPE_WRITE,
-    REQ_TYPE_EXECUTE
-}
+enum class RequestType(val type: Int){
+    REQ_TYPE_READ(0),
+    REQ_TYPE_WRITE(1),
+    REQ_TYPE_EXECUTE(2),
 
-enum class ResponseType{
-    RESP_TYPE_EACH,
-    RESP_TYPE_ALL_OK,
-    RESP_TYPE_ALL_FAIL
+    RESP_TYPE_EACH(100),
+    RESP_TYPE_ALL_OK(101),
+    RESP_TYPE_ALL_FAIL(102)
 }
