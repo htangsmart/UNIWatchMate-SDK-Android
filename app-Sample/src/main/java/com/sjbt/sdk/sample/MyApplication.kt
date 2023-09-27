@@ -41,7 +41,7 @@ class MyApplication : Application() {
         //监听sdk变化
         UNIWatchMate.observeUniWatchChange().subscribe {
             it.setLogEnable(true)
-            WmLog.e(com.example.myapplication.MyApplication.TAG, "SDK changed")
+            WmLog.e(TAG, "SDK changed")
         }
         initAllProcess()
     }
@@ -66,7 +66,7 @@ class MyApplication : Application() {
 
             override fun onNext(connectState: WmConnectState) {
 
-                WmLog.e(com.example.myapplication.MyApplication.TAG, "connect state: $connectState")
+                WmLog.e(TAG, "connect state: $connectState")
 
                 when (connectState) {
                     WmConnectState.BT_DISABLE -> {
