@@ -211,6 +211,7 @@ public class BtEngine {
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
+                        notifyUI(Listener.ON_SOCKET_CLOSE, mDevice);
                     }
                 }
             });

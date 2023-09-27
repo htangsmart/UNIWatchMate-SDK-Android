@@ -20,10 +20,16 @@ class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
     var mBindInfo: BindInfo? = null
     private val sjUniWatch: SJUniWatch = sjUniWatch
 
+    var mCurrDevice: BluetoothDevice? = null
+    var mCurrAddress: String? = null
+    var mConnectTryCount = 0
+    var mConnectState:WmConnectState = WmConnectState.DISCONNECTED
+
     /**
      * 通过address 连接
      */
     override fun connect(address: String, bindInfo: BindInfo, deviceMode: WmDeviceModel): WmDevice {
+        mCurrAddress = address
         val device = WmDevice(deviceMode)
         device.address = address
         device.mode = deviceMode
@@ -35,8 +41,8 @@ class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
             connectEmitter?.onNext(WmConnectState.CONNECTING)
 
             try {
-                val bluetoothDevice: BluetoothDevice = mBtAdapter.getRemoteDevice(address)
-                btEngine.connect(bluetoothDevice)
+                mCurrDevice = mBtAdapter.getRemoteDevice(address)
+                btEngine.connect(mCurrDevice)
             } catch (e: Exception) {
                 e.printStackTrace()
                 connectEmitter?.onNext(WmConnectState.DISCONNECTED)
@@ -56,7 +62,9 @@ class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
         bindInfo: BindInfo,
         deviceMode: WmDeviceModel
     ): WmDevice {
+        mCurrDevice = bluetoothDevice
         val wmDevice = WmDevice(deviceMode)
+        mCurrAddress = bluetoothDevice.address
         wmDevice.address = bluetoothDevice.address
         wmDevice.isRecognized = deviceMode == WmDeviceModel.SJ_WATCH
 
@@ -82,6 +90,7 @@ class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
 
     fun btStateChange(state: WmConnectState) {
         connectEmitter?.onNext(state)
+        mConnectState = state
     }
 
     override fun disconnect() {
@@ -97,7 +106,7 @@ class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
     }
 
     override fun getConnectState(): WmConnectState {
-        TODO("Not yet implemented")
+        return mConnectState
     }
 
 }

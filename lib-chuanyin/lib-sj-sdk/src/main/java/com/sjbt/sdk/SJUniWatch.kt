@@ -33,10 +33,7 @@ import com.sjbt.sdk.spp.bt.BtEngine.Listener
 import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
-import com.sjbt.sdk.utils.BtUtils
-import com.sjbt.sdk.utils.FileUtils
-import com.sjbt.sdk.utils.LogUtils
-import com.sjbt.sdk.utils.UrlParse
+import com.sjbt.sdk.utils.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe
@@ -56,10 +53,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<BluetoothDevice>
 
-    //连接
-    var mCurrDevice: BluetoothDevice? = null
-    var mCurrAddress: String? = null
-    var mConnectTryCount = 0
 
     //文件传输相关
     var mTransferFiles: List<File>? = null
@@ -142,8 +135,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun onClassicBtDisConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtDisConnect：" + device.address)
 
-                mCurrAddress?.let {
-                    if (device.address == mCurrAddress) {
+                sjConnect.mCurrDevice?.let {
+                    if (device == sjConnect.mCurrDevice) {
 
                         mTransferring = false
                         mTransferRetryCount = 0
@@ -161,7 +154,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             override fun onClassicBtConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtConnect：" + device.address)
-                if (!TextUtils.isEmpty(mCurrAddress) && device.address == mCurrAddress) {
+                if (device == sjConnect.mCurrDevice) {
                     sjConnect.disconnect()
                 }
             }
@@ -190,8 +183,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             override fun onBindState(device: BluetoothDevice, bondState: Int) {
                 if (bondState == BluetoothDevice.BOND_NONE) {
-                    if (!TextUtils.isEmpty(mCurrAddress) && device.address == mCurrAddress) {
-                        mConnectTryCount = 0
+                    if (device == sjConnect.mCurrDevice) {
+                        sjConnect.mConnectTryCount = 0
                         mBtEngine.clearStateMap()
 
                         sjConnect.btStateChange(WmConnectState.DISCONNECTED)
@@ -266,6 +259,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     if (result.toInt() == 1) {
                                         sjConnect.btStateChange(WmConnectState.VERIFIED)
                                     } else {
+                                        val success = ClsUtils.removeBond(
+                                            BluetoothDevice::class.java,
+                                            sjConnect.mCurrDevice
+                                        )
+
+                                        LogUtils.logBlueTooth("解绑成功:" + success)
+
                                         mBtEngine.getmSocket().close()
                                         sjConnect.disconnect()
                                     }
@@ -401,12 +401,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 ON_SOCKET_CLOSE -> {
                     SJLog.logBt(TAG, "onSocketClose")
+                    sjConnect.btStateChange(WmConnectState.DISCONNECTED)
                 }
 
                 CONNECTED -> {
-                    mCurrDevice = obj as BluetoothDevice
                     sjConnect.btStateChange(WmConnectState.CONNECTED)
-
                     sendNormalMsg(CmdHelper.biuShakeHandsCmd)
 
                 }
@@ -821,24 +820,22 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         WmLog.e(TAG, "onConnectFailed:" + msg)
 
-        if (device!!.address == mCurrAddress) {
+        if (device == sjConnect.mCurrDevice) {
             if (msg!!.contains("read failed, socket might closed or timeout")
                 || msg.contains("Connection reset by peer")
                 || msg.contains("Connect refused")
             ) {
-                mConnectTryCount++
-                if (mConnectTryCount < MAX_RETRY_COUNT) {
+                sjConnect.mConnectTryCount++
+                if (sjConnect.mConnectTryCount < MAX_RETRY_COUNT) {
                     sjConnect.reConnect(device)
                 } else {
-                    mConnectTryCount = 0
+                    sjConnect.mConnectTryCount = 0
                     sjConnect.btStateChange(WmConnectState.DISCONNECTED)
                 }
             } else {
-                mConnectTryCount = 0
+                sjConnect.mConnectTryCount = 0
                 sjConnect.btStateChange(WmConnectState.DISCONNECTED)
             }
-        } else {
-            sjConnect.btStateChange(WmConnectState.DISCONNECTED)
         }
     }
 

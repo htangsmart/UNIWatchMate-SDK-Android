@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.main_actiivty)
 
+        val tvState = findViewById<TextView>(R.id.tv_status)
         val btnConnect = findViewById<Button>(R.id.btn_connect)
         val btnExchange = findViewById<Button>(R.id.btn_exchange)
         val btnUnBind = findViewById<Button>(R.id.btn_bind)
@@ -42,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         btnExchange.setOnClickListener {
             connectSample()
+//            scanConnect()
         }
 
         btnUnBind.setOnClickListener {
@@ -80,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    private fun unbind(){
+    private fun unbind() {
         UNIWatchMate.wmConnect?.reset()
     }
 
@@ -88,8 +91,20 @@ class MainActivity : AppCompatActivity() {
      * 连接示例
      */
     private fun connectSample() {
-        UNIWatchMate.wmConnect?.connect("15:7E:78:A2:4B:30",
-            AbWmConnect.BindInfo(AbWmConnect.BindType.DISCOVERY,AbWmConnect.UserInfo("123456","张三"),""), WmDeviceModel.SJ_WATCH)
+        UNIWatchMate.wmConnect?.connect(
+            "15:7E:78:A2:4B:30",
+            AbWmConnect.BindInfo(
+                AbWmConnect.BindType.DISCOVERY,
+                AbWmConnect.UserInfo("123456", "张三")
+            ), WmDeviceModel.SJ_WATCH
+        )
+    }
+
+    private fun scanConnect() {
+        UNIWatchMate.scanQr(
+            "https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q",
+            AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, AbWmConnect.UserInfo("123456", "张三"))
+        )
     }
 
     private fun startDiscoveryDevice() {

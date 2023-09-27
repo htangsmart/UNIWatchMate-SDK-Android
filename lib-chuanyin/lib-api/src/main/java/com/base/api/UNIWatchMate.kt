@@ -8,10 +8,13 @@ import com.base.sdk.`interface`.app.AbWmApps
 import com.base.sdk.`interface`.setting.AbWmSettings
 import com.base.sdk.`interface`.sync.AbWmSyncs
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.`interface`.log.WmLog
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 object UNIWatchMate {
+    private val TAG = "UNIWatchMate"
+
     private lateinit var application: Application
     private val uniWatches: MutableList<AbUniWatch> = ArrayList()
 
@@ -61,6 +64,8 @@ object UNIWatchMate {
     fun scanQr(qrString: String, bindInfo: AbWmConnect.BindInfo) {
         uniWatches.forEach {
             val scanDevice = it.parseScanQr(qrString)
+
+            WmLog.e(TAG, "scanQr: $scanDevice")
 
             scanDevice?.let { device ->
                 if (device.isRecognized) {

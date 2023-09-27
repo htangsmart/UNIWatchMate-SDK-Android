@@ -2,6 +2,7 @@ package com.fitcloud.sdk
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.text.TextUtils
 import com.base.sdk.AbUniWatch
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.WmTransferFile
@@ -67,7 +68,9 @@ abstract class FcUniWatch(
     }
 
     override fun parseScanQr(qrString: String): WmScanDevice {
-        TODO("Not yet implemented")
+        val wmScanDevice = WmScanDevice(WmDeviceModel.FC_WATCH)
+
+        return wmScanDevice
     }
 
     var isForeground: Boolean = false
