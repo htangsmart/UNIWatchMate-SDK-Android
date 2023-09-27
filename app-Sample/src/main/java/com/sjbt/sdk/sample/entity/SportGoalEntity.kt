@@ -17,6 +17,7 @@ data class SportGoalEntity(
     val distance: Int,
 
     val calorie: Int,
+
     val activityMinutes: Short,
 )
 

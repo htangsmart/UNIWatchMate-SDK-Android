@@ -2,30 +2,39 @@ package com.sjbt.sdk.sample.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
+import com.base.sdk.entity.apps.WmConnectState
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
+import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 
-//@StringRes
-//fun ConnectorState.toStringRes(): Int {
-//    return when (this) {
-//        ConnectorState.NO_DEVICE -> R.string.device_state_no_device
-//        ConnectorState.BT_DISABLED -> R.string.device_state_bt_disabled
-//        ConnectorState.DISCONNECTED, ConnectorState.PRE_CONNECTING -> R.string.device_state_disconnected
-//        ConnectorState.CONNECTING -> R.string.device_state_connecting
-//        ConnectorState.CONNECTED -> R.string.device_state_connected
-//    }
-//}
+@StringRes
+fun WmConnectState.toStringRes(): Int {
+    return when (this) {
+        WmConnectState.BT_DISABLE -> R.string.device_state_bt_disabled
+        WmConnectState.DISCONNECTED -> R.string.device_state_disconnected
+        WmConnectState.CONNECTING -> R.string.device_state_connecting
+        WmConnectState.CONNECTED -> R.string.device_state_connected
+        else -> {
+            R.string.device_state_other
+        }
+    }
+}
 
 class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
 //    private val viewModel: DeviceViewMode by viewModels()
+    private val deviceManager = Injector.getDeviceManager()
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,32 +56,32 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-//                deviceManager.flowDevice.collect {
-//                    if (it == null) {
-//                        viewBind.itemDeviceBind.isVisible = true
-//                        viewBind.itemDeviceInfo.isVisible = false
-//                    } else {
-//                        viewBind.itemDeviceBind.isVisible = false
-//                        viewBind.itemDeviceInfo.isVisible = true
-//                        viewBind.tvDeviceName.text = it.name
-//                    }
-//                }
+                deviceManager.flowDevice.collect {
+                    if (it == null) {
+                        viewBind.itemDeviceBind.visibility = View.VISIBLE
+                        viewBind.itemDeviceInfo.visibility = View.GONE
+                    } else {
+                        viewBind.itemDeviceBind.visibility = View.GONE
+                        viewBind.itemDeviceInfo.visibility = View.VISIBLE
+                        viewBind.tvDeviceName.text = it.name
+                    }
+                }
+            }
+
+            launch {
+                deviceManager.flowConnectorState.asFlow().collect {
+                    viewBind.tvDeviceState.setText(it.toStringRes())
+                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.CONNECTED)
+                }
             }
             launch {
-//                deviceManager.flowConnectorState.collect {
-//                    viewBind.tvDeviceState.setText(it.toStringRes())
-//                    viewBind.layoutContent.setAllChildEnabled(it == ConnectorState.CONNECTED)
-//                }
-            }
-            launch {
-//                deviceManager.flowBattery.collect {
-//                    if (it == null) {
-//                        viewBind.batteryView.setBatteryUnknown()
-//                    } else {
-//                        val percentage: Int = it.percentage / 10 * 10
-//                        viewBind.batteryView.setBatteryStatus(it.isCharging, percentage)
-//                    }
-//                }
+                deviceManager.flowBattery.collect {
+                    if (it == null) {
+                        viewBind.batteryView.setBatteryUnknown()
+                    } else {
+                        viewBind.batteryView.setBatteryStatus(it.isCharge, it.currValue)
+                    }
+                }
             }
             launch {
 //                deviceManager.configFeature.observerDeviceInfo().startWithItem(
@@ -190,15 +199,15 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 }
 
 //class DeviceViewMode : AsyncViewModel<DeviceFragment.State>(DeviceFragment.State()) {
+
+//    private val versionRepository = Injector.getVersionRepository()
 //
-////    private val versionRepository = Injector.getVersionRepository()
-////
-////    fun checkUpgrade() {
-////        suspend {
-////            versionRepository.checkUpgrade()
-////        }.execute(DeviceFragment.State::asyncCheckUpgrade) {
-////            copy(asyncCheckUpgrade = it)
-////        }
-////    }
-//
+//    fun checkUpgrade() {
+//        suspend {
+//            versionRepository.checkUpgrade()
+//        }.execute(DeviceFragment.State::asyncCheckUpgrade) {
+//            copy(asyncCheckUpgrade = it)
+//        }
+//    }
+
 //}

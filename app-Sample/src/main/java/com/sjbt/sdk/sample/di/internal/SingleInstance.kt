@@ -7,6 +7,10 @@ import com.sjbt.sdk.sample.data.config.SportGoalRepositoryImpl
 import com.sjbt.sdk.sample.db.AppDatabase
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.base.storage.InternalStorageImpl
+import com.sjbt.sdk.sample.data.device.DeviceManager
+import com.sjbt.sdk.sample.data.device.DeviceManagerImpl
+import com.sjbt.sdk.sample.data.device.SyncDataRepository
+import com.sjbt.sdk.sample.data.device.SyncDataRepositoryImpl
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
 import com.sjbt.sdk.sample.data.user.UserInfoRepositoryImpl
 
@@ -52,23 +56,22 @@ object SingleInstance {
     val userInfoRepository: UserInfoRepository by lazy {
         UserInfoRepositoryImpl(CoroutinesInstance.applicationScope, internalStorage, appDatabase)
     }
-//
-//    val syncDataRepository: SyncDataRepository by lazy {
-//        SyncDataRepositoryImpl(appDatabase, userInfoRepository)
-//    }
-//
-//    val deviceManager: DeviceManager by lazy {
-//        DeviceManagerImpl(
-//            applicationContext,
-//            CoroutinesInstance.applicationScope,
-//            internalStorage,
-//            userInfoRepository,
-//            womenHealthRepository,
-//            exerciseGoalRepository,
-//            syncDataRepository,
-//            appDatabase,
-//        )
-//    }
+
+    val syncDataRepository: SyncDataRepository by lazy {
+        SyncDataRepositoryImpl(appDatabase, userInfoRepository)
+    }
+
+    val deviceManager: DeviceManager by lazy {
+        DeviceManagerImpl(
+            applicationContext,
+            CoroutinesInstance.applicationScope,
+            internalStorage,
+            userInfoRepository,
+            sportGoalRepository,
+            syncDataRepository,
+                    appDatabase
+        )
+    }
 
 //    val dialRepository: DialRepository by lazy {
 //        DialRepositoryImpl(

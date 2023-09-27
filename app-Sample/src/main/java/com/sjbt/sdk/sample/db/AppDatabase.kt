@@ -6,14 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.sjbt.sdk.sample.entity.DeviceBindEntity
 import com.sjbt.sdk.sample.entity.SportGoalEntity
+import com.sjbt.sdk.sample.entity.UnitInfoEntity
 import com.sjbt.sdk.sample.entity.UserEntity
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asExecutor
 
 @Database(
-    version = 1,
-    entities = [SportGoalEntity::class,UserEntity::class,DeviceBindEntity::class],
+    version = 2,
+    entities = [SportGoalEntity::class,UserEntity::class,DeviceBindEntity::class,UnitInfoEntity::class],
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun settingDao(): SettingDao

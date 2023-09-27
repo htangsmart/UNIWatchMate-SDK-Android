@@ -29,6 +29,7 @@ import com.bumptech.glide.request.target.DrawableImageViewTarget
 import com.github.kilnn.tool.dialog.prompt.PromptAutoCancel
 import com.github.kilnn.tool.dialog.prompt.PromptDialogHolder
 import com.github.kilnn.tool.system.SystemUtil
+import com.github.kilnn.tool.widget.item.PreferenceItem
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.squareup.moshi.Moshi
@@ -186,9 +187,9 @@ fun ViewGroup.setAllChildEnabled(enabled: Boolean) {
         if (child.isEnabled != enabled) {
             child.isEnabled = enabled
         }
-//        if (child is ViewGroup && child !is PreferenceItem) {
-//            child.setAllChildEnabled(enabled)
-//        }
+        if (child is ViewGroup && child !is PreferenceItem) {
+            child.setAllChildEnabled(enabled)
+        }
         if (child is ViewGroup ) {
             child.setAllChildEnabled(enabled)
         }

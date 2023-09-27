@@ -3,6 +3,7 @@ package com.sjbt.sdk.sample.di
 import com.sjbt.sdk.sample.data.config.SportGoalRepository
 import com.sjbt.sdk.sample.di.internal.SingleInstance
 import com.sjbt.sdk.sample.base.storage.InternalStorage
+import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
 import kotlinx.coroutines.CoroutineScope
@@ -30,11 +31,11 @@ object Injector {
         return SingleInstance.internalStorage
     }
 
-    //
-//    fun getDeviceManager(): DeviceManager {
-//        return SingleInstance.deviceManager
-//    }
-//
+
+    fun getDeviceManager(): DeviceManager {
+        return SingleInstance.deviceManager
+    }
+
     fun getUserInfoRepository(): UserInfoRepository {
         return SingleInstance.userInfoRepository
     }
