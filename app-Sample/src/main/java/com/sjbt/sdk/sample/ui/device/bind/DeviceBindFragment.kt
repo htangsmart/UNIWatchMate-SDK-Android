@@ -208,6 +208,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
             if (!scannerHelper.start()) {
                 viewBind.refreshLayout.isRefreshing = false
             }
+            UNIWatchMate.mInstance?.startDiscovery()
         }
 
         viewBind.scanDevicesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
