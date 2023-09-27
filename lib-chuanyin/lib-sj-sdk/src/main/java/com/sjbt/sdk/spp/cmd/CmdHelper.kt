@@ -47,8 +47,8 @@ object CmdHelper {
 
         //TYPE
         byteBuffer.put(head)
-        byteBuffer.put(CmdConfig.CMD_ORDER_ARRAY[command_index % CmdConfig.CMD_ORDER_ARRAY.size])
-        byteBuffer.putShort((cmd_id.toInt() and CmdConfig.TRANSFER_KEY.toInt()).toShort()) //携带方向
+        byteBuffer.put(CMD_ORDER_ARRAY[command_index % CMD_ORDER_ARRAY.size])
+        byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
         byteBuffer.put(divideType)
@@ -68,6 +68,17 @@ object CmdHelper {
         byteBuffer.flip()
         command_index++
         return byteBuffer.array()
+    }
+
+    fun getRandomNumber(length: Int): String? {
+        val chars = RANDOM.toCharArray()
+        val l = System.currentTimeMillis()
+        val random = Random(l)
+        val stringBuffer = StringBuffer()
+        for (i in 0 until length) {
+            stringBuffer.append(chars[random.nextInt(chars.size)])
+        }
+        return BtUtils.stringToHexString(stringBuffer.toString())
     }
 
     /**
@@ -121,12 +132,12 @@ object CmdHelper {
 //            LogUtils.logBlueTooth("offset:" + msgBean.offset);
 //            LogUtils.logBlueTooth("crc:" + msgBean.crc);
 //            LogUtils.logBlueTooth("length:" + length);
-            if (msgBean.divideType == CmdConfig.DIVIDE_N_2 || msgBean.divideType == CmdConfig.DIVIDE_N_JSON) {
+            if (msgBean.divideType == DIVIDE_N_2 || msgBean.divideType == DIVIDE_N_JSON) {
                 if (payLoadLength > 0) {
                     val payload = ByteArray(payLoadLength)
                     System.arraycopy(msg_result, 16, payload, 0, payLoadLength)
                     msgBean.payload = payload
-                    if (divideType == CmdConfig.DIVIDE_N_JSON) {
+                    if (divideType == DIVIDE_N_JSON) {
                         val payloadJson = String(payload, StandardCharsets.UTF_8)
                         msgBean.payloadJson = payloadJson
                     }
@@ -179,13 +190,13 @@ object CmdHelper {
                 }
             }
             if (i == 0) {
-                otaPckCrc = BtUtils.getCrc(CmdConfig.HEX_FFFF, info.payload, info.payload.size)
-                divide = CmdConfig.DIVIDE_Y_F_2
+                otaPckCrc = BtUtils.getCrc(HEX_FFFF, info.payload, info.payload.size)
+                divide = DIVIDE_Y_F_2
             } else {
                 divide = if (i == count - 1) {
-                    CmdConfig.DIVIDE_Y_E_2
+                    DIVIDE_Y_E_2
                 } else {
-                    CmdConfig.DIVIDE_Y_M_2
+                    DIVIDE_Y_M_2
                 }
                 otaPckCrc = BtUtils.getCrc(otaPckCrc, info.payload, info.payload.size)
             }
@@ -233,10 +244,11 @@ object CmdHelper {
     val verifyPayload: ByteArray
         get() {
             val verificationArray = arrayOfNulls<String>(5)
-            verificationArray[0] = CmdConfig.getRandomNumber(14)
-            verificationArray[1] = CmdConfig.getRandomNumber(2) //密钥
-            verificationArray[2] = CmdConfig.getRandomNumber(32)
-            verificationArray[3] = CmdConfig.getRandomNumber(16) //异或原参
+            verificationArray[0] = getRandomNumber(14)
+            verificationArray[1] = getRandomNumber(2) //密钥
+            verificationArray[2] = getRandomNumber(32)
+            verificationArray[3] = getRandomNumber(16) //异或原参
+
             val bytes = BtUtils.hexStringToByteArray(verificationArray[2])
             key1 = verificationArray[1]!!.toInt(16)
             mKey1 = BtUtils.intToHex(key1)
@@ -308,13 +320,13 @@ object CmdHelper {
      */
     val biuShakeHandsCmd: ByteArray
         get() {
-            val payload = BtUtils.hexStringToByteArray(CmdConfig.getRandomNumber(61))
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val payload = BtUtils.hexStringToByteArray(getRandomNumber(61))
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             LogUtils.logBlueTooth("发送握手消息:")
             return constructCmd(
-                CmdConfig.HEAD_VERIFY,
-                CmdConfig.CMD_ID_8001.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_VERIFY,
+                CMD_ID_8001.toShort(),
+                DIVIDE_N_2,
                 0,
                 crc,
                 payload
@@ -332,12 +344,12 @@ object CmdHelper {
         byteBuffer.put(bindInfo.scanCode.toByteArray())
 
         val payload = byteBuffer.array()
-        val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+        val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
 
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_802E,
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_802E,
+            DIVIDE_N_2,
             0,
             crc,
             payload
@@ -352,12 +364,12 @@ object CmdHelper {
     val biuVerifyCmd: ByteArray
         get() {
             val payload = verifyPayload
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             LogUtils.logBlueTooth("2.发送校验信息:")
             return constructCmd(
-                CmdConfig.HEAD_VERIFY,
-                CmdConfig.CMD_ID_8002.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_VERIFY,
+                CMD_ID_8002.toShort(),
+                DIVIDE_N_2,
                 0,
                 crc,
                 payload
@@ -386,11 +398,11 @@ object CmdHelper {
                 currTime
             )
             val payload = gson.toJson(timeSyncBean).toByteArray(StandardCharsets.UTF_8)
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8007.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_COMMON,
+                CMD_ID_8007.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 crc,
                 payload
@@ -406,9 +418,9 @@ object CmdHelper {
         get() {
             logSendMsg("3.发送基本信息:")
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8001.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_COMMON,
+                CMD_ID_8001.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 0,
                 null
@@ -422,9 +434,9 @@ object CmdHelper {
      */
     val appViewList: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8008.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8008.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -439,11 +451,11 @@ object CmdHelper {
         get() {
             val payload = ByteArray(1)
             payload[0] = 1 //1抬腕数据
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             return constructCmd(
-                CmdConfig.HEAD_COLLECT_DEBUG_DATA,
-                CmdConfig.CMD_ID_8001.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COLLECT_DEBUG_DATA,
+                CMD_ID_8001.toShort(),
+                DIVIDE_N_2,
                 0,
                 crc,
                 payload
@@ -458,11 +470,11 @@ object CmdHelper {
     fun getCollectDebugData(page: Byte): ByteArray {
         val payload = ByteArray(1)
         payload[0] = page //1抬腕数据
-        val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+        val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
         return constructCmd(
-            CmdConfig.HEAD_COLLECT_DEBUG_DATA,
-            CmdConfig.CMD_ID_8002.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COLLECT_DEBUG_DATA,
+            CMD_ID_8002.toShort(),
+            DIVIDE_N_2,
             0,
             crc,
             payload
@@ -478,11 +490,11 @@ object CmdHelper {
     fun setAppViewCmd(id: Byte): ByteArray {
         val payload = ByteArray(1)
         payload[0] = id
-        val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+        val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8009.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8009.toShort(),
+            DIVIDE_N_2,
             0,
             crc,
             payload
@@ -498,9 +510,9 @@ object CmdHelper {
         get() {
             logSendMsg("发送电量信息:")
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8003.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_COMMON,
+                CMD_ID_8003.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 0,
                 null
@@ -516,9 +528,9 @@ object CmdHelper {
         get() {
             logSendMsg("2.发送状态信息:")
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8002.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COMMON,
+                CMD_ID_8002.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -535,11 +547,11 @@ object CmdHelper {
         val payload = gson.toJson(notifyMsgBean).toByteArray(StandardCharsets.UTF_8)
         logSendMsg("发送通知消息:" + gson.toJson(notifyMsgBean))
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8004.toShort(),
-            CmdConfig.DIVIDE_N_JSON,
+            HEAD_COMMON,
+            CMD_ID_8004.toShort(),
+            DIVIDE_N_JSON,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -556,12 +568,12 @@ object CmdHelper {
 //        payload[1] = (byte) alarmBean.hour;
 //        payload[2] = (byte) alarmBean.min;
 //        payload[3] = (byte) alarmBean.repeat;
-        val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+        val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
         logSendMsg("闹钟：$alarmBean")
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_801C.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_801C.toShort(),
+            DIVIDE_N_2,
             0,
             crc,
             payload
@@ -575,9 +587,9 @@ object CmdHelper {
      */
     val currAlarmCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_801E.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_801E.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -592,9 +604,9 @@ object CmdHelper {
         get() {
             logSendMsg("发送查询密码设置")
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_800A.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COMMON,
+                CMD_ID_800A.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -615,11 +627,11 @@ object CmdHelper {
             logSendMsg("4.5发送查询时间同步设置：$json")
             val payload =
                 json.toByteArray(StandardCharsets.UTF_8)
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_800C.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_COMMON,
+                CMD_ID_800C.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 crc,
                 payload
@@ -645,11 +657,11 @@ object CmdHelper {
             val json = jsonObject.toString()
             val payload =
                 json.toByteArray(StandardCharsets.UTF_8)
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_8005.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_8005.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 crc,
                 payload
@@ -675,11 +687,11 @@ object CmdHelper {
             LogUtils.logCommon("设置密码：$json")
             val payload =
                 json.toByteArray(StandardCharsets.UTF_8)
-            val crc = BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size)
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_800B.toShort(),
-                CmdConfig.DIVIDE_N_JSON,
+                HEAD_COMMON,
+                CMD_ID_800B.toShort(),
+                DIVIDE_N_JSON,
                 0,
                 crc,
                 payload
@@ -701,11 +713,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_800D.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_800D.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -718,11 +730,11 @@ object CmdHelper {
             byteBuffer.flip()
             val payload = byteBuffer.array()
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8012.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COMMON,
+                CMD_ID_8012.toShort(),
+                DIVIDE_N_2,
                 0,
-                BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
         }
@@ -734,9 +746,9 @@ object CmdHelper {
      */
     val cancelBindRequestCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8011.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8011.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -749,9 +761,9 @@ object CmdHelper {
      */
     val unBindRequestCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_800E.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_800E.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -770,11 +782,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_800F.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_800F.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -792,11 +804,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8014.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8014.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -814,11 +826,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_OPP,
-            CmdConfig.CMD_ID_8001.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_OPP,
+            CMD_ID_8001.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -835,11 +847,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_OPP,
-            CmdConfig.CMD_ID_8003.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_OPP,
+            CMD_ID_8003.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -856,11 +868,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_OPP,
-            CmdConfig.CMD_ID_8002.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_OPP,
+            CMD_ID_8002.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -880,11 +892,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8010.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8010.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -905,11 +917,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_A_2_D,
-            CmdConfig.CMD_ID_8001.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_A_2_D,
+            CMD_ID_8001.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -930,11 +942,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_A_2_D,
-            CmdConfig.CMD_ID_8002.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_A_2_D,
+            CMD_ID_8002.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -958,10 +970,10 @@ object CmdHelper {
         byteBuffer.flip()
         otaCmdInfo.payload = byteBuffer.array()
         otaCmdInfo.crc =
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, otaCmdInfo.payload, otaCmdInfo.payload.size)
+            BtUtils.getCrc(HEX_FFFF, otaCmdInfo.payload, otaCmdInfo.payload.size)
         logSendMsg("发送消息序号：" + process + " 包长:" + otaCmdInfo.payload.size)
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_A_2_D, CmdConfig.CMD_ID_8003.toShort(),
+            HEAD_FILE_SPP_A_2_D, CMD_ID_8003.toShort(),
             divideType, otaCmdInfo.offSet, otaCmdInfo.crc, otaCmdInfo.payload
         )
     }
@@ -973,8 +985,8 @@ object CmdHelper {
      */
     val transfer04Cmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_FILE_SPP_A_2_D, CmdConfig.CMD_ID_8004.toShort(),
-            CmdConfig.DIVIDE_N_2, 0, 0, null
+            HEAD_FILE_SPP_A_2_D, CMD_ID_8004.toShort(),
+            DIVIDE_N_2, 0, 0, null
         )
 
     /**
@@ -984,8 +996,8 @@ object CmdHelper {
      */
     val transferCancelCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_FILE_SPP_A_2_D, CmdConfig.CMD_ID_8005.toShort(),
-            CmdConfig.DIVIDE_N_2, 0, 0, null
+            HEAD_FILE_SPP_A_2_D, CMD_ID_8005.toShort(),
+            DIVIDE_N_2, 0, 0, null
         )
 
     /**
@@ -1001,11 +1013,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_D_2_A,
-            CmdConfig.CMD_ID_8001.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_D_2_A,
+            CMD_ID_8001.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1023,11 +1035,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_D_2_A,
-            CmdConfig.CMD_ID_8002.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_D_2_A,
+            CMD_ID_8002.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1048,11 +1060,11 @@ object CmdHelper {
         val payload = byteBuffer.array()
         logSendMsg("发送消息序号：$process 成功:$state")
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_D_2_A,
-            CmdConfig.CMD_ID_8003.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_D_2_A,
+            CMD_ID_8003.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1069,11 +1081,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_D_2_A,
-            CmdConfig.CMD_ID_8004.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_D_2_A,
+            CMD_ID_8004.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1085,9 +1097,9 @@ object CmdHelper {
      */
     fun getTransferD2A05Cmd(result: Byte): ByteArray {
         return constructCmd(
-            CmdConfig.HEAD_FILE_SPP_D_2_A,
-            CmdConfig.CMD_ID_8005.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_FILE_SPP_D_2_A,
+            CMD_ID_8005.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1116,11 +1128,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_SPORT_HEALTH,
-            CmdConfig.CMD_ID_8004.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_SPORT_HEALTH,
+            CMD_ID_8004.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1132,9 +1144,9 @@ object CmdHelper {
      */
     val sportHealthInitInfoCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_SPORT_HEALTH,
-            CmdConfig.CMD_ID_8001.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_SPORT_HEALTH,
+            CMD_ID_8001.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1149,9 +1161,9 @@ object CmdHelper {
         get() {
             logSendMsg("7.获取运动步数：")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_8002.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_8002.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1167,9 +1179,9 @@ object CmdHelper {
         get() {
             logSendMsg("8.获取心率：")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_8003.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_8003.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1189,11 +1201,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_SPORT_HEALTH,
-            CmdConfig.CMD_ID_800F.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_SPORT_HEALTH,
+            CMD_ID_800F.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1207,9 +1219,9 @@ object CmdHelper {
         get() {
             logSendMsg("获取睡眠区间设置")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_800C.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_800C.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1232,11 +1244,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_SPORT_HEALTH,
-            CmdConfig.CMD_ID_800E.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_SPORT_HEALTH,
+            CMD_ID_800E.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1250,9 +1262,9 @@ object CmdHelper {
         get() {
             logSendMsg("9.获取血氧")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_8009.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_8009.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1268,9 +1280,9 @@ object CmdHelper {
         get() {
             logSendMsg("10.获取血糖")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_800A.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_800A.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1286,9 +1298,9 @@ object CmdHelper {
         get() {
             logSendMsg("11.获取血压")
             return constructCmd(
-                CmdConfig.HEAD_SPORT_HEALTH,
-                CmdConfig.CMD_ID_800B.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_SPORT_HEALTH,
+                CMD_ID_800B.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1304,9 +1316,9 @@ object CmdHelper {
         get() {
             logSendMsg("获取支持功能列表")
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_802D.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COMMON,
+                CMD_ID_802D.toShort(),
+                DIVIDE_N_2,
                 0,
                 0,
                 null
@@ -1325,11 +1337,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_SPORT_HEALTH,
-            CmdConfig.CMD_ID_8006.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_SPORT_HEALTH,
+            CMD_ID_8006.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1353,11 +1365,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8018.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8018.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1369,9 +1381,9 @@ object CmdHelper {
      */
     val deviceRingStateCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8017.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8017.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1390,11 +1402,11 @@ object CmdHelper {
             byteBuffer.flip()
             val payload = byteBuffer.array()
             return constructCmd(
-                CmdConfig.HEAD_COMMON,
-                CmdConfig.CMD_ID_8019.toShort(),
-                CmdConfig.DIVIDE_N_2,
+                HEAD_COMMON,
+                CMD_ID_8019.toShort(),
+                DIVIDE_N_2,
                 0,
-                BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
         }
@@ -1406,9 +1418,9 @@ object CmdHelper {
      */
     val searchDeviceCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8021.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8021.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1427,11 +1439,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
+            HEAD_COMMON,
             cmdId,
-            CmdConfig.DIVIDE_N_2,
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1443,9 +1455,9 @@ object CmdHelper {
      */
     val contactPreCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8027.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8027.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1464,11 +1476,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8022.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8022.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1510,11 +1522,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8023.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8023.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1550,11 +1562,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_8025.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_8025.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1566,9 +1578,9 @@ object CmdHelper {
      */
     val stopRingCmd: ByteArray
         get() = constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_801A.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_801A.toShort(),
+            DIVIDE_N_2,
             0,
             0,
             null
@@ -1618,11 +1630,11 @@ object CmdHelper {
         }
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_801B.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_801B.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1640,11 +1652,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
+            HEAD_COMMON,
             cmdId,
-            CmdConfig.DIVIDE_N_2,
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1663,11 +1675,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_802C.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_802C.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1685,11 +1697,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_COMMON,
-            CmdConfig.CMD_ID_802A.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_COMMON,
+            CMD_ID_802A.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1785,11 +1797,11 @@ object CmdHelper {
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(
-            CmdConfig.HEAD_CAMERA_PREVIEW,
-            CmdConfig.CMD_ID_8001.toShort(),
-            CmdConfig.DIVIDE_N_2,
+            HEAD_CAMERA_PREVIEW,
+            CMD_ID_8001.toShort(),
+            DIVIDE_N_2,
             0,
-            BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
     }
@@ -1801,12 +1813,12 @@ object CmdHelper {
      */
     fun getCameraPreviewDataCmd02(data: ByteArray, divideType: Byte): ByteArray {
         return constructCmd(
-            CmdConfig.HEAD_CAMERA_PREVIEW,
-            CmdConfig.CMD_ID_8002.toShort(),
+            HEAD_CAMERA_PREVIEW,
+            CMD_ID_8002.toShort(),
             divideType,
             0,
             BtUtils.getCrc(
-                CmdConfig.HEX_FFFF,
+                HEX_FFFF,
                 data,
                 data.size
             ),
@@ -1814,115 +1826,81 @@ object CmdHelper {
         )
     }
 
-    val sportUrn: ByteArray = byteArrayOf(
-        0x02.toByte(),
-        0x01.toByte(),
-        0x00.toByte(),
-        0x00.toByte(),
-    )
+    fun sizeOfNumber(variable: Any): Int {
+        // Long.SIZE_BYTES = 8
+        return ByteBuffer.allocate(Long.SIZE_BYTES)
+            .let { buffer ->
+                when (variable) {
+                    is Byte -> buffer.put(variable)
+                    is Short -> buffer.putShort(variable)
+                    is Int -> buffer.putInt(variable)
+                    is Long -> buffer.putLong(variable)
+                    is Float -> buffer.putFloat(variable)
+                    is Double -> buffer.putDouble(variable)
+                    else -> throw IllegalArgumentException("unsupported data type: ${variable::class.simpleName}")
+                }
+                buffer.position(0).limit()
+            }
+    }
 
-    val sportUrnStep: ByteArray = byteArrayOf(
-        0x02.toByte(),
-        0x01.toByte(),
-        0x01.toByte(),
-        0x00.toByte(),
-    )
-
-    val sportUrnCalories: ByteArray = byteArrayOf(
-        0x02.toByte(),
-        0x01.toByte(),
-        0x02.toByte(),
-        0x00.toByte(),
-    )
-
-    val sportUrnDistance: ByteArray = byteArrayOf(
-        0x02.toByte(),
-        0x01.toByte(),
-        0x03.toByte(),
-        0x00.toByte(),
-    )
-
-    val sportUrnActivityDuration: ByteArray = byteArrayOf(
-        0x02.toByte(),
-        0x01.toByte(),
-        0x04.toByte(),
-        0x00.toByte(),
-    )
+    fun getUrnId(
+        parentUrn: Byte,
+        childUrn: Byte = URN_0,
+        grandSon: Byte = URN_0,
+        grandgrandSon: Byte = URN_0
+    ): ByteArray {
+        return byteArrayOf(
+            parentUrn,
+            childUrn,
+            grandSon,
+            grandgrandSon,
+        )
+    }
 
     /**
      * 获取设置体育目标的命令
      */
-    fun getSportGoalPartCmd(
+    fun getUpdateSportGoalAllCmd(
         sportGoal: WmSportGoal
-    ): List<ByteArray> {
+    ): PayloadPackage {
 
         val payloadPackage = PayloadPackage()
 
-        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
-        bbSport.putInt(sportGoal.steps)
-        bbSport.putInt(sportGoal.calories)
-        bbSport.putInt(sportGoal.distance)
-        bbSport.putShort(sportGoal.activityDuration)
-
-        payloadPackage.putData(sportUrn, bbSport.array())
-
-        return payloadPackage.toByteArray()
-    }
-
-    /**
-     * 获取设置体育目标的命令
-     */
-    fun getSportGoalAllCmd(
-        steps: Int,
-        calories: Int,
-        distance: Int,
-        activityDuration: Short
-    ): List<ByteArray> {
-
-        val payloadPackage = PayloadPackage()
-
-        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
-        bbSport.putInt(steps)
-        bbSport.putInt(calories)
-        bbSport.putInt(distance)
-        bbSport.putShort(activityDuration)
-
-        payloadPackage.putData(sportUrn, bbSport.array())
-
-        return payloadPackage.toByteArray()
-    }
-
-    //发送消息
-    fun getCmdList(payloadPackage: PayloadPackage) {
-
-        if (payloadPackage.toByteArray().size == 1) {
-            var payload: ByteArray = payloadPackage.toByteArray()[0]
-            val cmdArray = constructCmd(
-                CmdConfig.HEAD_NODE_TYPE,
-                CmdConfig.CMD_ID_8001,
-                CmdConfig.DIVIDE_N_2,
-                0,
-                BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
-                payload
-            )
-
-            //sendMsg
-        } else if (payloadPackage.toByteArray().size > 1) {
-
-            payloadPackage.toByteArray().forEach {
-                var payload: ByteArray = it
-
-               val cmdArray = constructCmd(
-                    CmdConfig.HEAD_NODE_TYPE,
-                    CmdConfig.CMD_ID_8001,
-                    CmdConfig.DIVIDE_N_2,
-                    0,
-                    BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
-                    payload
+        if (sportGoal.steps != 0 || sportGoal.calories != 0 || sportGoal.distance != 0 || sportGoal.activityDuration.toInt() != 0) {
+            val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
+            bbSport.putInt(sportGoal.steps)
+            bbSport.putInt(sportGoal.calories)
+            bbSport.putInt(sportGoal.distance)
+            bbSport.putShort(sportGoal.activityDuration)
+            payloadPackage.putData(getUrnId(URN_1, URN_1), bbSport.array())
+        } else {
+            if (sportGoal.steps != 0) {
+                payloadPackage.putData(
+                    getUrnId(URN_1, URN_1, URN_1),
+                    ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps).array()
                 )
-
-//                sendMsg(cmdArray)
+            } else if (sportGoal.calories != 0) {
+                payloadPackage.putData(
+                    getUrnId(URN_1, URN_1, URN_2),
+                    ByteBuffer.allocate(sizeOfNumber(sportGoal.calories)).putInt(sportGoal.calories)
+                        .array()
+                )
+            } else if (sportGoal.distance != 0) {
+                payloadPackage.putData(
+                    getUrnId(URN_1, URN_1, URN_3),
+                    ByteBuffer.allocate(sizeOfNumber(sportGoal.distance)).putInt(sportGoal.distance)
+                        .array()
+                )
+            } else if (sportGoal.activityDuration.toInt() != 0) {
+                payloadPackage.putData(
+                    getUrnId(URN_1, URN_1, URN_4),
+                    ByteBuffer.allocate(sizeOfNumber(sportGoal.activityDuration))
+                        .putShort(sportGoal.activityDuration).array()
+                )
             }
         }
+
+        return payloadPackage
     }
+
 }
