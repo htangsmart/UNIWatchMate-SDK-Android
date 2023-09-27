@@ -1,27 +1,35 @@
 package com.sjbt.sdk.sync
 
 import com.base.sdk.entity.data.WmBatteryInfo
-import com.base.sdk.entity.data.WmTodayTotalData
 import com.base.sdk.`interface`.sync.AbSyncData
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.SingleEmitter
 
 class SyncBatteryInfo:AbSyncData<WmBatteryInfo>() {
 
+    var batteryEmitter: SingleEmitter<WmBatteryInfo>? = null
+    var observeBatteryEmitter: ObservableEmitter<WmBatteryInfo>? = null
+    var lastSyncTime: Long = 0
+
+
     override fun isSupport(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun latestSyncTime(): Long {
-        TODO("Not yet implemented")
+        return lastSyncTime
     }
 
     override fun syncData(startTime: Long): Single<WmBatteryInfo> {
-        TODO("Not yet implemented")
+        return Single.create{
+            batteryEmitter = it
+        }
     }
 
-    override var observeSyncData: Observable<WmBatteryInfo>
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override var observeSyncData: Observable<WmBatteryInfo> =
+        Observable.create { emitter -> observeBatteryEmitter = emitter }
+
 
 }
