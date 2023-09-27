@@ -22,7 +22,7 @@ class PayloadPackage {
          * @param data
          * @return
          */
-        fun fromByteArray(payloadData:ByteArray):PayloadPackage {
+        fun fromByteArray(payloadData: ByteArray): PayloadPackage {
             val payload = PayloadPackage()
             val bytes = ByteBuffer.wrap(payloadData)
             bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
@@ -43,7 +43,7 @@ class PayloadPackage {
         }
     }
 
-    private fun buildPackageHeader(bytes:ByteBuffer, isFirst:Boolean = true) {
+    private fun buildPackageHeader(bytes: ByteBuffer, isFirst: Boolean = true) {
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         bytes.putShort(_id)
         bytes.putInt(packageSeq++)
@@ -58,7 +58,7 @@ class PayloadPackage {
      * 判断是否还有下一个包
      * @return
      */
-    fun hasNext():Boolean {
+    fun hasNext(): Boolean {
         return packageSeq != 0xFFFFFFFF.toInt()
     }
 
@@ -67,7 +67,7 @@ class PayloadPackage {
      *
      * @param data
      */
-    fun next(data:ByteArray) {
+    fun next(data: ByteArray) {
         val bytes = ByteBuffer.wrap(data)
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         _id = bytes.short
@@ -84,7 +84,7 @@ class PayloadPackage {
      * @param urn 资源名
      * @param data 数据
      */
-    fun putData(urn:ByteArray, data:ByteArray, dataFmt:DataFormat = DataFormat.FMT_BIN) {
+    fun putData(urn: ByteArray, data: ByteArray, dataFmt: DataFormat = DataFormat.FMT_BIN) {
         val nodeData = NodeData(urn, data, dataFmt)
         itemList.add(nodeData)
         itemCount++
@@ -95,10 +95,10 @@ class PayloadPackage {
      * @param mtu MTU
      * @return
      */
-    fun toByteArray(mtu:Int = 600): List<ByteArray> {
+    fun toByteArray(mtu: Int = 600): List<ByteArray> {
         val limitation = mtu
         val payloadList = mutableListOf<ByteArray>() //payload列表
-        val bytes:ByteBuffer = ByteBuffer.allocate(limitation) //payload
+        val bytes: ByteBuffer = ByteBuffer.allocate(limitation) //payload
         buildPackageHeader(bytes, true)
 
         itemList.mapIndexed() { index, item ->

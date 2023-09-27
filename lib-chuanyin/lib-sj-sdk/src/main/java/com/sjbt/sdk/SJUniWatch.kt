@@ -22,10 +22,7 @@ import com.base.sdk.`interface`.setting.AbWmSettings
 import com.base.sdk.`interface`.sync.AbWmSyncs
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
-import com.sjbt.sdk.entity.CameraFrameInfo
-import com.sjbt.sdk.entity.H264FrameMap
-import com.sjbt.sdk.entity.MsgBean
-import com.sjbt.sdk.entity.OtaCmdInfo
+import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.log.SJLog
 import com.sjbt.sdk.settings.*
 import com.sjbt.sdk.spp.BtStateReceiver
@@ -33,8 +30,7 @@ import com.sjbt.sdk.spp.OnBtStateListener
 import com.sjbt.sdk.spp.bt.BtEngine
 import com.sjbt.sdk.spp.bt.BtEngine.Listener
 import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
-import com.sjbt.sdk.spp.cmd.CmdConfig.*
-import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.FileUtils
@@ -231,6 +227,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
+
     override fun socketNotify(state: Int, obj: Any?) {
         try {
             when (state) {
@@ -284,6 +281,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         HEAD_FILE_SPP_A_2_D -> {
 
+                        }
+
+                        HEAD_NODE_TYPE -> {
+                            when (msgBean.cmdId.toShort()) {
+                                CMD_ID_8001 -> {
+                                    var payloadPackage: PayloadPackage =
+                                        PayloadPackage.fromByteArray(msgBean.payload)
+
+                                }
+                            }
                         }
                     }
                 }
@@ -681,6 +688,24 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         }
         mBtEngine.sendMsgOnWorkThread(msg)
+    }
+
+    //发送Node节点消息
+    fun sendNodeCmdList(payloadPackage: PayloadPackage) {
+        payloadPackage.toByteArray().forEach {
+            var payload: ByteArray = it
+
+            val cmdArray = CmdHelper.constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8001,
+                DIVIDE_N_2,
+                0,
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                payload
+            )
+
+            sendNormalMsg(cmdArray)
+        }
     }
 
     private fun isMsgStopped(head: Byte, cmdId: Byte): Boolean {
