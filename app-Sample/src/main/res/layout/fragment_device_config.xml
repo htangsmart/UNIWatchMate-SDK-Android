@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/layout_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="?dividerVertical"
+        android:orientation="vertical"
+        android:showDividers="middle">
+
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_notification"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_notification_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_function"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_function_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_health_monitor"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_health_monitor_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_sedentary"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_sedentary_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_drink_water"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_drink_water_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_blood_pressure"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_blood_pressure_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_turn_wrist_lighting"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_turn_wrist_lighting_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_dnd"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_dnd_config"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_screen_vibrate"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_screen_vibrate"/>
+
+    </LinearLayout>
+
+</ScrollView>

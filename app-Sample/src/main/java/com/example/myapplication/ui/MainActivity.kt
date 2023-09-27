@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun connectSample() {
         UNIWatchMate.wmConnect?.connect("15:7E:78:A2:4B:30",
-            AbWmConnect.BindInfo(AbWmConnect.BindType.DISCOVERY,AbWmConnect.UserInfo("123456","张三"),""), WmDeviceModel.SJ_WATCH)
+            AbWmConnect.BindInfo(AbWmConnect.BindType.DISCOVERY,AbWmConnect.UserInfo("123456","张三")), WmDeviceModel.SJ_WATCH)
     }
 
     private fun startDiscoveryDevice() {

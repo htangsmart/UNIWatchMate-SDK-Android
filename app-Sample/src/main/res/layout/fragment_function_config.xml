@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/layout_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="?dividerVertical"
+        android:orientation="vertical"
+        android:showDividers="middle">
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_wear_right_hand"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_wear_right_hand"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_enhanced_measurement"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_enhanced_measurement"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_time_format_12_hour"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_time_format_12_hour"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_length_unit_imperial"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_length_unit_imperial"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_temperature_unit_fahrenheit"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_temperature_unit_fahrenheit"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_display_weather"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_display_weather"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_disconnect_reminder"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_disconnect_reminder"/>
+
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_display_exercise_goal"
+            style="@style/Widget.Item.Switch"
+            app:showSwitch="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_display_exercise_goal"/>
+
+    </LinearLayout>
+
+</ScrollView>
