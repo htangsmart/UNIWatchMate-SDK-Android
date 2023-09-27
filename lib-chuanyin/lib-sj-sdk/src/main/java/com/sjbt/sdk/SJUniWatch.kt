@@ -14,6 +14,7 @@ import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.WmTransferFile
 import com.base.sdk.`interface`.app.AbWmApps
@@ -34,6 +35,7 @@ import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.FileUtils
+import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe
@@ -286,9 +288,93 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         HEAD_NODE_TYPE -> {
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {
+
+                                    LogUtils.logBlueTooth("节点数据：" + msgBean.payload)
+
                                     var payloadPackage: PayloadPackage =
                                         PayloadPackage.fromByteArray(msgBean.payload)
 
+                                    payloadPackage.itemList.forEach {
+                                        when (it.urn[0]) {
+                                            URN_1 -> {//蓝牙连接 暂用旧协议格式
+
+                                            }
+
+                                            URN_2 -> {//设置同步
+                                                when (it.urn[1]) {
+                                                    URN_1 -> {//运动目标
+
+                                                        when (it.urn[2]) {
+                                                            URN_0 -> {
+
+                                                                val byteBuffer =
+                                                                    ByteBuffer.wrap(it.data)
+                                                                val step = byteBuffer.getInt()
+                                                                val distance = byteBuffer.getInt()
+                                                                val calories = byteBuffer.getInt()
+                                                                val activityDuration =
+                                                                    byteBuffer.getShort()
+
+                                                                val wmSportGoal = WmSportGoal(
+                                                                    step,
+                                                                    distance,
+                                                                    calories,
+                                                                    activityDuration
+                                                                )
+
+                                                                settingSportGoal.setEmitter.onSuccess(
+                                                                    wmSportGoal
+                                                                )
+                                                            }
+
+                                                            URN_1 -> {//步数
+
+                                                            }
+                                                            URN_2 -> {//热量（卡）
+
+                                                            }
+                                                            URN_3 -> {//距离（米）
+
+                                                            }
+                                                            URN_4 -> {//活动时长（分钟）
+
+                                                            }
+                                                        }
+                                                    }
+
+                                                    URN_2 -> {//健康信息
+
+                                                    }
+
+                                                    URN_3 -> {//单位同步
+
+                                                    }
+
+                                                    URN_4 -> {//语言设置
+
+                                                    }
+
+                                                    URN_4 -> {//语言设置
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                            URN_3 -> {//表盘
+
+                                            }
+
+                                            URN_4 -> {//应用
+
+                                            }
+
+                                            URN_5 -> {//运动同步
+
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -679,7 +765,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         if (mTransferring) {
             val byteBuffer = ByteBuffer.wrap(msg)
             val head = byteBuffer.get()
-            val cmdId = byteBuffer[2]
+            val cmdId:Short = byteBuffer[2].toShort()
 
             if (isMsgStopped(head, cmdId)) {
                 SJLog.logBt(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
@@ -708,14 +794,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    private fun isMsgStopped(head: Byte, cmdId: Byte): Boolean {
+    private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {
         return head != HEAD_FILE_SPP_A_2_D && head != HEAD_CAMERA_PREVIEW && !isCameraCmd(
             head,
             cmdId
         )
     }
 
-    private fun isCameraCmd(head: Byte, cmdId: Byte): Boolean {
+    private fun isCameraCmd(head: Byte, cmdId: Short): Boolean {
         return head == HEAD_COMMON && (cmdId == CMD_ID_8028 || cmdId == CMD_ID_8029 || cmdId == CMD_ID_802A || cmdId == CMD_ID_802B || cmdId == CMD_ID_802C)
     }
 
