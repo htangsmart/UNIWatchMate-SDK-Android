@@ -341,7 +341,9 @@ object CmdHelper {
         LogUtils.logBlueTooth("绑定命令")
         val byteBuffer = ByteBuffer.allocate(17)
         byteBuffer.put(bindInfo.bindType.ordinal.toByte())
-        byteBuffer.put(bindInfo.scanCode.toByteArray())
+        bindInfo.randomCode?.let {
+            byteBuffer.put(it.toByteArray())
+        }
 
         val payload = byteBuffer.array()
         val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
@@ -353,6 +355,23 @@ object CmdHelper {
             0,
             crc,
             payload
+        )
+    }
+
+    /**
+     * 获取绑定命令
+     * @return
+     */
+    fun getUnBindCmd(): ByteArray {
+        LogUtils.logBlueTooth("解绑命令")
+
+        return constructCmd(
+            HEAD_COMMON,
+            CMD_ID_802F,
+            DIVIDE_N_2,
+            0,
+            0,
+            null
         )
     }
 
@@ -1877,7 +1896,8 @@ object CmdHelper {
             if (sportGoal.steps != 0) {
                 payloadPackage.putData(
                     getUrnId(URN_1, URN_1, URN_1),
-                    ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps).array()
+                    ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps)
+                        .array()
                 )
             } else if (sportGoal.calories != 0) {
                 payloadPackage.putData(

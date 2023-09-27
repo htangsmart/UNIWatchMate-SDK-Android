@@ -22,6 +22,6 @@
         android:id="@+id/btn_bind"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="绑定" />
+        android:text="解绑" />
 
 </LinearLayout>

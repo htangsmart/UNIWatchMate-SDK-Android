@@ -36,6 +36,7 @@ import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.FileUtils
 import com.sjbt.sdk.utils.LogUtils
+import com.sjbt.sdk.utils.UrlParse
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe
@@ -50,8 +51,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     abstract var mMsgTimeOut: Int
 
     var mBtStateReceiver: BtStateReceiver? = null
-    private var mBtEngine = BtEngine.getInstance(this)
-    private var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+    var mBtEngine = BtEngine.getInstance(this)
+    var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<BluetoothDevice>
 
@@ -87,10 +88,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
 
-    override val wmSettings: AbWmSettings = SJSettings()
+    override val wmSettings: AbWmSettings = SJSettings(this)
     override val wmApps: AbWmApps = SJApps()
     override val wmSync: AbWmSyncs = SJSyncData()
-    override val wmConnect: AbWmConnect = SJConnect(mBtEngine, mBtAdapter)
+    override val wmConnect: AbWmConnect = SJConnect(this)
     override val wmTransferFile: WmTransferFile = SJTransferFile()
 
     private val sjConnect: SJConnect = wmConnect as SJConnect
@@ -143,7 +144,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 mCurrAddress?.let {
                     if (device.address == mCurrAddress) {
-                        sjConnect.mConnectTryCount = 0
 
                         mTransferring = false
                         mTransferRetryCount = 0
@@ -253,21 +253,29 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     }
                                 }
                             }
-
-
                         }
 
                         HEAD_COMMON -> {
 
                             when (msgBean.cmdId.toShort()) {
 
-                                CMD_ID_802E -> {
+                                CMD_ID_802E -> {//绑定
                                     val result = msg[16]
-                                    WmLog.d(TAG, "绑定:$result")
+                                    WmLog.d(TAG, "绑定结果:$result")
+
+                                    if (result.toInt() == 1) {
+                                        sjConnect.btStateChange(WmConnectState.VERIFIED)
+                                    } else {
+                                        mBtEngine.getmSocket().close()
+                                        sjConnect.disconnect()
+                                    }
                                 }
 
-                                CMD_ID_802F -> {
+                                CMD_ID_802F -> {//解绑
 
+                                    val result = msg[16]
+
+//                                    sjConnect.btStateChange(WmConnectState.DISCONNECTED)
                                 }
 
                             }
@@ -758,14 +766,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    private fun sendNormalMsg(msg: ByteArray?) {
+    fun sendNormalMsg(msg: ByteArray?) {
         if (mBtEngine == null || msg == null) {
             return
         }
         if (mTransferring) {
             val byteBuffer = ByteBuffer.wrap(msg)
             val head = byteBuffer.get()
-            val cmdId:Short = byteBuffer[2].toShort()
+            val cmdId: Short = byteBuffer[2].toShort()
 
             if (isMsgStopped(head, cmdId)) {
                 SJLog.logBt(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
@@ -865,13 +873,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return wmDeviceModel == WmDeviceModel.SJ_WATCH
     }
 
+    //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
     override fun parseScanQr(qrString: String): WmScanDevice {
         val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
-        wmScanDevice.qrUrl = qrString
-        wmScanDevice.address = qrString.substring(0, 12)
+        val params = UrlParse.getUrlParams(qrString)
 
+        val schemeMacAddress = params["mac"]
+        val schemeDeviceName = params["projectname"]
+        val random = params["random"]
+
+        wmScanDevice.randomCode = random
+
+        wmScanDevice.address = schemeMacAddress
         wmScanDevice.isRecognized =
-            qrString.contains("shenju") && isLegalMacAddress(wmScanDevice.address)
+            !TextUtils.isEmpty(schemeMacAddress) &&
+                    !TextUtils.isEmpty(schemeDeviceName) &&
+                    !TextUtils.isEmpty(random) &&
+                    isLegalMacAddress(schemeMacAddress)
 
         return wmScanDevice
     }

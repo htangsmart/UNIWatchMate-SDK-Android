@@ -1,6 +1,5 @@
 package com.sjbt.sdk
 
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
@@ -8,18 +7,18 @@ import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.log.WmLog
 import com.sjbt.sdk.log.SJLog
-import com.sjbt.sdk.spp.bt.BtEngine
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 
-class SJConnect(btEngine: BtEngine, mBtAdapter: BluetoothAdapter) : AbWmConnect() {
+class SJConnect(sjUniWatch: SJUniWatch) : AbWmConnect() {
 
-    var mConnectTryCount = 0
     private var connectEmitter: ObservableEmitter<WmConnectState>? = null
     private val TAG = TAG_SJ + "Connect"
-    private var btEngine = btEngine
-    private var mBtAdapter = mBtAdapter
+    private var btEngine = sjUniWatch.mBtEngine
+    private var mBtAdapter = sjUniWatch.mBtAdapter
     var mBindInfo: BindInfo? = null
+    private val sjUniWatch: SJUniWatch = sjUniWatch
 
     /**
      * 通过address 连接
@@ -75,7 +74,7 @@ class SJConnect(btEngine: BtEngine, mBtAdapter: BluetoothAdapter) : AbWmConnect(
     /**
      * 重连
      */
-    fun reConnect(device: BluetoothDevice){
+    fun reConnect(device: BluetoothDevice) {
         mBindInfo?.let {
             connect(device, it, WmDeviceModel.SJ_WATCH)
         }
@@ -86,11 +85,11 @@ class SJConnect(btEngine: BtEngine, mBtAdapter: BluetoothAdapter) : AbWmConnect(
     }
 
     override fun disconnect() {
-        connectEmitter?.onNext(WmConnectState.DISCONNECTED)
+        sjUniWatch.mBtEngine.closeSocket("user", true)
     }
 
     override fun reset() {
-        connectEmitter?.onNext(WmConnectState.DISCONNECTED)
+        sjUniWatch.sendNormalMsg(CmdHelper.getUnBindCmd())
     }
 
     override val observeConnectState: Observable<WmConnectState> = Observable.create {

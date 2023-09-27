@@ -29,8 +29,8 @@ internal class SettingSportGoal(
         return connector.settingsFeature().requestExerciseGoal().map {
             WmSportGoal(
                 steps = it.step,
-                calories = it.calorie.toDouble(),
-                distance = it.distance / 1000.0,
+                calories = it.calorie,
+                distance = it.distance / 1000,
                 activityDuration = 1000
             )
         }
