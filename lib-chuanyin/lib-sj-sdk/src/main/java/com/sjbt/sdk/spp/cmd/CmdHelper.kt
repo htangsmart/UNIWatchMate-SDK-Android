@@ -8,7 +8,6 @@ import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.`interface`.AbWmConnect
-import com.base.sdk.`interface`.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
@@ -1815,13 +1814,115 @@ object CmdHelper {
         )
     }
 
-    fun getSportInfoCmd(): List<ByteArray> {
+    val sportUrn: ByteArray = byteArrayOf(
+        0x02.toByte(),
+        0x01.toByte(),
+        0x00.toByte(),
+        0x00.toByte(),
+    )
+
+    val sportUrnStep: ByteArray = byteArrayOf(
+        0x02.toByte(),
+        0x01.toByte(),
+        0x01.toByte(),
+        0x00.toByte(),
+    )
+
+    val sportUrnCalories: ByteArray = byteArrayOf(
+        0x02.toByte(),
+        0x01.toByte(),
+        0x02.toByte(),
+        0x00.toByte(),
+    )
+
+    val sportUrnDistance: ByteArray = byteArrayOf(
+        0x02.toByte(),
+        0x01.toByte(),
+        0x03.toByte(),
+        0x00.toByte(),
+    )
+
+    val sportUrnActivityDuration: ByteArray = byteArrayOf(
+        0x02.toByte(),
+        0x01.toByte(),
+        0x04.toByte(),
+        0x00.toByte(),
+    )
+
+    /**
+     * 获取设置体育目标的命令
+     */
+    fun getSportGoalPartCmd(
+        sportGoal: WmSportGoal
+    ): List<ByteArray> {
+
         val payloadPackage = PayloadPackage()
 
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
+        bbSport.putInt(sportGoal.steps)
+        bbSport.putInt(sportGoal.calories)
+        bbSport.putInt(sportGoal.distance)
+        bbSport.putShort(sportGoal.activityDuration)
 
-//        payloadPackage.putData()
+        payloadPackage.putData(sportUrn, bbSport.array())
 
         return payloadPackage.toByteArray()
     }
 
+    /**
+     * 获取设置体育目标的命令
+     */
+    fun getSportGoalAllCmd(
+        steps: Int,
+        calories: Int,
+        distance: Int,
+        activityDuration: Short
+    ): List<ByteArray> {
+
+        val payloadPackage = PayloadPackage()
+
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
+        bbSport.putInt(steps)
+        bbSport.putInt(calories)
+        bbSport.putInt(distance)
+        bbSport.putShort(activityDuration)
+
+        payloadPackage.putData(sportUrn, bbSport.array())
+
+        return payloadPackage.toByteArray()
+    }
+
+    //发送消息
+    fun getCmdList(payloadPackage: PayloadPackage) {
+
+        if (payloadPackage.toByteArray().size == 1) {
+            var payload: ByteArray = payloadPackage.toByteArray()[0]
+            val cmdArray = constructCmd(
+                CmdConfig.HEAD_NODE_TYPE,
+                CmdConfig.CMD_ID_8001,
+                CmdConfig.DIVIDE_N_2,
+                0,
+                BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+                payload
+            )
+
+            //sendMsg
+        } else if (payloadPackage.toByteArray().size > 1) {
+
+            payloadPackage.toByteArray().forEach {
+                var payload: ByteArray = it
+
+               val cmdArray = constructCmd(
+                    CmdConfig.HEAD_NODE_TYPE,
+                    CmdConfig.CMD_ID_8001,
+                    CmdConfig.DIVIDE_N_2,
+                    0,
+                    BtUtils.getCrc(CmdConfig.HEX_FFFF, payload, payload.size),
+                    payload
+                )
+
+//                sendMsg(cmdArray)
+            }
+        }
+    }
 }

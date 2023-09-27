@@ -95,7 +95,7 @@ class PayloadPackage {
      * @param mtu MTU
      * @return
      */
-    fun toByteArray(mtu:Int = 500): List<ByteArray> {
+    fun toByteArray(mtu:Int = 600): List<ByteArray> {
         val limitation = mtu
         val payloadList = mutableListOf<ByteArray>() //payload列表
         val bytes:ByteBuffer = ByteBuffer.allocate(limitation) //payload

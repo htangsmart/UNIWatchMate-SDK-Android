@@ -33,12 +33,7 @@ public class CmdConfig {
     public static final byte HEAD_DEVICE_ERROR = (byte) 0xEF;//从设备向App端报告错误
     public static final byte HEAD_COLLECT_DEBUG_DATA = (byte) 0xDF;//收集调试数据
     public static final byte HEAD_CAMERA_PREVIEW = (byte) 0x1A;//收集调试数据
-
-    /*慧联协议*/
-    public static final byte HEAD_HL_DEVKIT_EQ = (byte) 0xE0;
-    public static final byte HEAD_HL_DEVKIT_ANC = (byte) 0xA0;
-    public static final byte HEAD_HL_DEVKIT_ENC = (byte) 0xB0;
-    public static final byte HEAD_HL_META_BUDS_COMMON = (byte) 0xC0;
+    public static final byte HEAD_NODE_TYPE = (byte) 0x1B;//收集调试数据
     public static final byte HEAD_HL_OTA_STEP = (byte) 0x0F;//App到设备端发送文件
 
     public static final short TRANSFER_KEY = 0X7FFF;
