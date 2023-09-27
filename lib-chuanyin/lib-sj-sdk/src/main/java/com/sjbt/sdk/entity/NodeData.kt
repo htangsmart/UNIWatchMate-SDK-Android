@@ -19,16 +19,16 @@ class NodeData(
     }
 
     companion object {
-        fun fromByteBuffer(bytes:ByteBuffer):NodeData {
+        fun fromByteBuffer(bytes:ByteBuffer, type:Int):NodeData {
             val nodeData = NodeData()
             nodeData.urn = ByteArray(4)
             bytes.get(nodeData.urn)
-            //if (type != RequestType.REQ_TYPE_READ.ordinal) {
-            nodeData.dataFmt = DataFormat.values()[bytes.get().toInt()]
-            nodeData.dataLen = bytes.short
-            nodeData.data = ByteArray(nodeData.dataLen.toInt())
-            bytes.get(nodeData.data)
-
+            if (type != RequestType.REQ_TYPE_READ.ordinal) {
+                nodeData.dataFmt = DataFormat.values()[bytes.get().toInt()]
+                nodeData.dataLen = bytes.short
+                nodeData.data = ByteArray(nodeData.dataLen.toInt())
+                bytes.get(nodeData.data)
+            }
             return nodeData
         }
     }
@@ -37,17 +37,17 @@ class NodeData(
         return "BaseNodeData(urn=${urn.contentToString()}, dataFmt=$dataFmt, dataLen=$dataLen, data=$data)"
     }
 
-    fun toBytes(): ByteArray {
-        //val size = 4 + (if (reqest_type != RequestType.REQ_TYPE_READ.ordinal) 3 + data.size else 0)
-        val size = 4 + 3 + data.size
+    fun toBytes(reqest_type:Int): ByteArray {
+        val size = 4 + (if (reqest_type != RequestType.REQ_TYPE_READ.ordinal) 3 + data.size else 0)
         val bytes:ByteBuffer = ByteBuffer.allocate( size)
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         bytes.put(urn)
-        // if (reqest_type != RequestType.REQ_TYPE_READ.ordinal ) {
-        bytes.put(dataFmt.ordinal.toByte())
-        bytes.putShort(dataLen)
-        for (item in data) {
-            bytes.put(item)
+        if (reqest_type != RequestType.REQ_TYPE_READ.ordinal ) {
+            bytes.put(dataFmt.ordinal.toByte())
+            bytes.putShort(dataLen)
+            for (item in data) {
+                bytes.put(item)
+            }
         }
 
         return bytes.array()

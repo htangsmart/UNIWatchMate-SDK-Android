@@ -35,7 +35,7 @@ class PayloadPackage {
 
             //判断bytes是否读完
             while (bytes.hasRemaining()) {
-                val nextNode = NodeData.fromByteBuffer(bytes)
+                val nextNode = NodeData.fromByteBuffer(bytes, payload.actionType)
                 payload.itemList.add(nextNode)
             }
             if (payload.itemList.size != payload.itemCount) {
@@ -54,7 +54,6 @@ class PayloadPackage {
         bytes.put(actionType.toByte())
         bytes.putShort(packageLimit)
 //        bytes.put(itemCount.toByte())
-
     }
 
     /**
@@ -82,7 +81,7 @@ class PayloadPackage {
 
         //判断bytes是否读完
         while (bytes.hasRemaining()) {
-            val nextNode = NodeData.fromByteBuffer(bytes)
+            val nextNode = NodeData.fromByteBuffer(bytes, actionType)
             itemList.add(nextNode)
         }
         if (itemList.size != itemCount) {
@@ -114,10 +113,12 @@ class PayloadPackage {
         var tempByteArray = ByteArray(0)
         buildPackageHeader(bytes)
 
+        var total_item_count = 0
         var count = 0
         itemList.mapIndexed() { index, item ->
-            val nextNode = item.toBytes()
+            val nextNode = item.toBytes(actionType)
             count++
+            total_item_count++
             //如果现有的payload长度加上当前item的长度超过了限制，则将现有的payload加入到payloadList中，
             // 并重新计算payload长度
             if (bytes.position() + tempByteArray.size + nextNode.size > limitation) {
@@ -148,6 +149,10 @@ class PayloadPackage {
         val actualData = ByteArray(bytes.limit())
         bytes.get(actualData)
         payloadList.add(actualData)
+
+//        if (total_item_count != itemCount) {
+//            throw Exception("total_item_count != itemCount")
+//        }
 
         return payloadList
     }
