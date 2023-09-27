@@ -1,0 +1,59 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext {
+        compile_sdk_version = 31
+        min_sdk_version = 21
+        target_sdk_version = 33
+        kotlin_version = '1.6.10'
+        core_ktx_version = '1.8.0'
+        retrofit_version = "2.9.0"
+        ok_http_version = "3.11.0"
+
+        rx_java_version = '3.0.4'
+        rx_android_version = '3.0.2'
+
+        gson_version = '2.8.7'
+        mmkv_version = '1.2.10'
+        appcompat_version = '1.4.1'
+        recycleview_version = '1.1.0'
+        viewpager_version = '1.1.0'
+        material_version = '1.6.0'
+        constraint_version = '2.0.1'
+        compose_ui_version = '1.2.0'
+        timber_version = '5.0.1'
+    }
+
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven {
+            allowInsecureProtocol = true
+            url "http://mvnrepo.alibaba-inc.com/mvn/repository"
+        }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven {
+            allowInsecureProtocol = true
+            url "http://mvnrepo.alibaba-inc.com/mvn/repository"
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

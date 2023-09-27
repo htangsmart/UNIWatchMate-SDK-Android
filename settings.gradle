@@ -1,0 +1,6 @@
+include ':app-Sample'
+
+include ':lib-chuanyin:lib-interface'
+include ':lib-chuanyin:lib-sj-sdk'
+include ':lib-chuanyin:lib-api'
+include ':lib-chuanyin:lib-fc-sdk'
