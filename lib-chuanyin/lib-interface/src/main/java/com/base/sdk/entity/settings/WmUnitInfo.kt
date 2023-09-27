@@ -8,7 +8,7 @@ data class WmUnitInfo(
      * Length unit
      * CM, INCH
      */
-    val lengthUnit: LengthUnit,
+    var lengthUnit: LengthUnit,
     /**
      * Weight unit
      * KG, LB
@@ -18,12 +18,12 @@ data class WmUnitInfo(
      * Temperature unit
      * CELSIUS, FAHRENHEIT
      */
-    val temperatureUnit: TemperatureUnit,
+    var temperatureUnit: TemperatureUnit,
     /**
      * Time format
      * TWELVE_HOUR, TWENTY_FOUR_HOUR
      */
-    val timeFormat: TimeFormat,
+    var timeFormat: TimeFormat,
 
     /**
      * Distance unit

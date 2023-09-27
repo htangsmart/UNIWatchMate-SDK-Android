@@ -5,9 +5,8 @@ import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.base.api.UNIWatchMate
-import com.base.sdk.AbUniWatch
-import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.WmPersonalInfo
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.data.config.SportGoalRepository
@@ -19,22 +18,23 @@ import com.sjbt.sdk.sample.model.device.ConnectorDevice
 import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import com.topstep.fitcloud.sample2.model.device.ConnectorState
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
-import java.util.*
+import java.util.concurrent.TimeUnit
 
 interface DeviceManager {
 
     val flowDevice: StateFlow<ConnectorDevice?>
 
-//  val flowConnectorState: StateFlow<ConnectorState>// connectorState
+    val flowConnectorState: Observable<WmConnectState>// connectorState
 
-//  val flowBattery: StateFlow<TmBatteryStatus?>
+    val flowBattery: StateFlow<WmBatteryInfo?>
 
     /**
      * Sync data state of [FcSyncState].
@@ -179,7 +179,7 @@ internal class DeviceManagerImpl(
      */
 //    override val flowConnectorState = combine(
 //        flowDevice,
-//        connector.observerConnectorState().map { simpleState(it) }.startWithItem(ConnectorState.DISCONNECTED).asFlow().distinctUntilChanged()
+//        WmUnitInfo..observerConnectorState().map { simpleState(it) }.startWithItem(ConnectorState.DISCONNECTED).asFlow().distinctUntilChanged()
 //    ) { device , connectorState ->
 //        //Device trying bind success,save it
 //        if (device != null && device.isTryingBind && connectorState == ConnectorState.CONNECTED) {
@@ -188,6 +188,9 @@ internal class DeviceManagerImpl(
 //        combineState(device, connectorState)
 //    }.stateIn(applicationScope, SharingStarted.Eagerly, ConnectorState.NO_DEVICE)
 
+    override val flowConnectorState = UNIWatchMate.wmConnect.observeConnectState
+//        .asFlow().distinctUntilChanged()
+//        .stateIn(applicationScope, SharingStarted.Eagerly, ConnectorState.NO_DEVICE)
 //    override val flowSyncState: StateFlow<Int?> = connector.dataFeature()
 //        .observerSyncState().asFlow().stateIn(applicationScope, SharingStarted.Lazily, null)
 
@@ -222,6 +225,17 @@ internal class DeviceManagerImpl(
 //                    )
                 }
             }
+        }
+        applicationScope.launch {
+            UNIWatchMate.wmConnect.observeConnectState.asFlow().collect {
+
+            }
+//            flowConnectorState.collect {
+//                Timber.tag(TAG).e("state:%s", it)
+//                if (it == ConnectorState.CONNECTED) {
+//                    onConnected()
+//                }
+//            }
         }
         applicationScope.launch {
 //            flowConnectorState.collect {
@@ -270,31 +284,25 @@ internal class DeviceManagerImpl(
         }
     }
 
-//    override val flowBattery: StateFlow<TmBatteryStatus?> = flowConnectorState
-//        .filter { it == ConnectorState.CONNECTED }
-//        .flatMapLatest {//flatMap 不同的是，它会取消先前启动的流
-//            Observable
-//                .interval(1000, 7500, TimeUnit.MILLISECONDS)
-//                .flatMap {
-//                    connector.settingsFeature().requestBattery().toObservable()
-//                }
-//                .retryWhen {
-//                    it.flatMap { throwable ->
-////                        if (throwable is BleDisconnectedException) {
-////                            //not retry when disconnected
-////                            Observable.error(throwable)
-////                        } else {
-//                            //retry when failed
-//                            Observable.timer(7500, TimeUnit.MILLISECONDS)
-////                        }
-//                    }
-//                }
-//                .asFlow()
-//                .catch {
-//                    //catch avoid crash
-//                }
-//        }
-//        .stateIn(applicationScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L), null)
+    override val flowBattery: StateFlow<WmBatteryInfo?> = flowConnectorState.asFlow()
+        .filter { it == WmConnectState.CONNECTED }
+        .flatMapLatest {//flatMap 不同的是，它会取消先前启动的流
+            Observable
+                .interval(1000, 7500, TimeUnit.MILLISECONDS)
+                .flatMap {
+                    UNIWatchMate.mWmSyncs?.syncBatteryInfo?.observeSyncData
+                }
+                .retryWhen {
+                    it.flatMap { throwable ->
+                        Observable.timer(7500, TimeUnit.MILLISECONDS)
+                    }
+                }
+                .asFlow()
+                .catch {
+                    //catch avoid crash
+                }
+        }
+        .stateIn(applicationScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L), null)
 
 //    override fun flowWeatherRequire(): Flow<Boolean> {
 //        return flowDevice.flatMapLatest {
@@ -501,31 +509,31 @@ internal class DeviceManagerImpl(
     )
 }
 
-private fun simpleState(state: WmConnectState): ConnectorState {
-    return when {
-        state == WmConnectState.DISCONNECTED -> ConnectorState.DISCONNECTED
-//        state == WmConnectState.PRE_CONNECTING -> ConnectorState.PRE_CONNECTING
-        state <= WmConnectState.CONNECTING -> {
-            ConnectorState.CONNECTING
-        }
+//private fun simpleState(state: WmConnectState): ConnectorState {
+//    return when {
+//        state == WmConnectState.DISCONNECTED -> ConnectorState.DISCONNECTED
+////        state == WmConnectState.PRE_CONNECTING -> ConnectorState.PRE_CONNECTING
+//        state <= WmConnectState.CONNECTING -> {
+//            ConnectorState.CONNECTING
+//        }
+//
+//        else -> {
+//            ConnectorState.CONNECTED
+//        }
+//    }
+//}
 
-        else -> {
-            ConnectorState.CONNECTED
-        }
-    }
-}
-
-private fun combineState(
-    device: ConnectorDevice?,
-    isAdapterEnabled: Boolean,
-    connectorState: ConnectorState,
-): ConnectorState {
-    return if (device == null) {
-        ConnectorState.NO_DEVICE
-    } else if (!isAdapterEnabled) {
-        ConnectorState.BT_DISABLED
-    } else {
-        connectorState
-    }
-}
+//private fun combineState(
+//    device: ConnectorDevice?,
+//    isAdapterEnabled: Boolean,
+//    connectorState: ConnectorState,
+//): ConnectorState {
+//    return if (device == null) {
+//        ConnectorState.NO_DEVICE
+//    } else if (!isAdapterEnabled) {
+//        ConnectorState.BT_DISABLED
+//    } else {
+//        connectorState
+//    }
+//}
 

@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:showDividers="middle">
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+      <!--  <com.sjbt.sdk.sample.widget.PreferenceItemView
             android:id="@+id/item_wear_right_hand"
             style="@style/Widget.Item.Switch"
             app:showSwitch="true"
@@ -26,7 +26,7 @@
             app:showSwitch="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_enhanced_measurement"/>
+            app:name="@string/ds_enhanced_measurement"/>-->
 
         <com.sjbt.sdk.sample.widget.PreferenceItemView
             android:id="@+id/item_time_format_12_hour"
@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:name="@string/ds_temperature_unit_fahrenheit"/>
-
+<!--
         <com.sjbt.sdk.sample.widget.PreferenceItemView
             android:id="@+id/item_display_weather"
             style="@style/Widget.Item.Switch"
@@ -74,7 +74,7 @@
             app:showSwitch="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_display_exercise_goal"/>
+            app:name="@string/ds_display_exercise_goal"/>-->
 
     </LinearLayout>
 
