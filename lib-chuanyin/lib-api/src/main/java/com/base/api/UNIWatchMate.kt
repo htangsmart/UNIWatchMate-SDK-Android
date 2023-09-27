@@ -61,6 +61,7 @@ object UNIWatchMate {
     fun scanQr(qrString: String, bindInfo: AbWmConnect.BindInfo) {
         uniWatches.forEach {
             val scanDevice = it.parseScanQr(qrString)
+
             scanDevice?.let { device ->
                 if (device.isRecognized) {
                     mWmApps = it.wmApps
@@ -70,6 +71,7 @@ object UNIWatchMate {
                     mInstance = it
                     uniWatchSubject.onNext(it)
 
+                    bindInfo.randomCode = scanDevice.randomCode
                     wmConnect?.connect(device.address!!, bindInfo, device.mode)
                 }
             }

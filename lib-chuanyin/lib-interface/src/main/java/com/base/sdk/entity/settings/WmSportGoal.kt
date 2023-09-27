@@ -11,17 +11,17 @@ data class WmSportGoal(
     /**
      * Calories(卡路里)
      */
-    val calories: Double,
+    val calories: Int,
     /**
      * Distance(距离)
      */
-    val distance: Double,
+    val distance: Int,
     /**
      * Activity duration(活动时长 分钟)
      */
-    val activityMinutes: Long
+    val activityDuration: Short
 ) {
     override fun toString(): String {
-        return "WmSportGoal(steps=$steps, calories=$calories, distance=$distance, activityDuration=$activityMinutes)"
+        return "WmSportGoal(steps=$steps, calories=$calories, distance=$distance, activityDuration=$activityDuration)"
     }
 }

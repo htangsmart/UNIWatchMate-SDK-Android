@@ -14,6 +14,7 @@ import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.WmTransferFile
 import com.base.sdk.`interface`.app.AbWmApps
@@ -22,10 +23,7 @@ import com.base.sdk.`interface`.setting.AbWmSettings
 import com.base.sdk.`interface`.sync.AbWmSyncs
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
-import com.sjbt.sdk.entity.CameraFrameInfo
-import com.sjbt.sdk.entity.H264FrameMap
-import com.sjbt.sdk.entity.MsgBean
-import com.sjbt.sdk.entity.OtaCmdInfo
+import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.log.SJLog
 import com.sjbt.sdk.settings.*
 import com.sjbt.sdk.spp.BtStateReceiver
@@ -33,11 +31,12 @@ import com.sjbt.sdk.spp.OnBtStateListener
 import com.sjbt.sdk.spp.bt.BtEngine
 import com.sjbt.sdk.spp.bt.BtEngine.Listener
 import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
-import com.sjbt.sdk.spp.cmd.CmdConfig.*
-import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.FileUtils
+import com.sjbt.sdk.utils.LogUtils
+import com.sjbt.sdk.utils.UrlParse
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe
@@ -52,8 +51,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     abstract var mMsgTimeOut: Int
 
     var mBtStateReceiver: BtStateReceiver? = null
-    private var mBtEngine = BtEngine.getInstance(this)
-    private var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+    var mBtEngine = BtEngine.getInstance(this)
+    var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<BluetoothDevice>
 
@@ -89,10 +88,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
 
-    override val wmSettings: AbWmSettings = SJSettings()
+    override val wmSettings: AbWmSettings = SJSettings(this)
     override val wmApps: AbWmApps = SJApps()
     override val wmSync: AbWmSyncs = SJSyncData()
-    override val wmConnect: AbWmConnect = SJConnect(mBtEngine, mBtAdapter)
+    override val wmConnect: AbWmConnect = SJConnect(this)
     override val wmTransferFile: WmTransferFile = SJTransferFile()
 
     private val sjConnect: SJConnect = wmConnect as SJConnect
@@ -145,7 +144,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 mCurrAddress?.let {
                     if (device.address == mCurrAddress) {
-                        sjConnect.mConnectTryCount = 0
 
                         mTransferring = false
                         mTransferRetryCount = 0
@@ -231,6 +229,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
+
     override fun socketNotify(state: Int, obj: Any?) {
         try {
             when (state) {
@@ -254,21 +253,29 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     }
                                 }
                             }
-
-
                         }
 
                         HEAD_COMMON -> {
 
                             when (msgBean.cmdId.toShort()) {
 
-                                CMD_ID_802E -> {
+                                CMD_ID_802E -> {//绑定
                                     val result = msg[16]
-                                    WmLog.d(TAG, "绑定:$result")
+                                    WmLog.d(TAG, "绑定结果:$result")
+
+                                    if (result.toInt() == 1) {
+                                        sjConnect.btStateChange(WmConnectState.VERIFIED)
+                                    } else {
+                                        mBtEngine.getmSocket().close()
+                                        sjConnect.disconnect()
+                                    }
                                 }
 
-                                CMD_ID_802F -> {
+                                CMD_ID_802F -> {//解绑
 
+                                    val result = msg[16]
+
+//                                    sjConnect.btStateChange(WmConnectState.DISCONNECTED)
                                 }
 
                             }
@@ -284,6 +291,100 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         HEAD_FILE_SPP_A_2_D -> {
 
+                        }
+
+                        HEAD_NODE_TYPE -> {
+                            when (msgBean.cmdId.toShort()) {
+                                CMD_ID_8001 -> {
+
+                                    LogUtils.logBlueTooth("节点数据：" + msgBean.payload)
+
+                                    var payloadPackage: PayloadPackage =
+                                        PayloadPackage.fromByteArray(msgBean.payload)
+
+                                    payloadPackage.itemList.forEach {
+                                        when (it.urn[0]) {
+                                            URN_1 -> {//蓝牙连接 暂用旧协议格式
+
+                                            }
+
+                                            URN_2 -> {//设置同步
+                                                when (it.urn[1]) {
+                                                    URN_1 -> {//运动目标
+
+                                                        when (it.urn[2]) {
+                                                            URN_0 -> {
+
+                                                                val byteBuffer =
+                                                                    ByteBuffer.wrap(it.data)
+                                                                val step = byteBuffer.getInt()
+                                                                val distance = byteBuffer.getInt()
+                                                                val calories = byteBuffer.getInt()
+                                                                val activityDuration =
+                                                                    byteBuffer.getShort()
+
+                                                                val wmSportGoal = WmSportGoal(
+                                                                    step,
+                                                                    distance,
+                                                                    calories,
+                                                                    activityDuration
+                                                                )
+
+                                                                settingSportGoal.setEmitter.onSuccess(
+                                                                    wmSportGoal
+                                                                )
+                                                            }
+
+                                                            URN_1 -> {//步数
+
+                                                            }
+                                                            URN_2 -> {//热量（卡）
+
+                                                            }
+                                                            URN_3 -> {//距离（米）
+
+                                                            }
+                                                            URN_4 -> {//活动时长（分钟）
+
+                                                            }
+                                                        }
+                                                    }
+
+                                                    URN_2 -> {//健康信息
+
+                                                    }
+
+                                                    URN_3 -> {//单位同步
+
+                                                    }
+
+                                                    URN_4 -> {//语言设置
+
+                                                    }
+
+                                                    URN_4 -> {//语言设置
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                            URN_3 -> {//表盘
+
+                                            }
+
+                                            URN_4 -> {//应用
+
+                                            }
+
+                                            URN_5 -> {//运动同步
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -665,14 +766,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    private fun sendNormalMsg(msg: ByteArray?) {
+    fun sendNormalMsg(msg: ByteArray?) {
         if (mBtEngine == null || msg == null) {
             return
         }
         if (mTransferring) {
             val byteBuffer = ByteBuffer.wrap(msg)
             val head = byteBuffer.get()
-            val cmdId = byteBuffer[2]
+            val cmdId: Short = byteBuffer[2].toShort()
 
             if (isMsgStopped(head, cmdId)) {
                 SJLog.logBt(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
@@ -683,14 +784,32 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtEngine.sendMsgOnWorkThread(msg)
     }
 
-    private fun isMsgStopped(head: Byte, cmdId: Byte): Boolean {
+    //发送Node节点消息
+    fun sendNodeCmdList(payloadPackage: PayloadPackage) {
+        payloadPackage.toByteArray().forEach {
+            var payload: ByteArray = it
+
+            val cmdArray = CmdHelper.constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8001,
+                DIVIDE_N_2,
+                0,
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                payload
+            )
+
+            sendNormalMsg(cmdArray)
+        }
+    }
+
+    private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {
         return head != HEAD_FILE_SPP_A_2_D && head != HEAD_CAMERA_PREVIEW && !isCameraCmd(
             head,
             cmdId
         )
     }
 
-    private fun isCameraCmd(head: Byte, cmdId: Byte): Boolean {
+    private fun isCameraCmd(head: Byte, cmdId: Short): Boolean {
         return head == HEAD_COMMON && (cmdId == CMD_ID_8028 || cmdId == CMD_ID_8029 || cmdId == CMD_ID_802A || cmdId == CMD_ID_802B || cmdId == CMD_ID_802C)
     }
 
@@ -754,13 +873,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return wmDeviceModel == WmDeviceModel.SJ_WATCH
     }
 
+    //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
     override fun parseScanQr(qrString: String): WmScanDevice {
         val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
-        wmScanDevice.qrUrl = qrString
-        wmScanDevice.address = qrString.substring(0, 12)
+        val params = UrlParse.getUrlParams(qrString)
 
+        val schemeMacAddress = params["mac"]
+        val schemeDeviceName = params["projectname"]
+        val random = params["random"]
+
+        wmScanDevice.randomCode = random
+
+        wmScanDevice.address = schemeMacAddress
         wmScanDevice.isRecognized =
-            qrString.contains("shenju") && isLegalMacAddress(wmScanDevice.address)
+            !TextUtils.isEmpty(schemeMacAddress) &&
+                    !TextUtils.isEmpty(schemeDeviceName) &&
+                    !TextUtils.isEmpty(random) &&
+                    isLegalMacAddress(schemeMacAddress)
 
         return wmScanDevice
     }

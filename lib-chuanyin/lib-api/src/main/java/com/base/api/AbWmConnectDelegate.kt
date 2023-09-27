@@ -26,11 +26,11 @@ internal class AbWmConnectDelegate(
     }
 
     override fun disconnect() {
-        TODO("Not yet implemented")
+        return watchSubject.value!!.wmConnect.disconnect()
     }
 
     override fun reset() {
-        TODO("Not yet implemented")
+        return watchSubject.value!!.wmConnect.reset()
     }
 
     override val observeConnectState: Observable<WmConnectState> = watchSubject.switchMap {

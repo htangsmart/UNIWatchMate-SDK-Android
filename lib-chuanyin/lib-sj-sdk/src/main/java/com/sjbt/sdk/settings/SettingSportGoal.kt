@@ -2,12 +2,16 @@ package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.setting.AbWmSetting
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
-class SettingSportGoal : AbWmSetting<WmSportGoal>() {
+class SettingSportGoal(sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
     lateinit var observeEmitter: ObservableEmitter<WmSportGoal>
     lateinit var setEmitter: SingleEmitter<WmSportGoal>
     lateinit var getEmitter: SingleEmitter<WmSportGoal>
+
+    val mSjUniWatch = sjUniWatch
 
     override fun isSupport(): Boolean {
         return true
@@ -25,6 +29,8 @@ class SettingSportGoal : AbWmSetting<WmSportGoal>() {
         return Single.create(object : SingleOnSubscribe<WmSportGoal> {
             override fun subscribe(emitter: SingleEmitter<WmSportGoal>) {
                 setEmitter = emitter
+                val payloadPackage = CmdHelper.getUpdateSportGoalAllCmd(obj)
+                mSjUniWatch.sendNodeCmdList(payloadPackage)
             }
         })
     }

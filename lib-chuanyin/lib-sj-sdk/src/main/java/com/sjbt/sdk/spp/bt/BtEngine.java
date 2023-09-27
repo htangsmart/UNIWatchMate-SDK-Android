@@ -1,14 +1,16 @@
 package com.sjbt.sdk.spp.bt;
 
-import static com.sjbt.sdk.spp.cmd.CmdConfig.BT_MSG_BASE_LEN;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.CMD_ID_8002;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.CMD_ID_8003;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.CMD_ID_800D;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.CMD_ID_800F;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.HEAD_CAMERA_PREVIEW;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.HEAD_COMMON;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.HEAD_FILE_SPP_A_2_D;
-import static com.sjbt.sdk.spp.cmd.CmdConfig.HEAD_HL_OTA_STEP;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.BT_MSG_BASE_LEN;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8002;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8003;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_800D;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_800F;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_802E;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_STR_8015;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_CAMERA_PREVIEW;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_COMMON;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_DEVICE_ERROR;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_FILE_SPP_A_2_D;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -19,7 +21,6 @@ import android.os.Message;
 
 import com.sjbt.sdk.entity.MsgBean;
 import com.sjbt.sdk.log.SJLog;
-import com.sjbt.sdk.spp.cmd.CmdConfig;
 import com.sjbt.sdk.spp.cmd.CmdHelper;
 import com.sjbt.sdk.utils.BtUtils;
 import com.sjbt.sdk.utils.LogUtils;
@@ -249,7 +250,7 @@ public class BtEngine {
                                     SJLog.INSTANCE.logBt(TAG, "开启子线程读取" + mDevice.getAddress());
                                     socketConnectRead();
                                 } catch (IOException e) {
-                                    closeSocket("loopRead异常 " + e, true);
+//                                    closeSocket("loopRead异常 " + e, true);
                                     e.printStackTrace();
                                     notifyErrorOnUI("3-" + e.getMessage());
                                 }
@@ -369,12 +370,11 @@ public class BtEngine {
 
     private static boolean notSetTimeOut(byte type, byte cmdId) {
         return (type == HEAD_COMMON && cmdId == CMD_ID_800D)//绑定
-//                || (type == 0x0e && cmdId == 0x04)//传文件最后一包结束04
-//                || (type == 0x0b && cmdId == 0x10)//删除表盘
                 || (type == HEAD_FILE_SPP_A_2_D && cmdId == CMD_ID_8003)//传输文件的过程中，采用连续传输的方式
-                || (type == HEAD_HL_OTA_STEP && cmdId == CMD_ID_8003)//传输文件的过程中，采用连续传输的方式
+                || (cmdId == CMD_ID_8003)//传输文件的过程中，采用连续传输的方式
                 || (type == HEAD_COMMON && cmdId == CMD_ID_800F)//我的表盘列表
                 || (type == HEAD_CAMERA_PREVIEW && cmdId == CMD_ID_8002)//相机预览
+                || (type == HEAD_COMMON && cmdId == CMD_ID_802E)//绑定
                 ;
     }
 
@@ -448,7 +448,7 @@ public class BtEngine {
     /**
      * 关闭Socket连接
      */
-    public static void closeSocket(String name, boolean isNotify) {
+    public void closeSocket(String name, boolean isNotify) {
         try {
             mStateMap.clear();
 
@@ -493,12 +493,12 @@ public class BtEngine {
                             ByteBuffer byteBuffer = ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN);
                             byte head = byteBuffer.get(0);
 
-                            if (head == CmdConfig.HEAD_DEVICE_ERROR) {
+                            if (head == HEAD_DEVICE_ERROR) {
                                 mListener.socketNotifyError(msg);
                             } else {
                                 try {
                                     MsgBean msgBean = CmdHelper.getPayLoadJson(msg);
-                                    if (msgBean.cmdIdStr.equals(CmdConfig.CMD_STR_8015) && msgBean.head == HEAD_COMMON) {
+                                    if (msgBean.cmdIdStr.equals(CMD_STR_8015) && msgBean.head == HEAD_COMMON) {
                                         byte busy = byteBuffer.get(16);
                                         deviceBusing = (busy == 1);
                                         SJLog.INSTANCE.logBt(TAG, "正在忙：" + deviceBusing);

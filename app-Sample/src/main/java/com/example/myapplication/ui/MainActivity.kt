@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         val btnConnect = findViewById<Button>(R.id.btn_connect)
         val btnExchange = findViewById<Button>(R.id.btn_exchange)
-        val btnBind = findViewById<Button>(R.id.btn_bind)
+        val btnUnBind = findViewById<Button>(R.id.btn_bind)
         checkPermission()
 
         btnConnect.setText("发现设备")
@@ -38,12 +38,15 @@ class MainActivity : AppCompatActivity() {
             startDiscoveryDevice()
         }
 
-        btnExchange.setText("连接：15:7E:78:A2:4B:5B")
+        btnExchange.setText("连接：15:7E:78:A2:4B:30")
 
         btnExchange.setOnClickListener {
             connectSample()
         }
 
+        btnUnBind.setOnClickListener {
+            unbind()
+        }
     }
 
     private fun checkPermission() {
@@ -77,11 +80,15 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+    private fun unbind(){
+        UNIWatchMate.wmConnect?.reset()
+    }
+
     /**
      * 连接示例
      */
     private fun connectSample() {
-        UNIWatchMate.wmConnect?.connect("15:7E:78:A2:4B:5B",
+        UNIWatchMate.wmConnect?.connect("15:7E:78:A2:4B:30",
             AbWmConnect.BindInfo(AbWmConnect.BindType.DISCOVERY,AbWmConnect.UserInfo("123456","张三"),""), WmDeviceModel.SJ_WATCH)
     }
 
@@ -116,7 +123,7 @@ class MainActivity : AppCompatActivity() {
      */
     fun settingsSample() {
         //设置运动目标 示例：其他与此类似，都是通过模块实例调用对应的接口方法
-        val sportGoal = WmSportGoal(10000, 200.0, 10000.0, 1000)
+        val sportGoal = WmSportGoal(10000, 200, 10000, 1000)
         val settingSingle = UNIWatchMate.wmSettings.settingSportGoal?.set(sportGoal)
         settingSingle?.subscribe(object : SingleObserver<WmSportGoal> {
             override fun onSubscribe(d: Disposable) {}

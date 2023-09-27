@@ -41,7 +41,9 @@ abstract class AbWmConnect {
     /**
      * 当扫码的时候要传随机码
      */
-    data class BindInfo(val bindType: BindType, val userInfo: UserInfo, val scanCode: String)
+    data class BindInfo(val bindType: BindType, val userInfo: UserInfo){
+        var randomCode: String? = null
+    }
 
     /**
      * 绑定类型

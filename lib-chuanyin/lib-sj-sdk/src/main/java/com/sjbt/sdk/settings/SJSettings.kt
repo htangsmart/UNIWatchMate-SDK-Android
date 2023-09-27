@@ -3,10 +3,11 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.*
 import com.base.sdk.`interface`.setting.AbWmSetting
 import com.base.sdk.`interface`.setting.AbWmSettings
+import com.sjbt.sdk.SJUniWatch
 
-class SJSettings : AbWmSettings() {
+class SJSettings(sjUniWatch: SJUniWatch) : AbWmSettings() {
 
-    override val settingSportGoal: AbWmSetting<WmSportGoal> = SettingSportGoal()
+    override val settingSportGoal: AbWmSetting<WmSportGoal> = SettingSportGoal(sjUniWatch)
     override val settingDateTime: AbWmSetting<WmDateTime> = SettingDateTime()
     override val settingPersonalInfo: AbWmSetting<WmPersonalInfo> = SettingPersonalInfo()
     override val settingSedentaryReminder: AbWmSetting<WmSedentaryReminder> = SettingSedentaryReminder()
