@@ -89,6 +89,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private val sjConnect: SJConnect = wmConnect as SJConnect
 
+    val mBindStateMap = HashMap<String, Boolean>()
+
     //同步数据
     private val syncActivity = wmSync.syncActivityData as SyncActivityData
     private val syncCaloriesData = wmSync.syncCaloriesData as SyncCaloriesData
@@ -258,26 +260,39 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     if (result.toInt() == 1) {
                                         sjConnect.btStateChange(WmConnectState.VERIFIED)
+                                        sjConnect.mCurrAddress?.let {
+                                            mBindStateMap.put(it, true)
+                                        }
+
                                     } else {
                                         val success = ClsUtils.removeBond(
                                             BluetoothDevice::class.java,
                                             sjConnect.mCurrDevice
                                         )
 
-                                        LogUtils.logBlueTooth("解绑成功:" + success)
+                                        sjConnect.mCurrAddress?.let {
+                                            mBindStateMap.put(it, false)
+                                        }
 
-                                        mBtEngine.getmSocket().close()
                                         sjConnect.disconnect()
                                     }
                                 }
 
                                 CMD_ID_802F -> {//解绑
+                                    val result = msg[16].toInt()
 
-                                    val result = msg[16]
+                                    sjConnect.mCurrAddress?.let {
+                                        mBindStateMap.put(it, false)
+                                    }
 
-//                                    sjConnect.btStateChange(WmConnectState.DISCONNECTED)
+                                    LogUtils.logBlueTooth("解绑成功:" + result)
+
+                                    if (result == 1) {
+                                        sjConnect.mCurrDevice?.let {
+                                            ClsUtils.removeBond(BluetoothDevice::class.java, it)
+                                        }
+                                    }
                                 }
-
                             }
                         }
 
@@ -821,9 +836,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         WmLog.e(TAG, "onConnectFailed:" + msg)
 
         if (device == sjConnect.mCurrDevice) {
+
             if (msg!!.contains("read failed, socket might closed or timeout")
                 || msg.contains("Connection reset by peer")
                 || msg.contains("Connect refused")
+                && mBindStateMap.get(device.address) == true
             ) {
                 sjConnect.mConnectTryCount++
                 if (sjConnect.mConnectTryCount < MAX_RETRY_COUNT) {
@@ -874,20 +891,20 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override fun parseScanQr(qrString: String): WmScanDevice {
         val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
         val params = UrlParse.getUrlParams(qrString)
+        if (!params.isEmpty()) {
+            val schemeMacAddress = params["mac"]
+            val schemeDeviceName = params["projectname"]
+            val random = params["random"]
 
-        val schemeMacAddress = params["mac"]
-        val schemeDeviceName = params["projectname"]
-        val random = params["random"]
+            wmScanDevice.randomCode = random
 
-        wmScanDevice.randomCode = random
-
-        wmScanDevice.address = schemeMacAddress
-        wmScanDevice.isRecognized =
-            !TextUtils.isEmpty(schemeMacAddress) &&
-                    !TextUtils.isEmpty(schemeDeviceName) &&
-                    !TextUtils.isEmpty(random) &&
-                    isLegalMacAddress(schemeMacAddress)
-
+            wmScanDevice.address = schemeMacAddress
+            wmScanDevice.isRecognized =
+                !TextUtils.isEmpty(schemeMacAddress) &&
+                        !TextUtils.isEmpty(schemeDeviceName) &&
+                        !TextUtils.isEmpty(random) &&
+                        isLegalMacAddress(schemeMacAddress)
+        }
         return wmScanDevice
     }
 

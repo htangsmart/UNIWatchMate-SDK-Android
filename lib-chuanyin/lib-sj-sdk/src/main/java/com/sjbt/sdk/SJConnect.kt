@@ -8,6 +8,7 @@ import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.log.WmLog
 import com.sjbt.sdk.log.SJLog
 import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.utils.ClsUtils
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 

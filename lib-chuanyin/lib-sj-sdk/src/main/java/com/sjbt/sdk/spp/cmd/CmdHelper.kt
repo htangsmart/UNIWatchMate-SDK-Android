@@ -341,7 +341,9 @@ object CmdHelper {
         LogUtils.logBlueTooth("绑定命令")
         val byteBuffer = ByteBuffer.allocate(17)
         byteBuffer.put(bindInfo.bindType.ordinal.toByte())
+
         bindInfo.randomCode?.let {
+            LogUtils.logBlueTooth("随机码:$it")
             byteBuffer.put(it.toByteArray())
         }
 

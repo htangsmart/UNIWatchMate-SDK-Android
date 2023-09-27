@@ -9,9 +9,11 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.log.WmLog
+import com.example.myapplication.MyApplication
 import com.example.myapplication.R
 import com.permissionx.guolindev.PermissionX
 import io.reactivex.rxjava3.core.Observer
@@ -35,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         btnConnect.setText("发现设备")
         btnConnect.setOnClickListener {
             //扫码切换sdk
-//            UNIWatchMate.scanQr("www.shenju.watch?mac=00:00:56:78:9A:BC?name=SJ 8020N")
             checkPermission()
             startDiscoveryDevice()
         }
@@ -43,13 +44,55 @@ class MainActivity : AppCompatActivity() {
         btnExchange.setText("连接：15:7E:78:A2:4B:30")
 
         btnExchange.setOnClickListener {
-            connectSample()
-//            scanConnect()
+//            connectSample()
+            scanConnect()
         }
 
         btnUnBind.setOnClickListener {
             unbind()
         }
+
+        //监听连接状态
+        UNIWatchMate.wmConnect.observeConnectState.subscribe(object : Observer<WmConnectState> {
+            override fun onSubscribe(d: Disposable) {
+
+            }
+
+            override fun onNext(connectState: WmConnectState) {
+
+                when (connectState) {
+                    WmConnectState.BT_DISABLE -> {
+                        tvState.setText("蓝牙关闭")
+                    }
+
+                    WmConnectState.BT_ENABLE -> {
+                        tvState.setText("蓝牙打开")
+                    }
+
+                    WmConnectState.DISCONNECTED -> {
+                        tvState.setText("蓝牙断开")
+                    }
+
+                    WmConnectState.CONNECTING -> {
+                        tvState.setText("正在连接")
+                    }
+
+                    WmConnectState.CONNECTED -> {
+                        tvState.setText("蓝牙已连接")
+                    }
+
+                    WmConnectState.VERIFIED -> {
+                        tvState.setText("设备已验证")
+                    }
+                }
+            }
+
+            override fun onError(e: Throwable) {
+                tvState.setText("连接出错：" + e.message)
+            }
+
+            override fun onComplete() {}
+        })
     }
 
     private fun checkPermission() {
@@ -102,7 +145,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun scanConnect() {
         UNIWatchMate.scanQr(
-            "https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q",
+            "https://static-ie.oraimo.com/oh.htm?mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q",
             AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, AbWmConnect.UserInfo("123456", "张三"))
         )
     }
