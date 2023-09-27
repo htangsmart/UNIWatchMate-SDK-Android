@@ -11,8 +11,8 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.log.WmLog
-import com.example.myapplication.R
 import com.permissionx.guolindev.PermissionX
+import com.sjbt.sdk.sample.R
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.core.SingleObserver
 import io.reactivex.rxjava3.disposables.Disposable

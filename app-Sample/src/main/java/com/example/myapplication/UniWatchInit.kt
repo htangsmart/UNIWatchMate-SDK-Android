@@ -10,6 +10,7 @@ import com.fitcloud.sdk.FcUniWatch
 import com.polidea.rxandroidble3.LogConstants
 import com.polidea.rxandroidble3.LogOptions
 import com.polidea.rxandroidble3.RxBleClient
+import com.sjbt.sdk.BuildConfig
 import com.sjbt.sdk.SJUniWatch
 import com.topstep.fitcloud.sdk.v2.FcSDK
 import timber.log.Timber

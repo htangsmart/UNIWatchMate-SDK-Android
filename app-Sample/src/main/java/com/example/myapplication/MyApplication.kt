@@ -13,7 +13,7 @@ class MyApplication : Application() {
     companion object {
         @JvmStatic
         lateinit var instance: MyApplication
-        private const val TAG: String = "MyApplication"
+         const val TAG: String = "MyApplication"
     }
 
     override fun onCreate() {
