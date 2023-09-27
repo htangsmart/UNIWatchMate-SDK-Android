@@ -5,9 +5,9 @@ import java.nio.ByteBuffer
 class PayloadPackage {
     var _id: Short = 0
     var packageSeq: Int = 0
-    var type: Int = 0
+    var actionType: Int = 0
     var packageLimit: Short = 0
-    var itemCount: Byte = 0
+    var itemCount: Int = 0
     var itemList: MutableList<NodeData> = mutableListOf()
 
     init {
@@ -22,43 +22,45 @@ class PayloadPackage {
          * @param data
          * @return
          */
-        fun fromByteArray(payloadData: ByteArray): PayloadPackage {
+        fun fromByteArray(payloadData:ByteArray):PayloadPackage {
             val payload = PayloadPackage()
             val bytes = ByteBuffer.wrap(payloadData)
             bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
             payload._id = bytes.short
             payload.packageSeq = bytes.int
 
-            payload.type = bytes.get().toInt()
+            payload.actionType = bytes.get().toInt()
             payload.packageLimit = bytes.short
-            payload.itemCount = bytes.get()
+            payload.itemCount = bytes.get().toInt()
 
             //判断bytes是否读完
             while (bytes.hasRemaining()) {
-                val nextNode = NodeData.fromByteBuffer(bytes, payload.type)
+                val nextNode = NodeData.fromByteBuffer(bytes, payload.actionType)
                 payload.itemList.add(nextNode)
+            }
+            if (payload.itemList.size != payload.itemCount) {
+                throw Exception("itemList.size != itemCount")
             }
 
             return payload
         }
     }
 
-    private fun buildPackageHeader(bytes: ByteBuffer, isFirst: Boolean = true) {
+    private fun buildPackageHeader(bytes:ByteBuffer) {
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         bytes.putShort(_id)
         bytes.putInt(packageSeq++)
-        if (isFirst) {
-            bytes.put(type.toByte())
-            bytes.putShort(packageLimit)
-            bytes.put(itemCount)
-        }
+
+        bytes.put(actionType.toByte())
+        bytes.putShort(packageLimit)
+//        bytes.put(itemCount.toByte())
     }
 
     /**
      * 判断是否还有下一个包
      * @return
      */
-    fun hasNext(): Boolean {
+    fun hasNext():Boolean {
         return packageSeq != 0xFFFFFFFF.toInt()
     }
 
@@ -67,15 +69,23 @@ class PayloadPackage {
      *
      * @param data
      */
-    fun next(data: ByteArray) {
+    fun next(data:ByteArray) {
         val bytes = ByteBuffer.wrap(data)
         bytes.order(java.nio.ByteOrder.LITTLE_ENDIAN)
         _id = bytes.short
         packageSeq = bytes.int
+        actionType = bytes.get().toInt()
+        packageLimit = bytes.short
+        val count = bytes.get()
+        itemCount += count
+
         //判断bytes是否读完
         while (bytes.hasRemaining()) {
-            val nextNode = NodeData.fromByteBuffer(bytes, this.type)
+            val nextNode = NodeData.fromByteBuffer(bytes, actionType)
             itemList.add(nextNode)
+        }
+        if (itemList.size != itemCount) {
+            throw Exception("itemList.size != itemCount")
         }
     }
 
@@ -83,8 +93,9 @@ class PayloadPackage {
      * 添加数据
      * @param urn 资源名
      * @param data 数据
+     * @param dataFmt 数据格式
      */
-    fun putData(urn: ByteArray, data: ByteArray, dataFmt: DataFormat = DataFormat.FMT_BIN) {
+    fun putData(urn:ByteArray, data:ByteArray, dataFmt:DataFormat = DataFormat.FMT_BIN) {
         val nodeData = NodeData(urn, data, dataFmt)
         itemList.add(nodeData)
         itemCount++
@@ -95,26 +106,36 @@ class PayloadPackage {
      * @param mtu MTU
      * @return
      */
-    fun toByteArray(mtu: Int = 600): List<ByteArray> {
+    fun toByteArray(mtu:Int = 600): List<ByteArray> {
         val limitation = mtu
         val payloadList = mutableListOf<ByteArray>() //payload列表
-        val bytes: ByteBuffer = ByteBuffer.allocate(limitation) //payload
-        buildPackageHeader(bytes, true)
+        val bytes:ByteBuffer = ByteBuffer.allocate(limitation) //payload
+        var tempByteArray = ByteArray(0)
+        buildPackageHeader(bytes)
 
+        var total_item_count = 0
+        var count = 0
         itemList.mapIndexed() { index, item ->
-            val nextNode = item.toBytes(type)
+            val nextNode = item.toBytes(actionType)
+            count++
+            total_item_count++
             //如果现有的payload长度加上当前item的长度超过了限制，则将现有的payload加入到payloadList中，
             // 并重新计算payload长度
-            if (bytes.position() + nextNode.size > limitation) {
+            if (bytes.position() + tempByteArray.size + nextNode.size > limitation) {
+                bytes.put(count.toByte()) //将itemCount写入bytes
+                bytes.put(tempByteArray) //将tempByteArray写入bytes
+
                 bytes.flip() // Now the limit is set to position
                 val actualData = ByteArray(bytes.limit())
                 bytes.get(actualData)
                 payloadList.add(actualData)
 
+                count = 0
                 bytes.clear()
-                buildPackageHeader(bytes, false)
+                tempByteArray = ByteArray(0)
+                buildPackageHeader(bytes)
             } else {
-                bytes.put(nextNode)
+                tempByteArray = tempByteArray.plus(nextNode)
             }
         }
 
@@ -122,7 +143,16 @@ class PayloadPackage {
         if (bytes.position() > 0) {
             bytes.putInt(2, 0xFFFFFFFF.toInt())
         }
-        payloadList.add(bytes.array())
+        bytes.put(count.toByte()) //将itemCount写入bytes
+        bytes.put(tempByteArray) //将tempByteArray写入bytes
+        bytes.flip() // Now the limit is set to position
+        val actualData = ByteArray(bytes.limit())
+        bytes.get(actualData)
+        payloadList.add(actualData)
+
+//        if (total_item_count != itemCount) {
+//            throw Exception("total_item_count != itemCount")
+//        }
 
         return payloadList
     }
