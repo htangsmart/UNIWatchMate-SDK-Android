@@ -12,6 +12,7 @@ import com.base.sdk.`interface`.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
+import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.log.SJLog.logSendMsg
 import com.sjbt.sdk.utils.*
 import org.json.JSONException
@@ -1813,4 +1814,14 @@ object CmdHelper {
             data
         )
     }
+
+    fun getSportInfoCmd(): List<ByteArray> {
+        val payloadPackage = PayloadPackage()
+
+
+//        payloadPackage.putData()
+
+        return payloadPackage.toByteArray()
+    }
+
 }
