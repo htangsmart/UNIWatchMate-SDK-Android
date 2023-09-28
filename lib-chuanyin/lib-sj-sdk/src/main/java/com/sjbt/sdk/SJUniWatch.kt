@@ -14,6 +14,8 @@ import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.`interface`.AbWmConnect
 import com.base.sdk.`interface`.WmTransferFile
@@ -21,9 +23,12 @@ import com.base.sdk.`interface`.app.AbWmApps
 import com.base.sdk.`interface`.log.WmLog
 import com.base.sdk.`interface`.setting.AbWmSettings
 import com.base.sdk.`interface`.sync.AbWmSyncs
+import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
 import com.sjbt.sdk.entity.*
+import com.sjbt.sdk.entity.old.BasicInfo
+import com.sjbt.sdk.entity.old.BiuBatteryBean
 import com.sjbt.sdk.log.SJLog
 import com.sjbt.sdk.settings.*
 import com.sjbt.sdk.spp.BtStateReceiver
@@ -81,11 +86,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
 
-    override val wmSettings: AbWmSettings = SJSettings(this)
-    override val wmApps: AbWmApps = SJApps()
-    override val wmSync: AbWmSyncs = SJSyncData()
-    override val wmConnect: AbWmConnect = SJConnect(this)
-    override val wmTransferFile: WmTransferFile = SJTransferFile()
+    override val wmSettings = SJSettings(this)
+    override val wmApps = SJApps()
+    override val wmSync = SJSyncData()
+    override val wmConnect = SJConnect(this)
+    override val wmTransferFile = SJTransferFile()
 
     private val sjConnect: SJConnect = wmConnect as SJConnect
 
@@ -95,6 +100,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val syncActivity = wmSync.syncActivityData as SyncActivityData
     private val syncCaloriesData = wmSync.syncCaloriesData as SyncCaloriesData
     private val syncDeviceInfo = wmSync.syncDeviceInfoData as SyncDeviceInfo
+    private val syncBatteryInfo = wmSync.syncDeviceInfoData as SyncBatteryInfo
     private val syncDistanceData = wmSync.syncDistanceData as SyncDistanceData
     private val syncHeartRateData = wmSync.syncHeartRateData as SyncHeartRateData
     private val syncOxygenData = wmSync.syncOxygenData as SyncOxygenData
@@ -125,6 +131,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val settingSportGoal = wmSettings.settingSportGoal as SettingSportGoal
     private val settingUnitInfo = wmSettings.settingUnitInfo as SettingUnitInfo
     private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
+
+    val gson = Gson()
 
     init {
         mContext = context
@@ -253,6 +261,43 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         HEAD_COMMON -> {
 
                             when (msgBean.cmdId.toShort()) {
+
+                                CMD_ID_8001 -> {
+                                    val basicInfo: BasicInfo = gson.fromJson(
+                                        msgBean.payloadJson,
+                                        BasicInfo::class.java
+                                    )
+
+                                    basicInfo?.let {
+                                        val wm = WmDeviceInfo(
+                                            it.prod_mode,
+                                            it.mac_addr,
+                                            it.soft_ver,
+                                            it.dev_id,
+                                            it.dev_name,
+                                            it.dev_name
+                                        )
+                                        syncDeviceInfo.deviceEmitter?.onSuccess(wm)
+                                    }
+
+                                }
+                                CMD_ID_8002 -> {
+
+
+                                    val batteryBean = gson.fromJson(
+                                        msgBean.payloadJson,
+                                        BiuBatteryBean::class.java
+                                    )
+
+                                    batteryBean?.let {
+                                        val batteryInfo =
+                                            WmBatteryInfo(it.isIs_charging == 1, it.battery_main)
+                                        syncBatteryInfo.batteryEmitter?.onSuccess(batteryInfo)
+                                        syncBatteryInfo.observeBatteryEmitter?.onNext(batteryInfo)
+                                    }
+
+                                }
+
 
                                 CMD_ID_802E -> {//绑定
                                     val result = msg[16]
