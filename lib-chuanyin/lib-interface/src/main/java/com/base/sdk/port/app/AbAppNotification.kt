@@ -11,5 +11,5 @@ abstract class AbAppNotification :IWmSupport {
     /**
      * sendNotification 发送通知
      */
-    abstract fun sendNotification(): Single<List<WmNotification>>
+    abstract fun sendNotification(notification: WmNotification): Single<Boolean>
 }

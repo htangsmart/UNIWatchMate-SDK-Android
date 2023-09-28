@@ -5,11 +5,14 @@ package com.base.sdk.entity.settings
  * (日期与时间同步信息)
  */
 data class WmSleepSettings(
-   var open:Boolean,
-   var startTime:Long,
-   var endTime:Long){
-   override fun toString(): String {
-      return "WmSleepSettings(open=$open, startTime=$startTime, endTime=$endTime)"
-   }
+    val open: Boolean,
+    val startHour: Int,
+    val startMinute: Int,
+    val endHour: Int,
+    val endMinute: Int,
+) {
+    override fun toString(): String {
+        return "WmSleepSettings(open=$open, startHour=$startHour, startMinute=$startMinute, endHour=$endHour, endMinute=$endMinute)"
+    }
 }
 

@@ -38,6 +38,8 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     private var mTransferring = false
     private var mDivide: Byte = 0
     private var mOtaProcess = 0
+    private var mFramePackageCount = 0
+    private var mFrameLastLen = 0
 
     init {
         mCameraThread = HandlerThread("camera_send_thread")
@@ -130,9 +132,6 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             }
         }
     }
-
-    private var mFramePackageCount = 0
-    private var mFrameLastLen = 0
 
     private fun sendFrameDataAsync(frameInfo: WmCameraFrameInfo?) {
         if (frameInfo == null) {

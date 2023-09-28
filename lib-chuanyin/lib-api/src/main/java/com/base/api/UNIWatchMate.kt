@@ -18,9 +18,9 @@ object UNIWatchMate {
     private lateinit var application: Application
     private val uniWatches: MutableList<AbUniWatch> = ArrayList()
 
-    var mWmTransferFile: WmTransferFile? = null
-    var mWmApps: AbWmApps? = null
-    var mWmSyncs: AbWmSyncs? = null
+//    var mWmTransferFile: WmTransferFile? = null
+//    var mWmApps: AbWmApps? = null
+//    var mWmSyncs: AbWmSyncs? = null
 
     var mInstance: AbUniWatch? = null
 
@@ -69,9 +69,9 @@ object UNIWatchMate {
 
             scanDevice?.let { device ->
                 if (device.isRecognized) {
-                    mWmApps = it.wmApps
-                    mWmSyncs = it.wmSync
-                    mWmTransferFile = it.wmTransferFile
+//                    mWmApps = it.wmApps
+//                    mWmSyncs = it.wmSync
+//                    mWmTransferFile = it.wmTransferFile
 
                     mInstance = it
                     uniWatchSubject.onNext(it)
