@@ -2,7 +2,6 @@ package com.sjbt.sdk.sample.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.sjbt.sdk.sample.model.device.ConnectorDevice
 
 @Entity
 data class DeviceBindEntity(
@@ -23,14 +22,14 @@ data class DeviceBindEntity(
     val name: String,
 )
 
-internal fun DeviceBindEntity?.toModel(): ConnectorDevice? {
-    return if (this == null) {
-        null
-    } else {
-        ConnectorDevice(
-            address = address,
-            name = name,
-            isTryingBind = false
-        )
-    }
-}
+//internal fun DeviceBindEntity?.toModel(): WmDeviceInfo? {
+//    return if (this == null) {
+//        null
+//    } else {
+//        WmDeviceInfo(
+//            address = address,
+//            name = name,
+//            isTryingBind = false
+//        )
+//    }
+//}

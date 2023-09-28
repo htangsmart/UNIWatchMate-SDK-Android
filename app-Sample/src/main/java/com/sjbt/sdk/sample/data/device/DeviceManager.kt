@@ -7,6 +7,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.entity.settings.WmPersonalInfo
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.data.config.SportGoalRepository
@@ -14,7 +15,6 @@ import com.sjbt.sdk.sample.data.user.UserInfoRepository
 import com.sjbt.sdk.sample.db.AppDatabase
 import com.sjbt.sdk.sample.entity.DeviceBindEntity
 import com.sjbt.sdk.sample.entity.toModel
-import com.sjbt.sdk.sample.model.device.ConnectorDevice
 import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
 
 interface DeviceManager {
 
-    val flowDevice: StateFlow<ConnectorDevice?>
+    val flowDevice: StateFlow<WmDeviceInfo?>?
 
     val flowConnectorState: Observable<WmConnectState>// connectorState
 
@@ -144,36 +144,38 @@ internal class DeviceManagerImpl(
      * Manually control the current device
      * 用户点击连接设备时更新 ConnectorDevice
      */
-    private val deviceFromMemory: MutableStateFlow<ConnectorDevice?> = MutableStateFlow(null)
+//    private val deviceFromMemory: MutableStateFlow<ConnectorDevice?> = MutableStateFlow(null)
 
     /**
      * Flow device from storage
      * 登录用户变化时，deviceFromMemory value设置为null，从数据库获取
      */
-    private val deviceFromStorage = internalStorage.flowAuthedUserId.flatMapLatest {
-        //ToNote:Clear device in memory every time Authed user changed. Avoid connecting to the previous user's device after switching users
-        deviceFromMemory.value = null
-        if (it == null) {
-            flowOf(null)
-        } else {
-            settingDao.flowDeviceBind(it)
-        }
-    }.map {
-        it.toModel()
-    }
+//    private val deviceFromStorage = internalStorage.flowAuthedUserId.flatMapLatest {
+//        //ToNote:Clear device in memory every time Authed user changed. Avoid connecting to the previous user's device after switching users
+//        deviceFromMemory.value = null
+//        if (it == null) {
+//            flowOf(null)
+//        } else {
+//            settingDao.flowDeviceBind(it)
+//        }
+//    }.map {
+//        it.toModel()
+//    }
 
     /**
      * Combine device [deviceFromMemory] and [deviceFromStorage]
      */
-    override val flowDevice: StateFlow<ConnectorDevice?> =
-        deviceFromMemory.combine(deviceFromStorage) { fromMemory, fromStorage ->
-            Timber.tag(TAG).i("device fromMemory:%s , fromStorage:%s", fromMemory, fromStorage)
-            check(fromStorage == null || !fromStorage.isTryingBind)//device fromStorage, isTryingBind must be false
+//    override val flowDevice: StateFlow<ConnectorDevice?> =
+//        deviceFromMemory.combine(deviceFromStorage) { fromMemory, fromStorage ->
+//            Timber.tag(TAG).i("device fromMemory:%s , fromStorage:%s", fromMemory, fromStorage)
+//            check(fromStorage == null || !fromStorage.isTryingBind)//device fromStorage, isTryingBind must be false
+//
+//            //Use device fromMemory first
+//            fromMemory ?: fromStorage
+//        }.stateIn(applicationScope, SharingStarted.Eagerly, null)
 
-            //Use device fromMemory first
-            fromMemory ?: fromStorage
-        }.stateIn(applicationScope, SharingStarted.Eagerly, null)
 
+    override val flowDevice: StateFlow<WmDeviceInfo?>? =  UNIWatchMate.mWmSyncs?.syncDeviceInfoData?.observeSyncData?.asFlow()?.stateIn(applicationScope, SharingStarted.Eagerly, null)
     /**
      * Connector state combine adapter state and current device
      */
@@ -202,56 +204,48 @@ internal class DeviceManagerImpl(
         applicationScope.launch {
             //Connect or disconnect when device changed
             //当登录设备或用户变化时，把个人资料更新到设备
-            userInfoRepository.flowCurrent.combine(flowDevice) { user, device ->
-                ConnectionParam(user, device)
-            }.collect {
-                if (it.device == null || it.user == null) {
-                    UNIWatchMate.mInstance?.wmConnect?.disconnect()
-                } else {
-                    val birthDate = WmPersonalInfo.BirthDate(
-                        it.user.birthYear,
-                        it.user.birthMonth,
-                        it.user.birthDay
-                    )
-                    val wmPersonalInfo = WmPersonalInfo(
-                        it.user.height,
-                        it.user.weight,
-                        if (it.user.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
-                        birthDate
-                    )
-                    UNIWatchMate.mInstance?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)
-//                    UNIWatchMate.mInstance?.wmConnect?.connect(
-//                        address = it.device.address, WmDeviceModel.SJ_WATCH
+//            userInfoRepository.flowCurrent.combine(flowDevice) { user, device ->
+//                ConnectionParam(user, device)
+//            }.collect {
+//                if (it.device == null || it.user == null) {
+////                    UNIWatchMate.mInstance?.wmConnect?.disconnect()
+//                } else {
+//                    val birthDate = WmPersonalInfo.BirthDate(
+//                        it.user.birthYear,
+//                        it.user.birthMonth,
+//                        it.user.birthDay
 //                    )
-                }
-            }
+//                    val wmPersonalInfo = WmPersonalInfo(
+//                        it.user.height,
+//                        it.user.weight,
+//                        if (it.user.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
+//                        birthDate
+//                    )
+//                    UNIWatchMate.mInstance?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)
+////                    UNIWatchMate.mInstance?.wmConnect?.connect(
+////                        address = it.device.address, WmDeviceModel.SJ_WATCH
+////                    )
+//                }
+//            }
         }
         applicationScope.launch {
             UNIWatchMate.wmConnect.observeConnectState.asFlow().collect {
+                Timber.tag(TAG).e("state:%s", it)
+                if (it == WmConnectState.CONNECTED) {
+                    onConnected()
 
+                }
             }
-//            flowConnectorState.collect {
-//                Timber.tag(TAG).e("state:%s", it)
-//                if (it == ConnectorState.CONNECTED) {
-//                    onConnected()
-//                }
-//            }
+
         }
-        applicationScope.launch {
-//            flowConnectorState.collect {
-//                Timber.tag(TAG).e("state:%s", it)
-//                if (it == ConnectorState.CONNECTED) {
-//                    onConnected()
-//                }
-//            }
-        }
+
         applicationScope.launch {
             sportGoalRepository.flowCurrent.drop(1).collect {
-//                if (flowConnectorState.value == ConnectorState.CONNECTED) {
-//                    applicationScope.launchWithLog {
-//                        abUniWatch?.wmSettings?.sportGoalSetting?.set(it)?.await()
-//                    }
-//                }
+                if (flowConnectorState.blockingLast() == WmConnectState.CONNECTED) {
+                    applicationScope.launchWithLog {
+                        UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
+                    }
+                }
             }
         }
     }
@@ -328,26 +322,26 @@ internal class DeviceManagerImpl(
             Timber.tag(TAG).w("bind error because no authed user")
             return
         }
-        deviceFromMemory.value = ConnectorDevice(address, name, true)
-        applicationScope.launchWithLog {
-            settingDao.clearDeviceBind(userId)
-        }
+//        deviceFromMemory.value = ConnectorDevice(address, name, true)
+//        applicationScope.launchWithLog {
+//            settingDao.clearDeviceBind(userId)
+//        }
     }
 
     override fun rebind() {
-        val device = flowDevice.value
-        if (device == null) {
-            Timber.tag(TAG).w("rebind error because no device")
-            return
-        }
-        bind(device.address, device.name)
+//        val device = flowDevice.value
+//        if (device == null) {
+//            Timber.tag(TAG).w("rebind error because no device")
+//            return
+//        }
+//        bind(device.address, device.name)
     }
 
     override fun cancelBind() {
-        val device = deviceFromMemory.value
-        if (device != null && device.isTryingBind) {
-            deviceFromMemory.value = null
-        }
+//        val device = deviceFromMemory.value
+//        if (device != null && device.isTryingBind) {
+//            deviceFromMemory.value = null
+//        }
     }
 
     override suspend fun unbind() {
@@ -372,28 +366,28 @@ internal class DeviceManagerImpl(
     /**
      * Save device with current user
      */
-    private suspend fun saveDevice(device: ConnectorDevice) {
-        val userId = internalStorage.flowAuthedUserId.value
-        if (userId == null) {
-            Timber.tag(TAG).w("saveDevice error because no authed user")
-            deviceFromMemory.value = null
-        } else {
-            deviceFromMemory.value = ConnectorDevice(
-                device.address, device.name, false
-            )
-            val entity = DeviceBindEntity(userId, device.address, device.name)
-            settingDao.insertDeviceBind(entity)
-        }
-    }
+//    private suspend fun saveDevice(device: ConnectorDevice) {
+//        val userId = internalStorage.flowAuthedUserId.value
+//        if (userId == null) {
+//            Timber.tag(TAG).w("saveDevice error because no authed user")
+//            deviceFromMemory.value = null
+//        } else {
+//            deviceFromMemory.value = ConnectorDevice(
+//                device.address, device.name, false
+//            )
+//            val entity = DeviceBindEntity(userId, device.address, device.name)
+//            settingDao.insertDeviceBind(entity)
+//        }
+//    }
 
     /**
      * Clear current user's device
      */
     private suspend fun clearDevice() {
-        deviceFromMemory.value = null
-        internalStorage.flowAuthedUserId.value?.let { userId ->
-            settingDao.clearDeviceBind(userId)
-        }
+//        deviceFromMemory.value = null
+//        internalStorage.flowAuthedUserId.value?.let { userId ->
+//            settingDao.clearDeviceBind(userId)
+//        }
     }
 
 //    override fun getNextRetrySeconds(): Int {
@@ -505,7 +499,7 @@ internal class DeviceManagerImpl(
 
     private data class ConnectionParam(
         val user: UserInfo?,
-        val device: ConnectorDevice?,
+        val device: WmDeviceInfo?,
     )
 }
 

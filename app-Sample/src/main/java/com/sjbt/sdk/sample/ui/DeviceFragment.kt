@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -56,20 +57,31 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                deviceManager.flowDevice.collect {
+                UNIWatchMate.wmConnect.observeConnectState
+                deviceManager.flowDevice?.collect {
                     if (it == null) {
                         viewBind.itemDeviceBind.visibility = View.VISIBLE
                         viewBind.itemDeviceInfo.visibility = View.GONE
                     } else {
                         viewBind.itemDeviceBind.visibility = View.GONE
                         viewBind.itemDeviceInfo.visibility = View.VISIBLE
-                        viewBind.tvDeviceName.text = it.name
+                        viewBind.tvDeviceName.text = it.deviceName
                     }
                 }
             }
 
             launch {
                 deviceManager.flowConnectorState.asFlow().collect {
+                    if (it == WmConnectState.CONNECTED) {
+                        viewBind.itemDeviceBind.visibility = View.VISIBLE
+                        viewBind.itemDeviceInfo.visibility = View.GONE
+                    } else {
+                        viewBind.itemDeviceBind.visibility = View.GONE
+                        viewBind.itemDeviceInfo.visibility = View.VISIBLE
+                        viewBind.tvDeviceName.text = "deviceName"
+//                        viewBind.tvDeviceName.text = it.deviceName
+                    }
+
                     viewBind.tvDeviceState.setText(it.toStringRes())
                     viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.CONNECTED)
                 }
