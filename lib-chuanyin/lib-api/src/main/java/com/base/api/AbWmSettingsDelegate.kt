@@ -39,4 +39,7 @@ internal class AbWmSettingsDelegate(
     override var settingHeartRate: AbWmSetting<WmHeartRateAlerts>
         get() = TODO("Not yet implemented")
         set(value) {}
+
+    override val settingSleepSettings: AbWmSetting<WmSleepSettings>
+        get() = TODO("Not yet implemented")
 }

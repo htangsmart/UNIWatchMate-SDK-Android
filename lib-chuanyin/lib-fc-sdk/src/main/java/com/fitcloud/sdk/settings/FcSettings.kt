@@ -29,5 +29,7 @@ class FcSettings(
         get() = TODO("Not yet implemented")
     override val settingHeartRate: AbWmSetting<WmHeartRateAlerts>
         get() = TODO("Not yet implemented")
+    override val settingSleepSettings: AbWmSetting<WmSleepSettings>
+        get() = TODO("Not yet implemented")
 
 }

@@ -17,7 +17,7 @@ class SJApps(sjUniWatch: SJUniWatch) : AbWmApps() {
 
     override var appSport: AbAppSport = AppSport()
 
-    override var appNotification: AbAppNotification = AppNotification()
+    override var appNotification: AbAppNotification = AppNotification(sjUniWatch)
 
     override var appDial: AbAppDial = AppDial(sjUniWatch)
 
