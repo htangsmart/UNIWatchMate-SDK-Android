@@ -1,17 +1,21 @@
 package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmDateTime
-import com.base.sdk.`interface`.setting.AbWmSetting
+import com.base.sdk.port.setting.AbWmSetting
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 /**
  * 设置时间功能
  */
-class SettingDateTime : AbWmSetting<WmDateTime>() {
+class SettingDateTime(sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
 
     lateinit var observeEmitter: ObservableEmitter<WmDateTime>
     lateinit var setEmitter: SingleEmitter<WmDateTime>
     lateinit var getEmitter: SingleEmitter<WmDateTime>
+
+    var sjUniWatch = sjUniWatch
 
     override fun isSupport(): Boolean {
         return true
@@ -29,6 +33,7 @@ class SettingDateTime : AbWmSetting<WmDateTime>() {
         return Single.create(object : SingleOnSubscribe<WmDateTime> {
             override fun subscribe(emitter: SingleEmitter<WmDateTime>) {
                 setEmitter = emitter
+                sjUniWatch.sendNormalMsg(CmdHelper.syncTimeCmd)
             }
         })
     }

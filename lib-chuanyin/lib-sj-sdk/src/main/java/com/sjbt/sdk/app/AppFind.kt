@@ -1,8 +1,8 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmFind
-import com.base.sdk.`interface`.app.AbAppFind
-import com.base.sdk.`interface`.app.StopType
+import com.base.sdk.port.app.AbAppFind
+import com.base.sdk.port.app.StopType
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

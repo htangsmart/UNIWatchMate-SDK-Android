@@ -1,7 +1,7 @@
 package com.fitcloud.sdk.settings
 
-import com.base.sdk.`interface`.setting.AbWmSetting
-import com.base.sdk.`interface`.setting.AbWmSettings
+import com.base.sdk.port.setting.AbWmSetting
+import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.entity.settings.*
 import com.topstep.fitcloud.sdk.v2.FcConnector
 

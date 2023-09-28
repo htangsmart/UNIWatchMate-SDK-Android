@@ -1,7 +1,7 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmWeatherForecast
-import com.base.sdk.`interface`.app.AbAppWeather
+import com.base.sdk.port.app.AbAppWeather
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

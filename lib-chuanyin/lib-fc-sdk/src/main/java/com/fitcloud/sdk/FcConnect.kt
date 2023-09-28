@@ -1,14 +1,13 @@
 package com.fitcloud.sdk
 
 import android.bluetooth.BluetoothDevice
-import com.base.sdk.`interface`.AbWmConnect
+import com.base.sdk.port.AbWmConnect
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.topstep.fitcloud.sdk.connector.FcConnectorState
 import com.topstep.fitcloud.sdk.v2.FcConnector
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 
 class FcConnect(
     private val connector: FcConnector,

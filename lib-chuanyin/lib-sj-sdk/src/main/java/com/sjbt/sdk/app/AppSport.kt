@@ -1,7 +1,7 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.common.WmSport
-import com.base.sdk.`interface`.app.AbAppSport
+import com.base.sdk.port.app.AbAppSport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

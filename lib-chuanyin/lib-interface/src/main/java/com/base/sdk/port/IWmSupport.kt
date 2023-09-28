@@ -1,4 +1,4 @@
-package com.base.sdk.`interface`
+package com.base.sdk.port
 
 interface IWmSupport {
     //是否支持此功能

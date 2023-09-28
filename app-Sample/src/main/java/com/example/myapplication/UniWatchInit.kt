@@ -5,7 +5,6 @@ import android.app.Application
 import android.os.Bundle
 import android.util.Log
 import com.base.api.UNIWatchMate
-import com.base.sdk.`interface`.log.WmLog
 import com.fitcloud.sdk.FcUniWatch
 import com.polidea.rxandroidble3.LogConstants
 import com.polidea.rxandroidble3.LogOptions

@@ -1,7 +1,7 @@
 package com.sjbt.sdk.sync
 
 import com.base.sdk.entity.data.WmStepData
-import com.base.sdk.`interface`.sync.AbSyncData
+import com.base.sdk.port.sync.AbSyncData
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single

@@ -1,7 +1,7 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmNotification
-import com.base.sdk.`interface`.app.AbAppNotification
+import com.base.sdk.port.app.AbAppNotification
 import io.reactivex.rxjava3.core.Single
 
 class AppNotification: AbAppNotification() {

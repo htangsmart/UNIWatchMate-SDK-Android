@@ -1,6 +1,7 @@
-package com.base.sdk.`interface`.app
+package com.base.sdk.port.app
 
-import com.base.sdk.`interface`.IWmSupport
+import com.base.sdk.entity.apps.WmCameraFrameInfo
+import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
@@ -49,7 +50,7 @@ abstract class AbAppCamera :IWmSupport {
     /**
      * 更新相机预览
      */
-    abstract fun updateCameraPreview(data: ByteArray)
+    abstract fun updateCameraPreview(data: WmCameraFrameInfo)
 
     abstract fun stopCameraPreview()
 

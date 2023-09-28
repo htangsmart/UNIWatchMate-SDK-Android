@@ -1,4 +1,4 @@
-package com.base.sdk.`interface`.sync
+package com.base.sdk.port.sync
 
 import com.base.sdk.entity.data.*
 import com.base.sdk.entity.settings.WmDeviceInfo

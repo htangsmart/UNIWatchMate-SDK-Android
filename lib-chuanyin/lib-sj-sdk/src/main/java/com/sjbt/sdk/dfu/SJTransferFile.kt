@@ -1,8 +1,8 @@
 package com.sjbt.sdk.dfu
 
-import com.base.sdk.`interface`.FileType
-import com.base.sdk.`interface`.WmTransferFile
-import com.base.sdk.`interface`.WmTransferState
+import com.base.sdk.port.FileType
+import com.base.sdk.port.WmTransferFile
+import com.base.sdk.port.WmTransferState
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import java.io.File

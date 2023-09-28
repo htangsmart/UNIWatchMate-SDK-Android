@@ -7,7 +7,7 @@ import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
-import com.base.sdk.`interface`.AbWmConnect
+import com.base.sdk.port.AbWmConnect
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo

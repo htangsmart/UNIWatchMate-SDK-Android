@@ -2,13 +2,12 @@ package com.fitcloud.sdk
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
-import android.text.TextUtils
 import com.base.sdk.AbUniWatch
-import com.base.sdk.`interface`.AbWmConnect
-import com.base.sdk.`interface`.WmTransferFile
-import com.base.sdk.`interface`.app.AbWmApps
-import com.base.sdk.`interface`.setting.AbWmSettings
-import com.base.sdk.`interface`.sync.AbWmSyncs
+import com.base.sdk.port.AbWmConnect
+import com.base.sdk.port.WmTransferFile
+import com.base.sdk.port.app.AbWmApps
+import com.base.sdk.port.setting.AbWmSettings
+import com.base.sdk.port.sync.AbWmSyncs
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
 import com.fitcloud.sdk.settings.FcSettings

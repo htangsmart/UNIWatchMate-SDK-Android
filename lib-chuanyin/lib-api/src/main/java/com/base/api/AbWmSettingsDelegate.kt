@@ -1,8 +1,8 @@
 package com.base.api
 
 import com.base.sdk.AbUniWatch
-import com.base.sdk.`interface`.setting.AbWmSetting
-import com.base.sdk.`interface`.setting.AbWmSettings
+import com.base.sdk.port.setting.AbWmSetting
+import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.entity.settings.*
 
 internal class AbWmSettingsDelegate(

@@ -1,7 +1,7 @@
-package com.base.sdk.`interface`.app
+package com.base.sdk.port.app
 
 import com.base.sdk.entity.apps.WmDial
-import com.base.sdk.`interface`.IWmSupport
+import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
@@ -12,7 +12,7 @@ abstract class AbAppDial : IWmSupport {
     /**
      * 同步表盘列表
      */
-    abstract var syncDialList : Observable<WmDial>
+    abstract fun syncDialList(index:Byte) : Observable<List<WmDial>>
 
     /**
      * 删除表盘

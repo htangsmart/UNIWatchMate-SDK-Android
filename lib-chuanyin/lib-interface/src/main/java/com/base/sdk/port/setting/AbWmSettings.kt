@@ -1,4 +1,4 @@
-package com.base.sdk.`interface`.setting
+package com.base.sdk.port.setting
 
 import com.base.sdk.entity.settings.*
 

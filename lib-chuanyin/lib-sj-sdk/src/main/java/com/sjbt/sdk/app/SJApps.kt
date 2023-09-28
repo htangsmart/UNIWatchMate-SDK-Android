@@ -1,12 +1,13 @@
 package com.sjbt.sdk.app
 
-import com.base.sdk.`interface`.app.*
+import com.base.sdk.port.app.*
+import com.sjbt.sdk.SJUniWatch
 
-class SJApps : AbWmApps() {
+class SJApps(sjUniWatch: SJUniWatch) : AbWmApps() {
 
     override var appAlarm: AbAppAlarm = AppAlarm()
 
-    override var appCamera: AbAppCamera = AppCamera()
+    override var appCamera: AbAppCamera = AppCamera(sjUniWatch)
 
     override var appContact: AbAppContact = AppContact()
 
@@ -18,7 +19,7 @@ class SJApps : AbWmApps() {
 
     override var appNotification: AbAppNotification = AppNotification()
 
-    override var appDial: AbAppDial = AppDial()
+    override var appDial: AbAppDial = AppDial(sjUniWatch)
 
     override var appLanguage: AbAppLanguage = AppLanguage()
 }

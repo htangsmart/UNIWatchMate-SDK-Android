@@ -1,6 +1,6 @@
-package com.base.sdk.`interface`.setting
+package com.base.sdk.port.setting
 
-import com.base.sdk.`interface`.IWmSupport
+import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

@@ -1,7 +1,7 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmAlarm
-import com.base.sdk.`interface`.app.AbAppAlarm
+import com.base.sdk.port.app.AbAppAlarm
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single

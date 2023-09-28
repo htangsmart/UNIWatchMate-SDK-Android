@@ -1,11 +1,10 @@
-package com.base.sdk.`interface`
+package com.base.sdk.port
 
 import android.bluetooth.BluetoothDevice
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
 
 /**
  * 连接模块
