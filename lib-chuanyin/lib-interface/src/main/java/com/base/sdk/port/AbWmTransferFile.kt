@@ -1,4 +1,4 @@
-package com.base.sdk.`interface`
+package com.base.sdk.port
 
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single

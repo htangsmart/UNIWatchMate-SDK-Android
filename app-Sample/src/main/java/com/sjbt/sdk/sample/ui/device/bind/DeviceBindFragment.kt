@@ -1,7 +1,6 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
 import android.app.Dialog
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -25,8 +24,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bertsir.zbar.Qr.ScanResult
 import com.base.api.UNIWatchMate
-import com.base.sdk.`interface`.AbWmConnect
-import com.base.sdk.entity.WmDevice
+import com.base.sdk.port.AbWmConnect
 import com.base.sdk.entity.WmScanDevice
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior

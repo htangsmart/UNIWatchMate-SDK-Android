@@ -1,6 +1,6 @@
 package com.fitcloud.sdk.settings
 
-import com.base.sdk.`interface`.setting.AbWmSetting
+import com.base.sdk.port.setting.AbWmSetting
 import com.base.sdk.entity.settings.WmSportGoal
 import com.topstep.fitcloud.sdk.v2.FcConnector
 import io.reactivex.rxjava3.core.Observable

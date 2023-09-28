@@ -2,7 +2,7 @@ package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
-import com.base.sdk.`interface`.app.AbAppContact
+import com.base.sdk.port.app.AbAppContact
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

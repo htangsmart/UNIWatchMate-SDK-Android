@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.TextUtils
-import com.base.sdk.`interface`.log.WmLog
 import com.sjbt.sdk.TAG_SJ
 import com.sjbt.sdk.log.SJLog
 import java.io.IOException

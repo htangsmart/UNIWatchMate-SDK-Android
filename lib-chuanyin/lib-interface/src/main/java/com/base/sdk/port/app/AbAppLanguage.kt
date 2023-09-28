@@ -1,8 +1,7 @@
-package com.base.sdk.`interface`.app
+package com.base.sdk.port.app
 
 import com.base.sdk.entity.apps.WmLanguage
-import com.base.sdk.`interface`.IWmSupport
-import io.reactivex.rxjava3.core.Observable
+import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Single
 
 /**

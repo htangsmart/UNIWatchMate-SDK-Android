@@ -1,6 +1,6 @@
 package com.sjbt.sdk.log
 
-import com.base.sdk.`interface`.log.WmLog
+import com.base.sdk.port.log.WmLog
 import com.sjbt.sdk.TAG_SJ
 
 object SJLog {

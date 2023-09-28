@@ -1,4 +1,4 @@
-package com.base.sdk.`interface`.app
+package com.base.sdk.port.app
 
 /**
  * 应用模块功能聚合

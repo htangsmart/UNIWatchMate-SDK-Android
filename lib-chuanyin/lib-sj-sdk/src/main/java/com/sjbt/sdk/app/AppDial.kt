@@ -1,20 +1,35 @@
 package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmDial
-import com.base.sdk.`interface`.app.AbAppDial
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.Single
+import com.base.sdk.port.app.AbAppDial
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
+import io.reactivex.rxjava3.core.*
 
-class AppDial: AbAppDial() {
+class AppDial(sjUniWatch: SJUniWatch) : AbAppDial() {
+    val sjUniWatch = sjUniWatch
+    lateinit var syncDialListEmitter: ObservableEmitter<List<WmDial>>
+    lateinit var deleteEmitter: SingleEmitter<WmDial>
+
     override fun isSupport(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
-    override var syncDialList: Observable<WmDial>
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    override fun syncDialList(index: Byte): Observable<List<WmDial>> {
+        return Observable.create(object : ObservableOnSubscribe<List<WmDial>> {
+            override fun subscribe(emitter: ObservableEmitter<List<WmDial>>) {
+                syncDialListEmitter = emitter
+                sjUniWatch.sendNormalMsg(CmdHelper.getDialListCmd(index))
+            }
+        })
+    }
 
     override fun deleteDial(dialItem: WmDial): Single<WmDial> {
-        TODO("Not yet implemented")
+        return Single.create(object : SingleOnSubscribe<WmDial> {
+            override fun subscribe(emitter: SingleEmitter<WmDial>) {
+                deleteEmitter = emitter
+                sjUniWatch.sendNormalMsg(CmdHelper.getDialActionCmd(2, dialItem.id))
+            }
+        })
     }
 }

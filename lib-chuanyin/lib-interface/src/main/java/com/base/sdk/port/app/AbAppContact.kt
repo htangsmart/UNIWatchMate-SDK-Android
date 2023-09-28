@@ -1,8 +1,8 @@
-package com.base.sdk.`interface`.app
+package com.base.sdk.port.app
 
 import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
-import com.base.sdk.`interface`.IWmSupport
+import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 

@@ -6,27 +6,26 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Handler
-import android.os.HandlerThread
 import android.text.TextUtils
 import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
+import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.AppView
+import com.base.sdk.entity.settings.WmAppView
 import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.entity.settings.WmSportGoal
-import com.base.sdk.`interface`.AbWmConnect
-import com.base.sdk.`interface`.WmTransferFile
-import com.base.sdk.`interface`.app.AbWmApps
-import com.base.sdk.`interface`.log.WmLog
-import com.base.sdk.`interface`.setting.AbWmSettings
-import com.base.sdk.`interface`.sync.AbWmSyncs
+import com.base.sdk.port.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
-import com.sjbt.sdk.entity.*
+import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.OtaCmdInfo
+import com.sjbt.sdk.entity.PayloadPackage
+import com.sjbt.sdk.entity.old.AppViewBean
 import com.sjbt.sdk.entity.old.BasicInfo
 import com.sjbt.sdk.entity.old.BiuBatteryBean
 import com.sjbt.sdk.log.SJLog
@@ -44,6 +43,7 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.ObservableOnSubscribe
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -75,20 +75,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var mTransferRetryCount = 0
     var mTransferring = false
 
-    //相机预览相关
-    var mCameraFrameInfo: CameraFrameInfo? = null
-    var mH264FrameMap: H264FrameMap = H264FrameMap()
-    var mLatestIframeId: Long = 0
-    var mLatestPframeId: Long = 0
-    private lateinit var mCameraThread: HandlerThread
-    private lateinit var mCameraHandler: Handler
-
-    var needNewH264Frame = false
-    var continueUpdateFrame: Boolean = false
-
     override val wmSettings = SJSettings(this)
-    override val wmApps = SJApps()
-    override val wmSync = SJSyncData()
+    override val wmApps = SJApps(this)
+    override val wmSync = SJSyncData(this)
     override val wmConnect = SJConnect(this)
     override val wmTransferFile = SJTransferFile()
 
@@ -100,7 +89,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val syncActivity = wmSync.syncActivityData as SyncActivityData
     private val syncCaloriesData = wmSync.syncCaloriesData as SyncCaloriesData
     private val syncDeviceInfo = wmSync.syncDeviceInfoData as SyncDeviceInfo
-    private val syncBatteryInfo = wmSync.syncDeviceInfoData as SyncBatteryInfo
+    private val syncBatteryInfo = wmSync.syncBatteryInfo as SyncBatteryInfo
     private val syncDistanceData = wmSync.syncDistanceData as SyncDistanceData
     private val syncHeartRateData = wmSync.syncHeartRateData as SyncHeartRateData
     private val syncOxygenData = wmSync.syncOxygenData as SyncOxygenData
@@ -137,7 +126,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     init {
         mContext = context
         mMsgTimeOut = timeout
-        mCameraThread = HandlerThread("camera_send_thread")
+
         mBtEngine.listener = this
 
         mBtStateReceiver = BtStateReceiver(mContext!!, object : OnBtStateListener {
@@ -219,20 +208,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         })
     }
 
-    open fun startCameraThread() {
-        if (!mCameraThread.isAlive) {
-            mCameraThread.start()
-            mCameraHandler = Handler(mCameraThread.looper)
-        }
-    }
-
-    open fun stopCameraThread() {
-        if (mCameraThread.isAlive) {
-            mCameraThread.interrupt()
-        }
-    }
-
-
     override fun socketNotify(state: Int, obj: Any?) {
         try {
             when (state) {
@@ -284,6 +259,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
 
 
+                                }
+
+                                CMD_ID_8003 -> {
                                     val batteryBean = gson.fromJson(
                                         msgBean.payloadJson,
                                         BiuBatteryBean::class.java
@@ -295,9 +273,27 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         syncBatteryInfo.batteryEmitter?.onSuccess(batteryInfo)
                                         syncBatteryInfo.observeBatteryEmitter?.onNext(batteryInfo)
                                     }
-
                                 }
 
+                                CMD_ID_8004 -> {
+//                                    msg[16].toInt() == 1
+//                                    appNotification.
+                                }
+
+                                CMD_ID_8008 -> {
+                                    val appViewBean =
+                                        gson.fromJson(msgBean.payloadJson, AppViewBean::class.java)
+
+                                    val appViews = mutableListOf<AppView>()
+                                    appViewBean?.let {
+                                        it.list.forEach {
+                                            appViews.add(AppView(it.using, it.id))
+                                        }
+                                    }
+
+                                    val wmAppView = WmAppView(appViews)
+                                    settingAppView.getEmitter.onSuccess(wmAppView)
+                                }
 
                                 CMD_ID_802E -> {//绑定
                                     val result = msg[16]
@@ -955,5 +951,63 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private fun isLegalMacAddress(address: String?): Boolean {
         return !TextUtils.isEmpty(address)
+    }
+
+    fun getCameraPreviewCmdInfo(
+        mFramePackageCount: Int,
+        mFrameLastLen: Int,
+        frameInfo: WmCameraFrameInfo,
+        i: Int
+    ): OtaCmdInfo {
+        val info = OtaCmdInfo()
+        val dataArray: ByteArray = frameInfo.frameData
+        if (i == 0 && mFramePackageCount > 1) {
+            mDivide = DIVIDE_Y_F_2
+        } else {
+            if (mFramePackageCount == 1) {
+                mDivide = DIVIDE_N_2
+            } else if (i == mFramePackageCount - 1) {
+                mDivide = DIVIDE_Y_E_2
+            } else {
+                mDivide = DIVIDE_Y_M_2
+            }
+        }
+
+//        LogUtils.logBlueTooth("分包类型：" + mDivide);
+        if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
+//            LogUtils.logBlueTooth("最后一包长度：" + mFrameLastLen);
+            if (mFrameLastLen == 0) {
+                info.offSet = i * mCellLength
+                info.payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            } else {
+                info.offSet = i * mCellLength
+                info.payload = ByteArray(mFrameLastLen)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            }
+        } else {
+            info.offSet = i * mCellLength
+            if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
+                LogUtils.logBlueTooth("本帧大小:" + dataArray.size)
+                LogUtils.logBlueTooth("帧数据长度：" + BtUtils.intToHex(dataArray.size))
+                if (dataArray.size < mCellLength) {
+                    LogUtils.logBlueTooth("不分包：$mDivide")
+                    mCellLength = dataArray.size
+                }
+                val byteBuffer = ByteBuffer.allocate(mCellLength + 5).order(ByteOrder.LITTLE_ENDIAN)
+                byteBuffer.put(frameInfo.frameType.toByte())
+                byteBuffer.putInt(dataArray.size)
+                val payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, 0, payload, 0, payload.size)
+                LogUtils.logBlueTooth("数据payload：" + payload.size)
+                byteBuffer.put(payload)
+                info.payload = byteBuffer.array()
+                LogUtils.logBlueTooth("首包payload总长度：" + info.payload.size)
+            } else {
+                info.payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            }
+        }
+        return info
     }
 }

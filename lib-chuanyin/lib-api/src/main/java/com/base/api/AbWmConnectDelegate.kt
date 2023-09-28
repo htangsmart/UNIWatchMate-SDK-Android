@@ -2,7 +2,7 @@ package com.base.api
 
 import android.bluetooth.BluetoothDevice
 import com.base.sdk.AbUniWatch
-import com.base.sdk.`interface`.AbWmConnect
+import com.base.sdk.port.AbWmConnect
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState

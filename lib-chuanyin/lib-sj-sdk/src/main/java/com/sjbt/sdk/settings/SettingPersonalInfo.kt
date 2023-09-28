@@ -1,7 +1,7 @@
 package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmPersonalInfo
-import com.base.sdk.`interface`.setting.AbWmSetting
+import com.base.sdk.port.setting.AbWmSetting
 import io.reactivex.rxjava3.core.*
 
 class SettingPersonalInfo: AbWmSetting<WmPersonalInfo>(){

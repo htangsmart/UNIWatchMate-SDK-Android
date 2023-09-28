@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.res.Configuration
 import android.content.res.Resources
 import com.base.api.UNIWatchMate
-import com.base.sdk.`interface`.log.WmLog
+import com.base.sdk.port.log.WmLog
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.example.myapplication.uniWatchInit
