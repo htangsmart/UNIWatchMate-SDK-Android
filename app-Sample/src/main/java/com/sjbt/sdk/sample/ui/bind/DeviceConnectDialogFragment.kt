@@ -9,16 +9,25 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.base.sdk.entity.apps.WmConnectState
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
+import com.sjbt.sdk.sample.base.AsyncEvent
 import com.sjbt.sdk.sample.base.AsyncViewModel
+import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.SingleAsyncState
+import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.databinding.DialogDeviceConnectBinding
+import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import com.sjbt.sdk.sample.utils.promptToast
+import com.sjbt.sdk.sample.utils.promptProgress
+import com.sjbt.sdk.sample.utils.showFailed
+import kotlinx.coroutines.delay
 
 class DeviceConnectDialogFragment : AppCompatDialogFragment() {
 
@@ -27,10 +36,10 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
         fun navToBgRunSettings()
     }
 
-//    private val promptToast by promptToast()
-//    private val promptProgress by promptProgress()
+    private val promptToast by promptToast()
+    private val promptProgress by promptProgress()
 
-//    private val deviceManager: DeviceManager = Injector.getDeviceManager()
+    private val deviceManager: DeviceManager = Injector.getDeviceManager()
 
     private var _viewBind: DialogDeviceConnectBinding? = null
     private val viewBind get() = _viewBind!!
@@ -44,7 +53,7 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
             //Required permissions
             PermissionHelper.requestBleConnect(this@DeviceConnectDialogFragment) { granted ->
                 if (!granted) {
-//                    deviceManager.cancelBind()
+                    deviceManager.cancelBind()
                     dismiss()
                 }
             }
@@ -56,92 +65,85 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
 
         lifecycle.launchRepeatOnStarted {
             launch {
-//                viewModel.flowState.collect {
-//                    if (it.async is Loading) {
-//                        promptProgress.showProgress(R.string.tip_please_wait)
-//                    } else {
-//                        promptProgress.dismiss()
-//                    }
-//                }
+                viewModel.flowState.collect {
+                    if (it.async is Loading) {
+                        promptProgress.showProgress(R.string.tip_please_wait)
+                    } else {
+                        promptProgress.dismiss()
+                    }
+                }
             }
             launch {
-//                viewModel.flowEvent.collect {
-//                    when (it) {
-//                        is AsyncEvent.OnFail -> promptToast.showFailed(it.error)
-//                        is AsyncEvent.OnSuccess<*> -> {
-//                            //Unbind success and dismiss
-//                            dismiss()
-//                        }
-//                    }
-//                }
+                viewModel.flowEvent.collect {
+                    when (it) {
+                        is AsyncEvent.OnFail -> promptToast.showFailed(it.error)
+                        is AsyncEvent.OnSuccess<*> -> {
+                            //Unbind success and dismiss
+                            dismiss()
+                        }
+                    }
+                }
             }
             launch {
-//                deviceManager.flowDevice.collect {
-//                    if (it != null) {
-//                        viewBind.tvName.text = it.name
-//                        viewBind.tvAddress.text = it.address
-//                        isCancelable = !it.isTryingBind
-//                        if (it.isTryingBind) {
-//                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
-//                            viewBind.btnUnbind.setOnClickListener {
-//                                //Cancel bind and exit
-//                                deviceManager.cancelBind()
-//                                dismissAllowingStateLoss()
-//                            }
-//                        } else {
-//                            viewBind.btnUnbind.setText(R.string.device_unbind)
-//                            viewBind.btnUnbind.setOnClickListener {
-//                                lifecycleScope.launchWhenResumed {
-//                                    UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
+                deviceManager.flowDevice?.collect {
+                    if (it != null) {
+                        viewBind.tvName.text = it.name
+                        viewBind.tvAddress.text = it.address
+                        isCancelable = !it.isTryingBind
+                        if (false) {
+                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
+                            viewBind.btnUnbind.setOnClickListener {
+                                //Cancel bind and exit
+                                deviceManager.cancelBind()
+                                dismissAllowingStateLoss()
+                            }
+                        } else {
+                            viewBind.btnUnbind.setText(R.string.device_unbind)
+                            viewBind.btnUnbind.setOnClickListener {
+                                lifecycleScope.launchWhenResumed {
+                                    UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             launch {
-//                deviceManager.flowConnectorState.collect {
-//                    timberJob?.cancel()
-//                    when (it) {
-//                        ConnectorState.NO_DEVICE -> {
-//                            dismiss()
-//                        }
-//                        ConnectorState.BT_DISABLED -> {
-//                            viewBind.tvState.setText(R.string.device_state_disconnected)
-//                            viewBind.progressDotView.setFailed()
-//                            showBtDisabled()
-//                        }
-//                        ConnectorState.DISCONNECTED -> {
-//                            viewBind.tvState.setText(R.string.device_state_disconnected)
-//                            viewBind.progressDotView.setFailed()
-//                            showDisconnectedReason()
-//                        }
-//                        ConnectorState.PRE_CONNECTING -> {
-//                            timberJob = lifecycleScope.launch {
-//                                val seconds = deviceManager.getNextRetrySeconds()
-//                                viewBind.tvState.text = "${seconds}s"
-//                                if (seconds > 0) {
-//                                    repeat(seconds) { times ->
-//                                        delay(1000)
-//                                        viewBind.tvState.text = "${seconds - times - 1}s"
-//                                    }
-//                                }
-//                            }
-//                            viewBind.progressDotView.setFailed()
-//                            showConnectingTips()
-//                        }
-//                        ConnectorState.CONNECTING -> {
-//                            viewBind.tvState.setText(R.string.device_state_connecting)
-//                            viewBind.progressDotView.setLoading()
-//                            showConnectingTips()
-//                        }
-//                        ConnectorState.CONNECTED -> {
-//                            viewBind.tvState.setText(R.string.device_state_connected)
-//                            viewBind.progressDotView.setSuccess()
-//                            showBgRunSettings()
-//                        }
-//                    }
-//                }
+                deviceManager.flowConnectorState.collect {
+                    timberJob?.cancel()
+                    when (it) {
+
+                        WmConnectState.DISCONNECTED -> {
+                            viewBind.tvState.setText(R.string.device_state_disconnected)
+                            viewBind.progressDotView.setFailed()
+                            showDisconnectedReason()
+                        }
+                        WmConnectState.CONNECTING -> {
+                            timberJob = lifecycleScope.launch {
+                                val seconds = 5
+                                viewBind.tvState.text = "${seconds}s"
+                                if (seconds > 0) {
+                                    repeat(seconds) { times ->
+                                        delay(1000)
+                                        viewBind.tvState.text = "${seconds - times - 1}s"
+                                    }
+                                }
+                            }
+                            viewBind.progressDotView.setFailed()
+                            showConnectingTips()
+                        }
+                        WmConnectState.CONNECTED -> {
+                            viewBind.tvState.setText(R.string.device_state_connecting)
+                            viewBind.progressDotView.setLoading()
+                            showConnectingTips()
+                        }
+                        WmConnectState.VERIFIED -> {
+                            viewBind.tvState.setText(R.string.device_state_connected)
+                            viewBind.progressDotView.setSuccess()
+                            showBgRunSettings()
+                        }
+                    }
+                }
             }
         }
         extraNormalColor = viewBind.tvExtraMsg.textColors
@@ -255,11 +257,11 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
 
 class DeviceConnectViewMode : AsyncViewModel<SingleAsyncState<Unit>>(SingleAsyncState()) {
 
-//    private val deviceManager: DeviceManager = Injector.getDeviceManager()
+    private val deviceManager: DeviceManager = Injector.getDeviceManager()
 
     fun unbind() {
         suspend {
-//            deviceManager.unbind()
+            deviceManager.reset()
         }.execute(SingleAsyncState<Unit>::async)
         {
             copy(async = it)

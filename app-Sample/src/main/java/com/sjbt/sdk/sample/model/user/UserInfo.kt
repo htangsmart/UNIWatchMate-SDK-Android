@@ -1,5 +1,7 @@
 package com.sjbt.sdk.sample.model.user
 
+import com.base.sdk.port.AbWmConnect
+
 data class UserInfo(
     val id: Long,
     var height: Int,//user height(cm)
@@ -48,4 +50,8 @@ fun UserInfo?.getWeight(): Float {
         weight = 50f
     }
     return weight
+}
+
+fun UserInfo?.toSdkUser(): AbWmConnect.UserInfo {
+    return AbWmConnect.UserInfo("${this?.id ?:0} ", "name")
 }

@@ -195,9 +195,9 @@
         <!--        <action-->
         <!--            android:id="@+id/toConnectHelp"-->
         <!--            app:destination="@id/connectHelpFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toBgRunSettings"-->
-        <!--            app:destination="@id/bgRunSettingsFragment"/>-->
+                <action
+                    android:id="@+id/toBgRunSettings"
+                    app:destination="@id/bgRunSettingsFragment"/>
     </fragment>
 
     <fragment
@@ -217,11 +217,11 @@
     <!--        android:label="@string/connect_help"-->
     <!--        tools:layout="@layout/fragment_connect_help"/>-->
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/bgRunSettingsFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.bgrun.BgRunSettingsFragment"-->
-    <!--        android:label="@string/bg_run_settings_module"-->
-    <!--        tools:layout="@layout/fragment_bg_run_settings"/>-->
+        <fragment
+            android:id="@+id/bgRunSettingsFragment"
+            android:name="com.sjbt.sdk.sample.ui.device.bgrun.BgRunSettingsFragment"
+            android:label="@string/bg_run_settings_module"
+            tools:layout="@layout/fragment_bg_run_settings"/>
 
     <fragment
         android:id="@+id/deviceConfigFragment"

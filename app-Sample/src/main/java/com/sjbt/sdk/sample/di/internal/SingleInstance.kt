@@ -7,6 +7,8 @@ import com.sjbt.sdk.sample.data.config.SportGoalRepositoryImpl
 import com.sjbt.sdk.sample.db.AppDatabase
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.base.storage.InternalStorageImpl
+import com.sjbt.sdk.sample.data.auth.AuthManager
+import com.sjbt.sdk.sample.data.auth.AuthManagerImpl
 import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.data.device.DeviceManagerImpl
 import com.sjbt.sdk.sample.data.device.SyncDataRepository
@@ -41,9 +43,9 @@ object SingleInstance {
 //        ApiClient(moshi)
 //    }
 
-//    val authManager: AuthManager by lazy {
-//        AuthManagerImpl(internalStorage, appDatabase)
-//    }
+    val authManager: AuthManager by lazy {
+        AuthManagerImpl(internalStorage, appDatabase)
+    }
 //
 //    val womenHealthRepository: WomenHealthRepository by lazy {
 //        WomenHealthRepositoryImpl(

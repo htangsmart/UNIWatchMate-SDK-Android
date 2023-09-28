@@ -62,6 +62,13 @@
     <string name="device_connect_auth_bind_failed">The device cancel bind or no response</string>
     <string name="device_connect_bg_run_settings">If the connection is unstable, try setting the option to run in the background.</string>
     <string name="device_disconnect_help">Unable to connect？</string>
+
+    <string name="bg_run_settings_module">Background Running settings</string>
+    <string name="bg_run_settings_des">You need to make some system settings so that APP can run in the background for a long time, for example:</string>
+    <string name="bg_run_settings_1">Ignore battery optimization</string>
+    <string name="bg_run_settings_2">Disabled power-saving mode</string>
+    <string name="bg_run_settings_3">Allow background auto-start</string>
+    <string name="bg_run_settings_4">Add white list to the system manager</string>
     <!--Sync-->
     <string name="module_sync">Sync</string>
     <string name="sync_state_idle">Pull down to sync data</string>
@@ -334,6 +341,7 @@
     <string name="device_state_disconnected">Disconnected</string>
     <string name="device_state_connecting">Connecting</string>
     <string name="device_state_connected">Connected</string>
+    <string name="device_state_verified">Verified</string>
     <string name="device_state_other">other</string>
 
 </resources>

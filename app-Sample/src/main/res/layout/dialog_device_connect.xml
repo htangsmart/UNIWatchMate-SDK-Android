@@ -34,10 +34,10 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="parent"
             android:layout_marginEnd="@dimen/dialog_device_connect_progress_dot_margin"
             android:src="@mipmap/ic_phone_android_black_48dp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/progress_dot_view"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
@@ -48,29 +48,28 @@
             android:text="@string/device_state_disconnected"
             android:textAppearance="?textAppearanceCaption"
             android:textSize="11sp"
+            app:layout_constraintBottom_toTopOf="@+id/progress_dot_view"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"/>
 
-  <!--      <com.topstep.fitcloud.sample2.ui.widget.ProgressDotView
+        <com.sjbt.sdk.sample.widget.ProgressDotView
             android:id="@+id/progress_dot_view"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_state"/>-->
+            app:layout_constraintTop_toBottomOf="@+id/tv_state"/>
 
         <ImageView
             android:layout_width="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_state"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/dialog_device_connect_progress_dot_margin"
             android:src="@mipmap/ic_watch_black_48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/progress_dot_view"
             app:layout_constraintTop_toTopOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -324,12 +324,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
     }
 
     override fun navToConnectHelp() {
-        //        findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
+//                findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
 
     }
 
     override fun navToBgRunSettings() {
-//        findNavController().navigate(DeviceBindFragmentDirections.toBgRunSettings())
+        findNavController().navigate(DeviceBindFragmentDirections.toBgRunSettings())
     }
 
     companion object {

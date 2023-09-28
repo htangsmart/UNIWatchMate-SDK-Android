@@ -8,11 +8,14 @@ import com.base.sdk.port.log.WmLog
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.example.myapplication.uniWatchInit
+import com.sjbt.sdk.sample.data.auth.AuthManager
+import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.FormatterUtil
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class MyApplication : Application() {
     val TAG: String = "MyApplication"
@@ -58,6 +61,11 @@ class MyApplication : Application() {
      * 全局监听连接状态
      */
     private fun observeState() {
+        val authManager = Injector.getAuthManager()
+        applicationScope.launch {
+            authManager.setUserId()
+        }
+
         //监听连接状态
         UNIWatchMate.wmConnect.observeConnectState.subscribe(object : Observer<WmConnectState> {
             override fun onSubscribe(d: Disposable) {

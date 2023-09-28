@@ -10,12 +10,14 @@ import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import timber.log.Timber
 
 @StringRes
 fun WmConnectState.toStringRes(): Int {
@@ -24,6 +26,7 @@ fun WmConnectState.toStringRes(): Int {
         WmConnectState.DISCONNECTED -> R.string.device_state_disconnected
         WmConnectState.CONNECTING -> R.string.device_state_connecting
         WmConnectState.CONNECTED -> R.string.device_state_connected
+        WmConnectState.VERIFIED -> R.string.device_state_verified
         else -> {
             R.string.device_state_other
         }
@@ -57,37 +60,31 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.wmConnect.observeConnectState
+
                 deviceManager.flowDevice?.collect {
+                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowDevice=$it") }
                     if (it == null) {
                         viewBind.itemDeviceBind.visibility = View.VISIBLE
                         viewBind.itemDeviceInfo.visibility = View.GONE
                     } else {
                         viewBind.itemDeviceBind.visibility = View.GONE
                         viewBind.itemDeviceInfo.visibility = View.VISIBLE
-                        viewBind.tvDeviceName.text = it.deviceName
+                        viewBind.tvDeviceName.text = it.name
                     }
                 }
             }
 
             launch {
-                deviceManager.flowConnectorState.asFlow().collect {
-                    if (it == WmConnectState.CONNECTED) {
-                        viewBind.itemDeviceBind.visibility = View.VISIBLE
-                        viewBind.itemDeviceInfo.visibility = View.GONE
-                    } else {
-                        viewBind.itemDeviceBind.visibility = View.GONE
-                        viewBind.itemDeviceInfo.visibility = View.VISIBLE
-                        viewBind.tvDeviceName.text = "deviceName"
-//                        viewBind.tvDeviceName.text = it.deviceName
-                    }
-
+                deviceManager.flowConnectorState.collect {
+                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowConnectorState=$it") }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.CONNECTED)
+                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
+
             launch {
                 deviceManager.flowBattery.collect {
+                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowBattery=$it") }
                     if (it == null) {
                         viewBind.batteryView.setBatteryUnknown()
                     } else {
@@ -95,6 +92,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     }
                 }
             }
+
             launch {
 //                deviceManager.configFeature.observerDeviceInfo().startWithItem(
 //                    deviceManager.configFeature.getDeviceInfo()
@@ -146,9 +144,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
 
-//            viewBind.itemDeviceInfo -> {
-//                DeviceConnectDialogFragment().show(childFragmentManager, null)
-//            }
+            viewBind.itemDeviceInfo -> {
+                DeviceConnectDialogFragment().show(childFragmentManager, null)
+            }
             viewBind.itemDeviceConfig -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceConfig())
             }
