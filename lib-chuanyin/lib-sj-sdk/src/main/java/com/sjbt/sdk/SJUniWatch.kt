@@ -120,6 +120,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val settingSportGoal = wmSettings.settingSportGoal as SettingSportGoal
     private val settingUnitInfo = wmSettings.settingUnitInfo as SettingUnitInfo
     private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
+    private val settingSleepSet = wmSettings.settingSleepSettings as SettingSleepSet
 
     val gson = Gson()
 
@@ -237,7 +238,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                             when (msgBean.cmdId.toShort()) {
 
-                                CMD_ID_8001 -> {
+                                CMD_ID_8001 -> {//基本信息
                                     val basicInfo: BasicInfo = gson.fromJson(
                                         msgBean.payloadJson,
                                         BasicInfo::class.java
@@ -254,14 +255,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         )
                                         syncDeviceInfo.deviceEmitter?.onSuccess(wm)
                                     }
-
                                 }
+
                                 CMD_ID_8002 -> {
 
-
                                 }
 
-                                CMD_ID_8003 -> {
+                                CMD_ID_8003 -> {//电量消息
                                     val batteryBean = gson.fromJson(
                                         msgBean.payloadJson,
                                         BiuBatteryBean::class.java
@@ -276,11 +276,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-//                                    msg[16].toInt() == 1
-//                                    appNotification.
+                                    appNotification.sendNotificationEmitter.onSuccess(msg[16].toInt() == 1)
                                 }
 
-                                CMD_ID_8008 -> {
+                                CMD_ID_8008 -> {//获取AppView List
+
                                     val appViewBean =
                                         gson.fromJson(msgBean.payloadJson, AppViewBean::class.java)
 
@@ -293,6 +293,63 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     val wmAppView = WmAppView(appViews)
                                     settingAppView.getEmitter.onSuccess(wmAppView)
+                                }
+
+                                CMD_ID_8009 -> {//APP 视图设置
+                                    settingAppView.setAppViewResult(msg[16].toInt() == 1)
+                                }
+
+                                CMD_ID_8010 -> {//设置/删除表盘返回
+                                    val type = msg[16].toInt() // 1设定 2删除
+                                    val actResult = msg[17].toInt() //是否操作成功
+                                    val reason = msg[18].toInt() //是否操作成功
+
+                                    appDial.deleteDialResult(actResult == 1, reason)
+                                }
+
+                                CMD_ID_800F -> {
+                                    if (msgBean.divideType === DIVIDE_N_2) {
+                                        appDial.mMyDialList.clear()
+                                        appDial.addDialList(msgBean)
+                                    } else {
+                                        if (msgBean.divideType === DIVIDE_Y_F_2) {
+                                            appDial.mMyDialList.clear()
+                                            appDial.addDialList(msgBean)
+                                            return
+                                        } else if (msgBean.divideType === DIVIDE_Y_M_2) {
+                                            appDial.addDialList(msgBean)
+                                            return
+                                        } else if (msgBean.divideType === DIVIDE_Y_E_2) {
+                                            appDial.addDialList(msgBean)
+                                        }
+                                    }
+
+                                    appDial.syncDialListEmitter.onNext(appDial.mMyDialList)
+                                    appDial.syncDialListEmitter.onComplete()
+                                }
+
+                                CMD_ID_8014 -> {//查询表盘当前信息
+
+                                }
+
+                                CMD_ID_8028 -> {
+
+                                }
+
+                                CMD_ID_8029 ->{
+
+                                }
+
+                                CMD_ID_802A ->{
+
+                                }
+
+                                CMD_ID_802B ->{
+
+                                }
+
+                                CMD_ID_802C ->{
+
                                 }
 
                                 CMD_ID_802E -> {//绑定

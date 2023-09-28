@@ -52,4 +52,9 @@ abstract class AbWmSettings {
      * rateSetting 心率提醒设置
      */
     abstract val settingHeartRate: AbWmSetting<WmHeartRateAlerts>
+
+    /**
+     * sleepSetting 睡眠设置
+     */
+    abstract val settingSleepSettings: AbWmSetting<WmSleepSettings>
 }

@@ -12,7 +12,7 @@ abstract class AbAppDial : IWmSupport {
     /**
      * 同步表盘列表
      */
-    abstract fun syncDialList(index:Byte) : Observable<List<WmDial>>
+    abstract fun syncDialList() : Observable<List<WmDial>>
 
     /**
      * 删除表盘

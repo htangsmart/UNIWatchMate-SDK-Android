@@ -10,9 +10,9 @@ class SettingAppView(sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
     lateinit var observeEmitter: ObservableEmitter<WmAppView>
     lateinit var setEmitter: SingleEmitter<WmAppView>
     lateinit var getEmitter: SingleEmitter<WmAppView>
-    val sjUniWatch = sjUniWatch
-
+    private val sjUniWatch = sjUniWatch
     var is_support: Boolean = false
+    private var mAppView: WmAppView? = null
 
     override fun isSupport(): Boolean {
         return is_support
@@ -27,6 +27,7 @@ class SettingAppView(sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
     }
 
     override fun set(appView: WmAppView): Single<WmAppView> {
+        mAppView = appView
         return Single.create(object : SingleOnSubscribe<WmAppView> {
             override fun subscribe(emitter: SingleEmitter<WmAppView>) {
                 setEmitter = emitter
@@ -48,4 +49,11 @@ class SettingAppView(sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
         })
     }
 
+    fun setAppViewResult(isSuccess: Boolean) {
+        if (isSuccess) {
+            getEmitter?.onSuccess(mAppView)
+        } else {
+            getEmitter?.onError(Throwable("set fail"))
+        }
+    }
 }

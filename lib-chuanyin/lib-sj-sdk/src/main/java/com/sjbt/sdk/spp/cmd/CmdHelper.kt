@@ -569,7 +569,7 @@ object CmdHelper {
         logSendMsg("发送通知消息:" + gson.toJson(notifyMsgBean))
         return constructCmd(
             HEAD_COMMON,
-            CMD_ID_8004.toShort(),
+            CMD_ID_8004,
             DIVIDE_N_JSON,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -1236,12 +1236,12 @@ object CmdHelper {
      *
      * @return
      */
-    val sleepSetCmd: ByteArray
+    val getSleepSetCmd: ByteArray
         get() {
             logSendMsg("获取睡眠区间设置")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
-                CMD_ID_800C.toShort(),
+                CMD_ID_800C,
                 DIVIDE_N_2,
                 0,
                 0,
@@ -1254,7 +1254,7 @@ object CmdHelper {
      *
      * @return
      */
-    fun getSetSleepCmd(open: Byte, startH: Byte, startM: Byte, endH: Byte, endM: Byte): ByteArray {
+    fun setSleepSetCmd(open: Byte, startH: Byte, startM: Byte, endH: Byte, endM: Byte): ByteArray {
         val byteBuffer = ByteBuffer.allocate(5)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(open)
