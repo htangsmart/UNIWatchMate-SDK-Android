@@ -8,13 +8,17 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.BindType
+import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.settings.WmSportGoal
-import com.base.sdk.port.AbWmConnect
 import com.base.sdk.port.log.WmLog
 import com.permissionx.guolindev.PermissionX
 import com.sjbt.sdk.sample.R
+import com.sjbt.sdk.sample.model.user.UserInfo
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.core.SingleObserver
 import io.reactivex.rxjava3.disposables.Disposable
@@ -52,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         //监听连接状态
-        UNIWatchMate.wmConnect.observeConnectState.subscribe(object : Observer<WmConnectState> {
+        UNIWatchMate.observeConnectState.subscribe(object : Observer<WmConnectState> {
             override fun onSubscribe(d: Disposable) {
 
             }
@@ -126,53 +130,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun unbind() {
-        UNIWatchMate.wmConnect?.reset()
+        UNIWatchMate.reset()
     }
 
     /**
      * 连接示例
      */
     private fun connectSample() {
-        UNIWatchMate.wmConnect?.connect(
+        UNIWatchMate.connect(
             "15:7E:78:A2:4B:30",
-            AbWmConnect.BindInfo(
-                AbWmConnect.BindType.DISCOVERY,
-                AbWmConnect.UserInfo("123456", "张三")
-            ), WmDeviceModel.SJ_WATCH
+            WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
         )
     }
 
     private fun scanConnect() {
-        UNIWatchMate.scanQr(
+        UNIWatchMate.connectScanQr(
             "https://static-ie.oraimo.com/oh.htm?mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q",
-            AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, AbWmConnect.UserInfo("123456", "张三"))
+            WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
         )
     }
 
     private fun startDiscoveryDevice() {
 
-        UNIWatchMate.mInstance?.let {
-            val observable = it.startDiscovery()
-            val observer: Observer<BluetoothDevice> = object : Observer<BluetoothDevice> {
-                override fun onSubscribe(d: Disposable) {
+        val observable = UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)
 
-                }
+        val observer: Observer<WmScanDevice> = object : Observer<WmScanDevice> {
+            override fun onSubscribe(d: Disposable) {
 
-                override fun onError(e: Throwable) {
-                    WmLog.e(TAG, "onError:$e")
-                }
-
-                override fun onNext(t: BluetoothDevice) {
-                    WmLog.d(TAG, "onNext:$t")
-                }
-
-                override fun onComplete() {
-                    WmLog.d(TAG, "onComplete")
-                }
             }
 
-            observable.subscribe(observer)
+            override fun onError(e: Throwable) {
+                WmLog.e(TAG, "onError:$e")
+            }
+
+            override fun onNext(t: WmScanDevice) {
+                WmLog.d(TAG, "onNext:$t")
+            }
+
+            override fun onComplete() {
+                WmLog.d(TAG, "onComplete")
+            }
         }
+
+        observable.subscribe(observer)
+
     }
 
     /**

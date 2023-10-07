@@ -1,15 +1,11 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
 import android.app.Dialog
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Animatable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -19,14 +15,15 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.setFragmentResultListener
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bertsir.zbar.Qr.ScanResult
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.BindType
+import com.base.sdk.entity.WmBindInfo
+import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.WmScanDevice
-import com.base.sdk.port.AbWmConnect
+import com.base.sdk.entity.common.WmTimeUnit
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,8 +37,8 @@ import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
+import com.sjbt.sdk.utils.UrlParse
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
 
 /**
@@ -52,6 +49,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private /*const*/ val promptBindSuccessId = 1
 
     private val viewBind: FragmentDeviceBindBinding by viewBinding()
+
     /**
      * Avoid repeated requests for permissions at the same time
      */
@@ -61,7 +59,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
         listener = object : OtherDevicesAdapter.Listener {
-            override fun onItemClick(device: WmScanDevice) {
+            override fun onItemClick(device: WmDevice) {
                 tryingBind(device.address ?: "", device.name)
             }
         }
@@ -90,7 +88,6 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private fun tryingBind(address: String, name: String?) {
         this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
-        val userInfo = AbWmConnect.UserInfo("", "")
         deviceManager.bind(
             address, if (name.isNullOrEmpty()) {
                 UNKNOWN_DEVICE_NAME
@@ -98,16 +95,44 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                 name
             }
         )
-        UNIWatchMate.wmConnect.connect(address,
-            AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, userInfo),
-            WmDeviceModel.SJ_WATCH)
+        UNIWatchMate.connect(
+            address,
+            WmBindInfo("124", "124324", BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
+        )
+
         DeviceConnectDialogFragment().show(childFragmentManager, null)
+    }
+
+    fun parseScanQr(qrString: String): WmDevice {
+        val wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
+
+        val params = UrlParse.getUrlParams(qrString)
+        if (!params.isEmpty()) {
+            val schemeMacAddress = params["mac"]
+            val schemeDeviceName = params["projectname"]
+            val random = params["random"]
+
+            wmScanDevice.randomCode = random
+
+            wmScanDevice.address = schemeMacAddress
+            wmScanDevice.isRecognized =
+                !TextUtils.isEmpty(schemeMacAddress) &&
+                        !TextUtils.isEmpty(schemeDeviceName) &&
+                        !TextUtils.isEmpty(random) &&
+                        isLegalMacAddress(schemeMacAddress)
+        }
+        return wmScanDevice
+    }
+
+    private fun isLegalMacAddress(address: String?): Boolean {
+        return !TextUtils.isEmpty(address)
     }
 
     private fun tryingBind(scanResult: ScanResult) {
         this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
-        val userInfo = AbWmConnect.UserInfo("", "")
-        val wmScanDevice = UNIWatchMate.mInstance?.parseScanQr(scanResult.getContent())
+        val userInfo = WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
+        val wmScanDevice = parseScanQr(scanResult.getContent())
+
         wmScanDevice?.let {
             if (wmScanDevice.address != null) {
                 deviceManager.bind(
@@ -117,8 +142,10 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         wmScanDevice.name!!
                     }
                 )
-                UNIWatchMate.scanQr(scanResult.getContent(),
-                    AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, userInfo))
+                UNIWatchMate.connectScanQr(
+                    scanResult.getContent(),
+                    userInfo
+                )
             }
         }
         DeviceConnectDialogFragment().show(childFragmentManager, null)
@@ -161,8 +188,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
         viewBind.scanDevicesRecyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        viewBind.scanDevicesRecyclerView.addItemDecoration(CustomDividerItemDecoration(context,
-            LinearLayoutManager.VERTICAL))
+        viewBind.scanDevicesRecyclerView.addItemDecoration(
+            CustomDividerItemDecoration(
+                context,
+                LinearLayoutManager.VERTICAL
+            )
+        )
         viewBind.scanDevicesRecyclerView.adapter = scanDevicesAdapter
 
         viewBind.otherDevicesRecyclerView.layoutManager =
@@ -184,7 +215,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             })
 
         viewBind.fabScan.setOnClickListener {
-           startDiscover()
+            startDiscover()
         }
 
         viewLifecycle.launchRepeatOnStarted {
@@ -231,10 +262,11 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private fun startDiscover() {
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.mInstance?.startDiscovery()?.asFlow()?.collect {
-                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
-                    scanDevicesAdapter.newScanResult(it)
-                }
+//                UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)?.asFlow()?.collect {
+//                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
+//                    scanDevicesAdapter.newScanResult(it)
+//                }
+
             }
         }
     }
@@ -268,9 +300,11 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     private fun createBluetoothSnackbar(): Snackbar {
-        val snackbar = Snackbar.make(viewBind.root,
+        val snackbar = Snackbar.make(
+            viewBind.root,
             R.string.device_state_bt_disabled,
-            Snackbar.LENGTH_INDEFINITE)
+            Snackbar.LENGTH_INDEFINITE
+        )
         snackbar.setAction(R.string.action_turn_on) {
             PermissionHelper.requestBle(this) { granted ->
                 if (granted) {

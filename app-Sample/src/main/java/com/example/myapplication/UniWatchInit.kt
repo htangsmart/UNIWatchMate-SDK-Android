@@ -4,12 +4,12 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import com.base.api.BuildConfig
 import com.base.api.UNIWatchMate
 import com.fitcloud.sdk.FcUniWatch
 import com.polidea.rxandroidble3.LogConstants
 import com.polidea.rxandroidble3.LogOptions
 import com.polidea.rxandroidble3.RxBleClient
-import com.sjbt.sdk.BuildConfig
 import com.sjbt.sdk.SJUniWatch
 import com.topstep.fitcloud.sdk.v2.FcSDK
 import timber.log.Timber
@@ -36,15 +36,17 @@ fun uniWatchInit(application: Application) {
     )
 }
 
-class SJUniWatchImpl(override var mContext: Application, override var mMsgTimeOut: Int):
-    SJUniWatch(mContext, mMsgTimeOut) {
+class SJUniWatchImpl(override var mContext: Application,
+                     override var mMsgTimeOut: Int
+) : SJUniWatch(mContext,mMsgTimeOut) {
+
 }
 
 class FcUniWatchImpl(application: Application) : FcUniWatch(application) {
+
     init {
         //1. FitCloud-SDK 需要知道当前APP的前后台状态
-        application.registerActivityLifecycleCallbacks(object :
-            Application.ActivityLifecycleCallbacks {
+        application.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             var startCount = 0
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             }
@@ -106,5 +108,6 @@ class FcUniWatchImpl(application: Application) : FcUniWatch(application) {
         sdk.setReConnectFrequent(false)//在后台时减少回连的次数，节省电量
         return sdk
     }
+
 
 }

@@ -67,7 +67,7 @@ class MyApplication : Application() {
         }
 
         //监听连接状态
-        UNIWatchMate.wmConnect.observeConnectState.subscribe(object : Observer<WmConnectState> {
+        UNIWatchMate.observeConnectState.subscribe(object : Observer<WmConnectState> {
             override fun onSubscribe(d: Disposable) {
 
             }

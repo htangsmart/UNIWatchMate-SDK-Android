@@ -1,17 +1,26 @@
 package com.fitcloud.sdk
 
+import android.Manifest
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import com.base.sdk.AbUniWatch
-import com.base.sdk.port.AbWmConnect
+import com.base.sdk.entity.WmBindInfo
+import com.base.sdk.entity.WmDevice
+import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.common.WmTimeUnit
+import com.base.sdk.entity.common.WmScanDevice
 import com.base.sdk.port.WmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
-import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.WmScanDevice
 import com.fitcloud.sdk.settings.FcSettings
+import com.topstep.fitcloud.sdk.connector.FcConnectorState
 import com.topstep.fitcloud.sdk.v2.FcSDK
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 
 abstract class FcUniWatch(
@@ -46,30 +55,87 @@ abstract class FcUniWatch(
         get() = TODO("Not yet implemented")
     override val wmSync: AbWmSyncs
         get() = TODO("Not yet implemented")
-
-    override val wmConnect: AbWmConnect by lazy(LazyThreadSafetyMode.NONE) {
-        FcConnect(requireSDK().connector)
-    }
-
     override val wmTransferFile: WmTransferFile
         get() = TODO("Not yet implemented")
 
-    override fun getDeviceModel(): WmDeviceModel {
-        return WmDeviceModel.FC_WATCH
+    override fun connect(address: String, bindInfo: WmBindInfo): WmDevice? {
+        if (bindInfo.model != getDeviceModel())
+            return null
+        requireSDK().connector.connect(
+            address = address,
+            userId = bindInfo.userId,
+            bindOrLogin = true,
+            sex = true,
+            age = 20,
+            height = 180f,
+            weight = 75f
+        )
+        return WmDevice(bindInfo.model)
     }
 
-    override fun setDeviceMode(wmDeviceModel: WmDeviceModel): Boolean {
-        return wmDeviceModel == WmDeviceModel.FC_WATCH
+    override fun connect(device: BluetoothDevice, bindInfo: WmBindInfo): WmDevice? {
+        if (bindInfo.model != getDeviceModel())
+            return null
+        requireSDK().connector.connect(
+            device = device,
+            userId = bindInfo.userId,
+            bindOrLogin = true,
+            sex = true,
+            age = 20,
+            height = 180f,
+            weight = 75f
+        )
+        val name = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+            || ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        ) {
+            device.name
+        } else {
+            null
+        }
+        return WmDevice(bindInfo.model)
     }
 
-    override fun startDiscovery(): Observable<BluetoothDevice> {
+    override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
         TODO("Not yet implemented")
     }
 
-    override fun parseScanQr(qrString: String): WmScanDevice {
-        val wmScanDevice = WmScanDevice(WmDeviceModel.FC_WATCH)
+    override fun disconnect() {
+        fcSDK?.connector?.disconnect()
+    }
 
-        return wmScanDevice
+    override fun reset(): Completable {
+        TODO("Not yet implemented")
+    }
+
+    override val observeConnectState: Observable<WmConnectState> =
+        requireSDK().connector.observerConnectorState().map {
+            mapState(it)
+        }
+
+    override fun getConnectState(): WmConnectState {
+        return mapState(fcSDK?.connector?.getConnectorState())
+    }
+
+    private fun mapState(state: FcConnectorState?): WmConnectState {
+        return when (state) {
+            null, FcConnectorState.DISCONNECTED -> WmConnectState.DISCONNECTED
+            FcConnectorState.PRE_CONNECTING -> WmConnectState.CONNECTING
+            FcConnectorState.CONNECTING -> WmConnectState.CONNECTING
+            FcConnectorState.PRE_CONNECTED -> WmConnectState.CONNECTED
+            FcConnectorState.CONNECTED -> WmConnectState.VERIFIED
+        }
+    }
+
+    override fun getDeviceModel(): WmDeviceModel? {
+        return WmDeviceModel.FC_WATCH
+    }
+
+    override fun setDeviceModel(wmDeviceModel: WmDeviceModel): Boolean {
+        return wmDeviceModel == WmDeviceModel.FC_WATCH
+    }
+
+    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmScanDevice> {
+        TODO("Not yet implemented")
     }
 
     var isForeground: Boolean = false
