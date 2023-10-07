@@ -46,7 +46,7 @@ public final class TimeUtils {
     public static String getTime(String format, long time) {
         if (time <= 0)
             time = 0;
-        int leftSeconds= (int) (time % 1000);
+        int leftSeconds = (int) (time % 1000);
         int totalSeconds = (int) (time / 1000);
         if (leftSeconds > 500) {
             totalSeconds++;
@@ -59,7 +59,7 @@ public final class TimeUtils {
         } else if (TIME_FORMAT_02.equals(format)) {
             return String.format(format, hours, minutes, seconds);
         } else if (TIME_FORMAT_00.equals(format)) {
-            return String.format(format,seconds);
+            return String.format(format, seconds);
         }
         if (TextUtils.isEmpty(format)) {
             format = TIME_FORMAT_02;
@@ -73,36 +73,55 @@ public final class TimeUtils {
     private static SimpleDateFormat getDefaultFormat() {
         return getDateFormat("yyyy-MM-dd HH:mm:ss");
     }
+
+    public static SimpleDateFormat getDefaultHMSFormat() {
+        return getDateFormat("HH:mm:ss");
+    }
+
+    public static SimpleDateFormat getDefaultYMDFormat() {
+        return getDateFormat("yyyy-MM-dd");
+    }
+
     public static SimpleDateFormat getEfTakenDataFormat() {
         return getDateFormat("yyyy:MM:dd HH:mm:ss");
     }
+
     public static SimpleDateFormat getUTCTakenDataFormat() {
         return getUtcDateFormat("yyyy:MM:dd HH:mm:ss");
     }
+
     public static SimpleDateFormat getSecondDataFormat() {
         return getDateFormat("ss");
     }
+
     public static SimpleDateFormat getGPSDataFormat() {
         return getDateFormat("yyyy:MM:dd");
     }
+
     public static SimpleDateFormat getUtcGPSDataFormat() {
         return getUtcDateFormat("yyyy:MM:dd");
     }
+
     public static SimpleDateFormat getDayDefaultFormat() {
         return getDateFormat("yyyy-MM-dd");
     }
+
     public static SimpleDateFormat getHhMmDefaultFormat() {
         return getDateFormat("hh:mm");
     }
+
     public static SimpleDateFormat getDayDefaultFormatChinese() {
         return getDateFormat("yyyy年MM月dd日");
     }
+
     public static SimpleDateFormat getDayDefaultMdFormat() {
         return getDateFormat("MM-dd");
     }
+
     public static SimpleDateFormat getDayRegisterDefaultFormat() {
         return getDateFormat("yyyyMMdd");
     }
+
     private static SimpleDateFormat getDateFormat(String pattern) {
         SimpleDateFormat simpleDateFormat = SDF_THREAD_LOCAL.get();
         if (simpleDateFormat == null) {
@@ -113,6 +132,7 @@ public final class TimeUtils {
         }
         return simpleDateFormat;
     }
+
     private static SimpleDateFormat getUtcDateFormat(String pattern) {
         SimpleDateFormat simpleDateFormat = UTC_THREAD_LOCAL.get();
         if (simpleDateFormat == null) {
@@ -124,6 +144,7 @@ public final class TimeUtils {
         }
         return simpleDateFormat;
     }
+
     private TimeUtils() {
         throw new UnsupportedOperationException("u can't instantiate me...");
     }
@@ -240,6 +261,7 @@ public final class TimeUtils {
     /**
      * Date to the formatted time string.
      * <p>The pattern is {@code yyyy-MM-dd HH:mm:ss}.</p>
+     *
      * @param date The date.
      * @return the formatted time string
      */
@@ -249,6 +271,7 @@ public final class TimeUtils {
 
     /**
      * Date to the formatted time string.
+     *
      * @param date    The date.
      * @param pattern The pattern of date format, such as yyyy/MM/dd HH:mm
      * @return the formatted time string
@@ -494,8 +517,9 @@ public final class TimeUtils {
     public static String getNowString(@NonNull final DateFormat format) {
         return millis2String(System.currentTimeMillis(), format);
     }
-    public static String getNowStringMinus(@NonNull final DateFormat format,long minus) {
-        return millis2String(System.currentTimeMillis()-minus, format);
+
+    public static String getNowStringMinus(@NonNull final DateFormat format, long minus) {
+        return millis2String(System.currentTimeMillis() - minus, format);
     }
 
     /**
@@ -1198,15 +1222,16 @@ public final class TimeUtils {
         long wee = getWeeOfToday();
         return millis >= wee && millis < wee + TimeConstants.DAY;
     }
+
     /**
      * Return whether it is today.
      *
      * @param millis The milliseconds.
      * @return {@code true}: yes<br>{@code false}: no
      */
-    public static boolean isTodayByPos(final long millis,final int pos) {
+    public static boolean isTodayByPos(final long millis, final int pos) {
         long wee = getWeeOfToday();
-        return millis >= wee+ TimeConstants.DAY*pos && millis < wee + (pos+1)*TimeConstants.DAY;
+        return millis >= wee + TimeConstants.DAY * pos && millis < wee + (pos + 1) * TimeConstants.DAY;
     }
 
     public static boolean isTomorrow(final long millis) {
@@ -1780,6 +1805,7 @@ public final class TimeUtils {
             return millis2String(createTime, "yyyy-MM-dd HH:mm");
         }
     }
+
     /*
     返回时刻好友里的时间
      * */
@@ -1790,6 +1816,7 @@ public final class TimeUtils {
             return millis2String(createTime, "yyyy-MM-dd");
         }
     }
+
     public static boolean isThisYear(long createTime) {
         int dayCount = isLeapYear(createTime) ? 366 : 365;
         if (createTime >= System.currentTimeMillis() - 1000L * 60 * 60 * 24 * dayCount) {
@@ -1817,20 +1844,20 @@ public final class TimeUtils {
     public static String getLeftTime(long leftTime) {
         long hour = (leftTime / 1000 / 60 / 60 % 24);
         long min = (leftTime / 1000 / 60 % 60);
-        long sencond=(leftTime / 1000%60);
+        long sencond = (leftTime / 1000 % 60);
         String hourString = hour + "";
         String minString = min + "";
         String sencondString = sencond + "";
         if (hour <= 9) {
             hourString = "0" + hourString;
         }
-        if (min <=  9) {
+        if (min <= 9) {
             minString = "0" + minString;
         }
-        if (sencond <=  9) {
+        if (sencond <= 9) {
             sencondString = "0" + sencondString;
         }
-        return hourString+":" + minString+ ":" + sencondString;
+        return hourString + ":" + minString + ":" + sencondString;
     }
 
 }

@@ -75,7 +75,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:name="@string/ds_screen_vibrate"/>
-
+<!--        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_wrist_lighting_enabled"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:preferenceTitle="@string/ds_turn_wrist_lighting_config"/>
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_synchronize_date_and_time_enabled"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:preferenceTitle="@string/ds_synchronize_date_and_time"/>-->
     </LinearLayout>
 
 </ScrollView>
