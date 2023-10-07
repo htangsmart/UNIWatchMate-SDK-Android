@@ -2,6 +2,8 @@ package com.example.myapplication.ui
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.widget.Button
@@ -194,4 +196,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
+
+
 

@@ -6,6 +6,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.sjbt.sdk.sample.base.BaseActivity
+import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.ui.auth.AuthActivity
 
 /**
  * Splash screen.
@@ -24,6 +26,9 @@ class LaunchActivity : BaseActivity() {
         lifecycleScope.launchWhenStarted {
             launchNavigation = viewModel.getLaunchNavigation()
             when (launchNavigation) {
+                LaunchNavigation.NavToSignIn -> {
+                    AuthActivity.start(this@LaunchActivity)
+                }
                 LaunchNavigation.NavToMain -> {
                     MainActivity.start(this@LaunchActivity)
                 }
@@ -38,11 +43,16 @@ class LaunchActivity : BaseActivity() {
 }
 
 sealed class LaunchNavigation {
+    object NavToSignIn : LaunchNavigation()
     object NavToMain : LaunchNavigation()
 }
 
 class LaunchViewMode : ViewModel() {
     suspend fun getLaunchNavigation(): LaunchNavigation {
-        return LaunchNavigation.NavToMain
+        return if (Injector.getAuthManager().hasAuthedUser()) {
+            LaunchNavigation.NavToMain
+        } else {
+            LaunchNavigation.NavToSignIn
+        }
     }
 }

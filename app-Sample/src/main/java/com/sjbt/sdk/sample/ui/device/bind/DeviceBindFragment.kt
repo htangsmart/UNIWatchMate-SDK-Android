@@ -132,6 +132,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        lifecycleScope.launchWhenResumed {
+            if (!isRequestingPermission) {
+                isRequestingPermission = true
+                PermissionHelper.requestBle(this@DeviceBindFragment) {
+                    isRequestingPermission = false
+                }
+            }
+        }
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.menu_device_bind, menu)
