@@ -1,13 +1,13 @@
 package com.sjbt.sdk.spp.cmd
 
 import android.text.TextUtils
+import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
-import com.base.sdk.port.AbWmConnect
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
@@ -337,7 +337,7 @@ object CmdHelper {
      * 获取绑定命令
      * @return
      */
-    fun getBindCmd(bindInfo: AbWmConnect.BindInfo): ByteArray {
+    fun getBindCmd(bindInfo: WmBindInfo): ByteArray {
         LogUtils.logBlueTooth("绑定命令")
         val byteBuffer = ByteBuffer.allocate(17)
         byteBuffer.put(bindInfo.bindType.ordinal.toByte())

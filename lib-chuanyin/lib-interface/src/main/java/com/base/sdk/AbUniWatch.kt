@@ -1,14 +1,18 @@
 package com.base.sdk
 
 import android.bluetooth.BluetoothDevice
-import com.base.sdk.port.AbWmConnect
+import com.base.sdk.entity.WmBindInfo
+import com.base.sdk.entity.WmDevice
+import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.common.WmDiscoverDevice
+import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.port.WmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.log.WmLog
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
-import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.WmScanDevice
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 
 /**
@@ -30,7 +34,7 @@ abstract class AbUniWatch {
     abstract val wmSettings: AbWmSettings
 
     /**
-     * A应用模块
+     * 应用模块
      */
     abstract val wmApps: AbWmApps
 
@@ -40,39 +44,77 @@ abstract class AbUniWatch {
     abstract val wmSync: AbWmSyncs
 
     /**
-     * 连接模块
-     */
-    abstract val wmConnect: AbWmConnect
-
-    /**
      * 文件传输
      */
     abstract val wmTransferFile: WmTransferFile
 
     /**
-     * 获取设备模式。
-     * 可能存在某个SDK支持多种模式的情况。
+     * 连接方法
+     * @return 如果返回null，表示无法识别此[deviceMode]
      */
-    abstract fun getDeviceModel(): WmDeviceModel
+    abstract fun connect(
+        address: String,
+        bindInfo: WmBindInfo
+    ): WmDevice?
+
+    /**
+     * 连接方法
+     * @return 如果返回null，表示无法识别此[deviceMode]
+     */
+    abstract fun connect(
+        device: BluetoothDevice,
+        bindInfo: WmBindInfo
+    ): WmDevice?
+
+    /**
+     * 连接方法
+     * @return 如果返回null，表示无法识别此[qrString]
+     */
+    abstract fun connectScanQr(
+        qrString: String,
+        bindInfo: WmBindInfo,
+    ): WmDevice?
+
+    /**
+     * 断开连接
+     */
+    abstract fun disconnect()
+
+    /**
+     * 恢复出厂设置
+     */
+    abstract fun reset(): Completable
+
+    /**
+     * 监听连接状态
+     */
+    abstract val observeConnectState: Observable<WmConnectState>
+
+    /**
+     * 获取连接状态
+     */
+    abstract fun getConnectState(): WmConnectState
+
+    /**
+     * 获取当前设备模式。
+     * @return null表示尚未
+     */
+    abstract fun getDeviceModel(): WmDeviceModel?
 
     /**
      * 设置设备模式.
      * 如果一个SDK支持多个模式，需要保存当前模式，以便在 [getDeviceModel] 获取
      * @return 设置是否成功
      */
-    abstract fun setDeviceMode(wmDeviceModel: WmDeviceModel): Boolean
+    abstract fun setDeviceModel(wmDeviceModel: WmDeviceModel): Boolean
 
     /**
      * 开始扫描设备
      */
-    abstract fun startDiscovery(): Observable<BluetoothDevice>
-
-    /**
-     * 解析二维码
-     */
-    abstract fun parseScanQr(qrString: String): WmScanDevice
+    abstract fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice>
 
     fun setLogEnable(logEnable: Boolean) {
         WmLog.logEnable = logEnable
     }
+
 }

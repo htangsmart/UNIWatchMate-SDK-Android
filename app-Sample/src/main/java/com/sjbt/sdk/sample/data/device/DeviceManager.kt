@@ -6,8 +6,11 @@ import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.BindType
+import com.base.sdk.entity.WmBindInfo
+import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.WmDateTime
@@ -34,7 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 interface DeviceManager {
@@ -189,7 +191,7 @@ internal class DeviceManagerImpl(
      */
     override val flowConnectorState = combine(
         flowDevice,
-        UNIWatchMate.wmConnect.observeConnectState.startWithItem(UNIWatchMate.wmConnect.getConnectState())
+        UNIWatchMate.observeConnectState.startWithItem(UNIWatchMate.getConnectState())
             .asFlow().distinctUntilChanged()
     ) { device, connectorState ->
         //Device trying bind success,save it
@@ -216,10 +218,9 @@ internal class DeviceManagerImpl(
                 if (it.device == null || it.user == null) {
 //                    UNIWatchMate.mInstance?.wmConnect?.disconnect()
                 } else {
-                    UNIWatchMate.mInstance?.wmConnect?.connect(
+                    UNIWatchMate.connect(
                         address = it.device.address,
-                        AbWmConnect.BindInfo(AbWmConnect.BindType.DISCOVERY, it.user.toSdkUser()),
-                        WmDeviceModel.SJ_WATCH
+                        it.user.toSdkUser(BindType.DISCOVERY)
                     )
                 }
             }
@@ -237,7 +238,7 @@ internal class DeviceManagerImpl(
             flowConnectorState.collect {
                 Timber.tag(TAG).e("onConnected if verified state:%s", it)
                 if (it == WmConnectState.VERIFIED) {
-                    onVerified()
+                    onConnected()
                 }
             }
         }
@@ -254,7 +255,7 @@ internal class DeviceManagerImpl(
 
     }
 
-    private fun onVerified() {
+    private fun onConnected() {
         val userId = internalStorage.flowAuthedUserId.value
         if (userId != null) {
             applicationScope.launchWithLog {
@@ -272,21 +273,6 @@ internal class DeviceManagerImpl(
 //                        UNIWatchMate.mInstance?.wmSettings?.settingSportGoal?.set(it)?.await()
 //                    }
                 }
-                runCatchingWithLog {
-                    val wmDateTime = WmDateTime(TimeZone.getDefault().id,
-                        WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
-                        WmUnitInfo.DateFormat.YYYY_MM_DD,
-                        System.currentTimeMillis(),
-                        TimeUtils.millis2String(System.currentTimeMillis(),
-                            TimeUtils.getDefaultYMDFormat()),
-                        TimeUtils.millis2String(System.currentTimeMillis(),
-                            TimeUtils.getDefaultHMSFormat()))
-                    Timber.tag(TAG).e("同步时间 wmDateTime=$wmDateTime")
-                    UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime)?.toObservable()?.asFlow()?.collect{
-                        Timber.tag(TAG).e("同步时间 结束 wmDateTime=$wmDateTime")
-                    }
-                }
-
                 runCatchingWithLog {
 //                    Timber.tag(TAG).e("setUserInfo")
                     userInfoRepository.flowCurrent.value?.let {
@@ -320,8 +306,8 @@ internal class DeviceManagerImpl(
         }
         .flatMapLatest {//flatMap 不同的是，它会取消先前启动的流
 
-            UNIWatchMate.mInstance?.wmSync?.syncBatteryInfo?.observeSyncData?.startWith(
-                UNIWatchMate.mInstance!!.wmSync!!.syncBatteryInfo.syncData(System.currentTimeMillis())
+            UNIWatchMate?.wmSync?.syncBatteryInfo?.observeSyncData?.startWith(
+                UNIWatchMate.wmSync!!.syncBatteryInfo.syncData(System.currentTimeMillis())
             )?.retryWhen {
                 it.flatMap { throwable ->
                     Observable.timer(7500, TimeUnit.MILLISECONDS)
@@ -380,9 +366,7 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun unbind() {
-        UNIWatchMate.mInstance?.let {
-            it.wmConnect?.disconnect()
-        }
+        UNIWatchMate.disconnect()
 //        connector.settingsFeature().unbindUser()
 //            .ignoreElement().onErrorComplete()
 //            .andThen(
@@ -392,9 +376,7 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun reset() {
-        UNIWatchMate.mInstance?.let {
-            it.wmConnect?.reset()
-        }
+        UNIWatchMate.reset()
         clearDevice()
     }
 
@@ -434,9 +416,8 @@ internal class DeviceManagerImpl(
 //    }
 
     override fun disconnect() {
-        UNIWatchMate.mInstance?.let {
-            it.wmConnect?.disconnect()
-        }
+
+        UNIWatchMate.disconnect()
     }
 
     override fun reconnect() {
@@ -489,7 +470,7 @@ internal class DeviceManagerImpl(
 //        }
     }
 
-    //    private suspend fun saveSyncData(data: FcSyncData) {
+//    private suspend fun saveSyncData(data: FcSyncData) {
 //        Timber.tag(TAG).i("saveSyncData:%d", data.type)
 //        val userId = internalStorage.flowAuthedUserId.value ?: return
 //
@@ -528,29 +509,28 @@ internal class DeviceManagerImpl(
 //        }
 //    }
     fun parseScanQr(qrString: String): WmScanDevice {
-        val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
-        val params = UrlParse.getUrlParams(qrString)
-        if (!params.isEmpty()) {
-            val schemeMacAddress = params["mac"]
-            val schemeDeviceName = params["projectname"]
-            val random = params["random"]
+    val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
+    val params = UrlParse.getUrlParams(qrString)
+    if (!params.isEmpty()) {
+        val schemeMacAddress = params["mac"]
+        val schemeDeviceName = params["projectname"]
+        val random = params["random"]
 
-            wmScanDevice.randomCode = random
+        wmScanDevice.randomCode = random
 
-            wmScanDevice.address = schemeMacAddress
-            wmScanDevice.isRecognized =
-                !TextUtils.isEmpty(schemeMacAddress) &&
-                        !TextUtils.isEmpty(schemeDeviceName) &&
-                        !TextUtils.isEmpty(random) &&
-                        isLegalMacAddress(schemeMacAddress)
-        }
-        return wmScanDevice
+        wmScanDevice.address = schemeMacAddress
+        wmScanDevice.isRecognized =
+            !TextUtils.isEmpty(schemeMacAddress) &&
+                    !TextUtils.isEmpty(schemeDeviceName) &&
+                    !TextUtils.isEmpty(random) &&
+                    isLegalMacAddress(schemeMacAddress)
+    }
+    return wmScanDevice
     }
 
     private fun isLegalMacAddress(address: String?): Boolean {
         return !TextUtils.isEmpty(address)
     }
-
     companion object {
         private const val TAG = "DeviceManager"
     }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.base.api.UNIWatchMate
 import com.base.sdk.entity.settings.WmSportGoal
 import com.github.kilnn.wheellayout.OneWheelLayout
 import com.github.kilnn.wheellayout.WheelIntConfig
@@ -94,6 +95,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
             R.string.unit_k_calories_param, exerciseGoal.calories.toString()
         )
     }
+
     private fun updateActivityDuration() {
         viewBind.itemActivityDuration.getTextView().text = getString(
             R.string.unit_minute_param, exerciseGoal.activityDuration
@@ -132,11 +134,17 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
             exerciseGoal = exerciseGoal.copy(calories = selectValue)
             updateCalories()
             exerciseGoalRepository.modify(authedUserId, exerciseGoal)
-        }else if (DIALOG_EXERCISE_ACTIVITY_DURATION == tag) {
+        } else if (DIALOG_EXERCISE_ACTIVITY_DURATION == tag) {
             exerciseGoal = exerciseGoal.copy(activityDuration = selectValue.toShort())
             updateActivityDuration()
             exerciseGoalRepository.modify(authedUserId, exerciseGoal)
         }
+
+        setExerciseGoal()
+    }
+
+    private fun setExerciseGoal() {
+        UNIWatchMate.wmSettings.settingSportGoal.set(exerciseGoal)
     }
 
     override fun dialogGetDistanceMetric(): Float {

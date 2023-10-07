@@ -1,6 +1,8 @@
 package com.sjbt.sdk.sample.model.user
 
-import com.base.sdk.port.AbWmConnect
+import com.base.sdk.entity.BindType
+import com.base.sdk.entity.WmBindInfo
+import com.base.sdk.entity.WmDeviceModel
 
 data class UserInfo(
     val id: Long,
@@ -52,6 +54,6 @@ fun UserInfo?.getWeight(): Float {
     return weight
 }
 
-fun UserInfo?.toSdkUser(): AbWmConnect.UserInfo {
-    return AbWmConnect.UserInfo("${this?.id ?:0} ", "name")
+fun UserInfo?.toSdkUser(bindType: BindType): WmBindInfo {
+    return WmBindInfo("${this?.id ?:0} ", "name",bindType,WmDeviceModel.SJ_WATCH)
 }

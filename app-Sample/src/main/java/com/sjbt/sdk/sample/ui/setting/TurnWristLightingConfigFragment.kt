@@ -56,7 +56,7 @@ class TurnWristLightingConfigFragment : BaseFragment(R.layout.fragment_turn_wris
                 }
             }
             launch {
-                UNIWatchMate.wmConnect.observeConnectState.asFlow().collect {
+                UNIWatchMate.observeConnectState.asFlow().collect {
                     viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
                     updateUI()
                 }
