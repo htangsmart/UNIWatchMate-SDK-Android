@@ -246,11 +246,11 @@
             app:destination="@id/drinkWaterConfigFragment"/>
         <action
             android:id="@+id/toBpConfig"
-            app:destination="@id/bpConfigFragment"/>
+            app:destination="@id/bpConfigFragment"/>-->
         <action
             android:id="@+id/toTurnWristLightingConfig"
             app:destination="@id/turnWristLightingConfigFragment"/>
-        <action
+      <!--  <action
             android:id="@+id/toDndConfig"
             app:destination="@id/dndConfigFragment"/>
         <action
@@ -319,11 +319,11 @@
     <!--        android:label="@string/ds_blood_pressure_config"-->
     <!--        tools:layout="@layout/fragment_blood_pressure_config"/>-->
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/turnWristLightingConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.TurnWristLightingConfigFragment"-->
-    <!--        android:label="@string/ds_turn_wrist_lighting_config"-->
-    <!--        tools:layout="@layout/fragment_turn_wrist_lighting_config"/>-->
+        <fragment
+            android:id="@+id/turnWristLightingConfigFragment"
+            android:name="com.sjbt.sdk.sample.ui.setting.TurnWristLightingConfigFragment"
+            android:label="@string/ds_turn_wrist_lighting_config"
+            tools:layout="@layout/fragment_turn_wrist_lighting_config"/>
 
     <!--    <fragment-->
     <!--        android:id="@+id/dndConfigFragment"-->

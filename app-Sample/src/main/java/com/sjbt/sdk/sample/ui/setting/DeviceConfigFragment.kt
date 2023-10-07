@@ -67,9 +67,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 //            viewBind.itemBloodPressure -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toBpConfig())
 //            }
-//            viewBind.itemTurnWristLighting -> {
-//                findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
-//            }
+            viewBind.itemTurnWristLighting -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
+            }
 //            viewBind.itemDnd -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toDndConfig())
 //            }

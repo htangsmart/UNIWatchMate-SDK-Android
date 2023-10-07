@@ -133,12 +133,12 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
                             showConnectingTips()
                         }
                         WmConnectState.CONNECTED -> {
-                            viewBind.tvState.setText(R.string.device_state_connecting)
+                            viewBind.tvState.setText(R.string.device_state_connected)
                             viewBind.progressDotView.setLoading()
                             showConnectingTips()
                         }
                         WmConnectState.VERIFIED -> {
-                            viewBind.tvState.setText(R.string.device_state_connected)
+                            viewBind.tvState.setText(R.string.device_state_verified)
                             viewBind.progressDotView.setSuccess()
                             showBgRunSettings()
                         }
