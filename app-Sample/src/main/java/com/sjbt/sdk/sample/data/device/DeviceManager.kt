@@ -213,7 +213,7 @@ internal class DeviceManagerImpl(
                 } else {
                     UNIWatchMate.connect(
                         address = it.device.address,
-                        it.user.toSdkUser(BindType.DISCOVERY)
+                        it.user.toSdkUser(BindType.CONNECT_BACK)
                     )
                 }
             }

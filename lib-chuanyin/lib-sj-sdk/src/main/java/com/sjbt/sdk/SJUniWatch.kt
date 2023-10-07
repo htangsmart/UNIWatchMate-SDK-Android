@@ -9,6 +9,7 @@ import android.os.Build
 import android.text.TextUtils
 import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
+import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
@@ -40,17 +41,14 @@ import com.sjbt.sdk.spp.bt.BtEngine.Listener
 import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
-import com.sjbt.sdk.utils.BtUtils
-import com.sjbt.sdk.utils.ClsUtils
-import com.sjbt.sdk.utils.FileUtils
-import com.sjbt.sdk.utils.LogUtils
+import com.sjbt.sdk.utils.*
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.functions.Action
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), Listener {
+abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
     private val TAG = TAG_SJ + "SJUniWatch"
 
@@ -89,7 +87,7 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
     override val wmSettings = SJSettings(this)
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
-    override val wmTransferFile = SJTransferFile()
+    override val wmTransferFile = SJTransferFile(this)
 
     val mBindStateMap = HashMap<String, Boolean>()
 
@@ -234,7 +232,11 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
 
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
-                                        sendNormalMsg(CmdHelper.getBindCmd(it))
+                                        if (it.bindType != BindType.CONNECT_BACK) {
+                                            sendNormalMsg(CmdHelper.getBindCmd(it))
+                                        } else {
+                                            btStateChange(WmConnectState.VERIFIED)
+                                        }
                                     }
                                 }
                             }
@@ -360,7 +362,7 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
 
                                 CMD_ID_802E -> {//绑定
                                     val result = msg[16]
-                                    WmLog.d(TAG, "绑定结果:$result")
+                                    LogUtils.logBlueTooth("绑定结果:$result")
 
                                     if (result.toInt() == 1) {
                                         btStateChange(WmConnectState.VERIFIED)
@@ -996,28 +998,18 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
     }
 
     //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
-//     fun parseScanQr(qrString: String): WmDiscoverDevice {
-//        val wmScanDevice = WmDiscoverDevice(WmDeviceModel.SJ_WATCH)
-//        val params = UrlParse.getUrlParams(qrString)
-//        if (!params.isEmpty()) {
-//            val schemeMacAddress = params["mac"]
-//            val schemeDeviceName = params["projectname"]
-//            val random = params["random"]
-//
-//            wmScanDevice.randomCode = random
-//
-//            wmScanDevice.address = schemeMacAddress
-//            wmScanDevice.isRecognized =
-//                !TextUtils.isEmpty(schemeMacAddress) &&
-//                        !TextUtils.isEmpty(schemeDeviceName) &&
-//                        !TextUtils.isEmpty(random) &&
-//                        isLegalMacAddress(schemeMacAddress)
-//        }
-//        return wmScanDevice
-//    }
 
     override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
-        TODO("Not yet implemented")
+
+        val params = UrlParse.getUrlParams(qrString)
+
+        if (params.isNotEmpty()) {
+            val schemeMacAddress = params["mac"]
+            bindInfo.randomCode = params["random"]
+            return schemeMacAddress?.let { connect(it, bindInfo) }
+        } else {
+            return WmDevice(bindInfo.model)
+        }
     }
 
     /**
@@ -1059,6 +1051,7 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
         bluetoothDevice: BluetoothDevice,
         bindInfo: WmBindInfo
     ): WmDevice {
+        mBindInfo = bindInfo
         mCurrDevice = bluetoothDevice
         val wmDevice = WmDevice(bindInfo.model)
         mCurrAddress = bluetoothDevice.address
@@ -1114,7 +1107,10 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
         return wmDeviceModel == WmDeviceModel.SJ_WATCH
     }
 
-    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice> {
+    override fun startDiscovery(
+        scanTime: Int,
+        wmTimeUnit: WmTimeUnit
+    ): Observable<WmDiscoverDevice> {
         return Observable.create(object : ObservableOnSubscribe<WmDiscoverDevice> {
             override fun subscribe(emitter: ObservableEmitter<WmDiscoverDevice>) {
                 discoveryObservableEmitter = emitter

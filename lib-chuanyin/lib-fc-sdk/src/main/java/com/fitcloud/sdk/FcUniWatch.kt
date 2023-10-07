@@ -13,7 +13,7 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.common.WmDiscoverDevice
-import com.base.sdk.port.WmTransferFile
+import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
@@ -55,7 +55,7 @@ abstract class FcUniWatch(
         get() = TODO("Not yet implemented")
     override val wmSync: AbWmSyncs
         get() = TODO("Not yet implemented")
-    override val wmTransferFile: WmTransferFile
+    override val wmTransferFile: AbWmTransferFile
         get() = TODO("Not yet implemented")
 
     override fun connect(address: String, bindInfo: WmBindInfo): WmDevice? {

@@ -99,7 +99,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         )
         UNIWatchMate.connect(
             address,
-            WmBindInfo("124", "124324", BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
+            WmBindInfo("124", "124324", BindType.DISCOVERY ,WmDeviceModel.SJ_WATCH)
         )
 
         DeviceConnectDialogFragment().show(childFragmentManager, null)
