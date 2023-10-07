@@ -131,9 +131,9 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private const val ITEM_TYPE_TITLE = 0
         private const val ITEM_TYPE_NONE = 1
         private const val ITEM_TYPE_DATA = 2
-//        fun devices(devices: Collection<WmScanDevice>?): List<WmDevice>? {
+//        fun devices(devices: Collection<WmDiscoverDevice>?): List<WmDevice>? {
 //            if (devices.isNullOrEmpty()) return null
-//            val list = ArrayList<WmScanDevice>()
+//            val list = ArrayList<WmDiscoverDevice>()
 //            for (device in devices) {
 ////                WmDeviceModel(device.address, device.name, 0)
 //            }

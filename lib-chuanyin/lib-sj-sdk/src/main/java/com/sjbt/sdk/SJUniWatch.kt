@@ -14,7 +14,7 @@ import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.AppView
@@ -61,7 +61,7 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
     var mBtEngine = BtEngine.getInstance(this)
     var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
-    private lateinit var discoveryObservableEmitter: ObservableEmitter<WmScanDevice>
+    private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
     private var connectEmitter: ObservableEmitter<WmConnectState>? = null
     var mBindInfo: WmBindInfo? = null
@@ -201,8 +201,8 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
             }
 
             override fun onDiscoveryDevice(device: BluetoothDevice) {
-                val wmScanDevice = WmScanDevice(device, 20)
-                discoveryObservableEmitter.onNext(wmScanDevice)
+                val wmDiscoverDevice = WmDiscoverDevice(device, 20)
+                discoveryObservableEmitter.onNext(wmDiscoverDevice)
             }
 
             override fun onStartDiscovery() {
@@ -996,8 +996,8 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
     }
 
     //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
-//     fun parseScanQr(qrString: String): WmScanDevice {
-//        val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
+//     fun parseScanQr(qrString: String): WmDiscoverDevice {
+//        val wmScanDevice = WmDiscoverDevice(WmDeviceModel.SJ_WATCH)
 //        val params = UrlParse.getUrlParams(qrString)
 //        if (!params.isEmpty()) {
 //            val schemeMacAddress = params["mac"]
@@ -1114,9 +1114,9 @@ abstract class SJUniWatch(context: Application,timeout:Int) : AbUniWatch(), List
         return wmDeviceModel == WmDeviceModel.SJ_WATCH
     }
 
-    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmScanDevice> {
-        return Observable.create(object : ObservableOnSubscribe<WmScanDevice> {
-            override fun subscribe(emitter: ObservableEmitter<WmScanDevice>) {
+    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice> {
+        return Observable.create(object : ObservableOnSubscribe<WmDiscoverDevice> {
+            override fun subscribe(emitter: ObservableEmitter<WmDiscoverDevice>) {
                 discoveryObservableEmitter = emitter
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

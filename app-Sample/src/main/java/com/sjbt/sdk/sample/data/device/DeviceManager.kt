@@ -10,7 +10,7 @@ import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.sjbt.sdk.sample.base.storage.InternalStorage

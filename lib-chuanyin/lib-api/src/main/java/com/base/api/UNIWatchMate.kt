@@ -8,7 +8,7 @@ import com.base.sdk.entity.WmDevice
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.port.WmTransferFile
 import com.base.sdk.port.app.AbWmApps
@@ -106,7 +106,7 @@ object UNIWatchMate : AbUniWatch() {
         throw RuntimeException("No Sdk Match Exception!")
     }
 
-    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmScanDevice> {
+    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice> {
         return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit)
     }
 

@@ -12,7 +12,7 @@ import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.log.WmLog
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
 
         val observable = UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)
 
-        val observer: Observer<WmScanDevice> = object : Observer<WmScanDevice> {
+        val observer: Observer<WmDiscoverDevice> = object : Observer<WmDiscoverDevice> {
             override fun onSubscribe(d: Disposable) {
 
             }
@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 WmLog.e(TAG, "onError:$e")
             }
 
-            override fun onNext(t: WmScanDevice) {
+            override fun onNext(t: WmDiscoverDevice) {
                 WmLog.d(TAG, "onNext:$t")
             }
 

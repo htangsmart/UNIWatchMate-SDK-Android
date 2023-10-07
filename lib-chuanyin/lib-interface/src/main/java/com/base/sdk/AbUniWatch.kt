@@ -4,7 +4,7 @@ import android.bluetooth.BluetoothDevice
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.common.WmScanDevice
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.port.WmTransferFile
@@ -111,7 +111,7 @@ abstract class AbUniWatch {
     /**
      * 开始扫描设备
      */
-    abstract fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmScanDevice>
+    abstract fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice>
 
     fun setLogEnable(logEnable: Boolean) {
         WmLog.logEnable = logEnable
