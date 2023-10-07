@@ -7,7 +7,7 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
-import com.base.sdk.port.WmTransferFile
+import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.log.WmLog
 import com.base.sdk.port.setting.AbWmSettings
@@ -46,7 +46,7 @@ abstract class AbUniWatch {
     /**
      * 文件传输
      */
-    abstract val wmTransferFile: WmTransferFile
+    abstract val wmTransferFile: AbWmTransferFile
 
     /**
      * 连接方法

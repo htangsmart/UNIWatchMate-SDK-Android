@@ -7,7 +7,7 @@ import java.io.File
 /**
  * 传输文件功能抽象类
  */
-abstract class WmTransferFile : IWmSupport {
+abstract class AbWmTransferFile : IWmSupport {
     abstract fun start(fileType: FileType, file: File): Observable<WmTransferState>
     abstract fun startMultiple(fileType: FileType, file: List<File>): Observable<WmTransferState>
     abstract fun isSupportMultiple(): Boolean

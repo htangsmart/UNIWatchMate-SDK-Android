@@ -10,7 +10,7 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
-import com.base.sdk.port.WmTransferFile
+import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.sync.AbWmSyncs
 import io.reactivex.rxjava3.core.Completable
@@ -27,12 +27,10 @@ object UNIWatchMate : AbUniWatch() {
     private val uniWatchObservable = BehaviorObservable<AbUniWatch>(uniWatchSubject)
 
     override val wmSettings: AbWmSettings = AbWmSettingsDelegate(uniWatchObservable)
-    override val wmApps: AbWmApps
-        get() = TODO("Not yet implemented")
-    override val wmSync: AbWmSyncs
-        get() = TODO("Not yet implemented")
-    override val wmTransferFile: WmTransferFile
-        get() = TODO("Not yet implemented")
+    override val wmApps: AbWmApps = AbWmAppDelegate(uniWatchObservable)
+    override val wmSync: AbWmSyncs = AbWmSyncDelegate(uniWatchObservable)
+
+    override val wmTransferFile: AbWmTransferFile = AbWmTransferDelegate(uniWatchObservable)
 
     fun init(application: Application, uniWatches: List<AbUniWatch>) {
         if (this::application.isInitialized) {
