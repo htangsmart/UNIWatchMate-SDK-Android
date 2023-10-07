@@ -44,6 +44,7 @@ import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
 
 /**
@@ -165,8 +166,20 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         scannerHelper.stop()
         this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
         val userInfo = AbWmConnect.UserInfo("", "")
-
-        UNIWatchMate.scanQr(scanResult.getContent(),AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR,userInfo))
+        val wmScanDevice = UNIWatchMate.mInstance?.parseScanQr(scanResult.getContent())
+        wmScanDevice?.let {
+            if (wmScanDevice.address!=null ) {
+                deviceManager.bind(
+                    wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
+                        UNKNOWN_DEVICE_NAME
+                    } else {
+                        wmScanDevice.name!!
+                    }
+                )
+                UNIWatchMate.scanQr(scanResult.getContent(),
+                    AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, userInfo))
+            }
+        }
         DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
     override fun onPromptCancel(promptId: Int, cancelReason: Int, tag: String?) {
@@ -201,7 +214,14 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
             if (!scannerHelper.start()) {
                 viewBind.refreshLayout.isRefreshing = false
             }
-            UNIWatchMate.mInstance?.startDiscovery()
+            viewLifecycle.launchRepeatOnStarted {
+                launch {
+                    UNIWatchMate.mInstance?.startDiscovery()?.asFlow()?.collect {
+                        this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
+                        scanDevicesAdapter.newScanResult(it)
+                    }
+                }
+            }
         }
 
         viewBind.scanDevicesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
