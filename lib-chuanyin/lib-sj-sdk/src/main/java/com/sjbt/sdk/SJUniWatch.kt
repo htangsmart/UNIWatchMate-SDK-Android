@@ -400,6 +400,41 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         HEAD_CAMERA_PREVIEW -> {
 
+                            when(msgBean.cmdId.toShort()){
+                                CMD_ID_8001 -> {
+                                    val byteBuffer =
+                                        ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN)
+                                    val camera_pre_allow = byteBuffer[16] //是否容许同步画面 0允许 1不允许
+
+                                    val reason = byteBuffer[17]
+                                    val lenArray = ByteArray(4)
+                                    System.arraycopy(msg, 18, lenArray, 0, lenArray.size)
+                                    mOtaProcess = 0
+                                    mCellLength =
+                                        ByteBuffer.wrap(lenArray).order(ByteOrder.LITTLE_ENDIAN).int
+                                    mCellLength = mCellLength - 5
+                                    LogUtils.logBlueTooth("相机预览传输包大小：$mCellLength")
+
+                                    appCamera.continueUpdateFrame = camera_pre_allow.toInt() == 1
+
+                                    LogUtils.logBlueTooth("是否支持相机预览 continueUpdateFrame：$appCamera.continueUpdateFrame")
+
+                                    appCamera.cameraStateEmitter.onNext(camera_pre_allow.toInt() == 1)
+
+                                    if (camera_pre_allow.toInt() == 1) {
+                                        LogUtils.logBlueTooth("预发送数据：" +appCamera. mH264FrameMap.getFrameCount())
+                                        if (!appCamera.mH264FrameMap.isEmpty()) {
+                                            LogUtils.logBlueTooth("发送的帧ID：$appCamera.mLatestIframeId")
+                                            appCamera.mCameraFrameInfo =
+                                                appCamera. mH264FrameMap.getFrame(appCamera.mLatestIframeId)
+                                            LogUtils.logBlueTooth("发送的帧信息：${appCamera.mCameraFrameInfo}")
+                                            appCamera.sendFrameDataAsync(appCamera.mCameraFrameInfo)
+                                        } else {
+                                            appCamera.needNewH264Frame = true
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         HEAD_FILE_SPP_A_2_D -> {

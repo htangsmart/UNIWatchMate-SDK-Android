@@ -92,15 +92,16 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         })
 
     override fun cameraBackSwitch(isBack: WMCameraPosition): Observable<WMCameraPosition> {
-        return Observable.create(object:ObservableOnSubscribe<WMCameraPosition>{
+        return Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
             override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
                 cameraBackSwitchEmitter = emitter
             }
         })
     }
 
+    var isPreviewAble = false
     override fun isCameraPreviewEnable(): Boolean {
-        return true
+        return isPreviewAble
     }
 
     override fun isCameraPreviewReady(): Single<Boolean> {
@@ -133,7 +134,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         }
     }
 
-    private fun sendFrameDataAsync(frameInfo: WmCameraFrameInfo?) {
+    fun sendFrameDataAsync(frameInfo: WmCameraFrameInfo?) {
         if (frameInfo == null) {
             needNewH264Frame = true
             LogUtils.logBlueTooth("没数据了-》2")
@@ -163,9 +164,19 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
 
                 try {
                     mTransferring = true
-                    val info: OtaCmdInfo = sjUniWatch.getCameraPreviewCmdInfo(mFramePackageCount,mFrameLastLen,cameraFrameInfo, i)
+                    val info: OtaCmdInfo = sjUniWatch.getCameraPreviewCmdInfo(
+                        mFramePackageCount,
+                        mFrameLastLen,
+                        cameraFrameInfo,
+                        i
+                    )
                     //                    LogUtils.logBlueTooth("执行发送：" + info + " 分包类型：" + mDivide);
-                    sjUniWatch.sendNormalMsg(CmdHelper.getCameraPreviewDataCmd02(info.payload, mDivide))
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getCameraPreviewDataCmd02(
+                            info.payload,
+                            mDivide
+                        )
+                    )
                     if (i != mFramePackageCount - 1) {
                         Thread.sleep(MSG_INTERVAL_FRAME)
                     }
