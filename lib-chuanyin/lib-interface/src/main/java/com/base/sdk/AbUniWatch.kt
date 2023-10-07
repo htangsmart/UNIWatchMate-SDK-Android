@@ -67,10 +67,12 @@ abstract class AbUniWatch {
      */
     abstract fun startDiscovery(): Observable<BluetoothDevice>
 
+    /**
+     * 解析二维码
+     */
+    abstract fun parseScanQr(qrString: String): WmScanDevice
+
     fun setLogEnable(logEnable: Boolean) {
         WmLog.logEnable = logEnable
     }
-
-    abstract fun parseScanQr(qrString: String): WmScanDevice
-
 }
