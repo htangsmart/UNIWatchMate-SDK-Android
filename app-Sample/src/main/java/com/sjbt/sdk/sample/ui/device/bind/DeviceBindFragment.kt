@@ -32,7 +32,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBindBinding
+import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.flowLocationServiceState
@@ -60,7 +62,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
      */
     private var isRequestingPermission: Boolean = false
 
-//    private val deviceManager: DeviceManager = Injector.getDeviceManager()
+    private val deviceManager: DeviceManager = Injector.getDeviceManager()
 
     private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
         listener = object : OtherDevicesAdapter.Listener {
@@ -165,13 +167,6 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         val userInfo = AbWmConnect.UserInfo("", "")
 
         UNIWatchMate.scanQr(scanResult.getContent(),AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR,userInfo))
-//        deviceManager.bind(
-//            address, if (name.isNullOrEmpty()) {
-//                UNKNOWN_DEVICE_NAME
-//            } else {
-//                name
-//            }
-//        )
         DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
     override fun onPromptCancel(promptId: Int, cancelReason: Int, tag: String?) {

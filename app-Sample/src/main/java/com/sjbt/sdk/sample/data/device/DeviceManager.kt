@@ -266,9 +266,9 @@ internal class DeviceManagerImpl(
 
                 runCatchingWithLog {
                     Timber.tag(TAG).e("setExerciseGoal")
-                    sportGoalRepository.flowCurrent.value.let {
-                        UNIWatchMate.mInstance?.wmSettings?.settingSportGoal?.set(it)?.await()
-                    }
+//                    sportGoalRepository.flowCurrent.value.let {
+//                        UNIWatchMate.mInstance?.wmSettings?.settingSportGoal?.set(it)?.await()
+//                    }
                 }
                 runCatchingWithLog {
                     Timber.tag(TAG).e("setUserInfo")
@@ -370,7 +370,7 @@ internal class DeviceManagerImpl(
 //            .andThen(
 //                connector.settingsFeature().unbindAudioDevice().onErrorComplete()
 //            ).await()
-        clearDevice()
+//        clearDevice()
     }
 
     override suspend fun reset() {
@@ -401,10 +401,10 @@ internal class DeviceManagerImpl(
      * Clear current user's device
      */
     private suspend fun clearDevice() {
-//        deviceFromMemory.value = null
-//        internalStorage.flowAuthedUserId.value?.let { userId ->
-//            settingDao.clearDeviceBind(userId)
-//        }
+        deviceFromMemory.value = null
+        internalStorage.flowAuthedUserId.value?.let { userId ->
+            settingDao.clearDeviceBind(userId)
+        }
     }
 //
 //    override fun getNextRetrySeconds(): Int {
