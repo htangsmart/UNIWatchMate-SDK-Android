@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import androidx.recyclerview.widget.SortedListAdapterCallback
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.sjbt.sdk.sample.databinding.ItemScanDeviceBinding
 import kotlin.math.abs
 
@@ -46,7 +47,7 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
         return sorter.size()
     }
 
-    fun newScanResult(result: BluetoothDevice) {
+    fun newScanResult(result: WmDiscoverDevice) {
         /**
          * ToNote:The data in [SortedList] is sorted, so the [SortedList.indexOf] method uses binary search to improve efficiency.
          * Unfortunately, this only works if the primary keys match the sort keys.That is, the [SortedListAdapterCallback.areItemsTheSame] method and [SortedListAdapterCallback.compare] need to maintain consistency.
@@ -54,7 +55,7 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
          */
         var existIndex = SortedList.INVALID_POSITION
         for (i in 0 until sorter.size()) {
-            if (result.address == sorter[i].address) {
+            if (result.device.address == sorter[i].address) {
                 existIndex = i
                 break
             }
@@ -67,18 +68,18 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
         if (exist != null) {
             //If it exists, then update the rssi and the name that may change
             //ToNote:In rare cases, the name may change
-            val nameChanged = exist.name != result.name && !result.name.isNullOrEmpty()
+            val nameChanged = exist.name != result.device.name && !result.device.name.isNullOrEmpty()
             //ToNote:Not updated when the rssi difference is small. This is to avoid frequent drawing of View when there are a large number of devices around
             val rssiChanged = abs(exist.rssi - 10) > 5
             if (nameChanged || rssiChanged) {
-                exist.name = result.name
-                exist.rssi = 10
+                exist.name = result.device.name
+                exist.rssi = result.rss.toInt()
                 sorter.recalculatePositionOfItemAt(existIndex)
             }
         } else {
             val oldSize = sorter.size()
             //If it does not exist, then add
-            sorter.add(ScanDevice(result.address, result.name, 10))
+            sorter.add(ScanDevice(result.device.address, result.device.name, result.rss.toInt()))
             listener?.onItemSizeChanged(oldSize, oldSize + 1)
         }
     }

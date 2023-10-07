@@ -7,16 +7,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.BindType
-import com.base.sdk.entity.WmBindInfo
-import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
-import com.base.sdk.entity.settings.WmDateTime
-import com.base.sdk.entity.settings.WmUnitInfo
-import com.base.sdk.port.AbWmConnect
-import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.data.config.SportGoalRepository
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
@@ -470,7 +463,7 @@ internal class DeviceManagerImpl(
 //        }
     }
 
-//    private suspend fun saveSyncData(data: FcSyncData) {
+    //    private suspend fun saveSyncData(data: FcSyncData) {
 //        Timber.tag(TAG).i("saveSyncData:%d", data.type)
 //        val userId = internalStorage.flowAuthedUserId.value ?: return
 //
@@ -508,29 +501,30 @@ internal class DeviceManagerImpl(
 //            FcSyncDataType.TODAY_TOTAL_DATA -> syncDataRepository.saveTodayStep(userId, data.toTodayTotal())
 //        }
 //    }
-    fun parseScanQr(qrString: String): WmScanDevice {
-    val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
-    val params = UrlParse.getUrlParams(qrString)
-    if (!params.isEmpty()) {
-        val schemeMacAddress = params["mac"]
-        val schemeDeviceName = params["projectname"]
-        val random = params["random"]
-
-        wmScanDevice.randomCode = random
-
-        wmScanDevice.address = schemeMacAddress
-        wmScanDevice.isRecognized =
-            !TextUtils.isEmpty(schemeMacAddress) &&
-                    !TextUtils.isEmpty(schemeDeviceName) &&
-                    !TextUtils.isEmpty(random) &&
-                    isLegalMacAddress(schemeMacAddress)
-    }
-    return wmScanDevice
-    }
+//    fun parseScanQr(qrString: String): WmScanDevice {
+//        val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
+//        val params = UrlParse.getUrlParams(qrString)
+//        if (!params.isEmpty()) {
+//            val schemeMacAddress = params["mac"]
+//            val schemeDeviceName = params["projectname"]
+//            val random = params["random"]
+//
+//            wmScanDevice.randomCode = random
+//
+//            wmScanDevice.address = schemeMacAddress
+//            wmScanDevice.isRecognized =
+//                !TextUtils.isEmpty(schemeMacAddress) &&
+//                        !TextUtils.isEmpty(schemeDeviceName) &&
+//                        !TextUtils.isEmpty(random) &&
+//                        isLegalMacAddress(schemeMacAddress)
+//        }
+//        return wmScanDevice
+//    }
 
     private fun isLegalMacAddress(address: String?): Boolean {
         return !TextUtils.isEmpty(address)
     }
+
     companion object {
         private const val TAG = "DeviceManager"
     }

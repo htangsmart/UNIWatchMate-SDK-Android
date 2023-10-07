@@ -15,6 +15,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.setFragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bertsir.zbar.Qr.ScanResult
@@ -39,6 +40,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import com.sjbt.sdk.utils.UrlParse
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
 
 /**
@@ -271,10 +273,10 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private fun startDiscover() {
         viewLifecycle.launchRepeatOnStarted {
             launch {
-//                UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)?.asFlow()?.collect {
-//                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
-//                    scanDevicesAdapter.newScanResult(it)
-//                }
+                UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)?.asFlow()?.collect {
+                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
+                    scanDevicesAdapter.newScanResult(it)
+                }
 
             }
         }
