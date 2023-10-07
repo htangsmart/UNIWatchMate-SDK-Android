@@ -6,14 +6,14 @@ import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.entity.settings.*
 
 internal class AbWmSettingsDelegate(
-    watchObservable: BehaviorObservable<AbUniWatch>
+   private val watchObservable: BehaviorObservable<AbUniWatch>
 ) : AbWmSettings() {
 
     override var settingSportGoal: AbWmSetting<WmSportGoal>
         get() = TODO("Not yet implemented")
         set(value) {}
     override var settingDateTime: AbWmSetting<WmDateTime>
-        get() = TODO("Not yet implemented")
+        get() = watchObservable.value!!.wmSettings?.settingDateTime
         set(value) {}
     override var settingPersonalInfo: AbWmSetting<WmPersonalInfo>
         get() = TODO("Not yet implemented")
@@ -31,7 +31,7 @@ internal class AbWmSettingsDelegate(
         get() = TODO("Not yet implemented")
         set(value) {}
     override var settingAppView: AbWmSetting<WmAppView>
-        get() = TODO("Not yet implemented")
+        get() = watchObservable.value!!.wmSettings?.settingAppView
         set(value) {}
     override var settingDrinkWater: AbWmSetting<WmSedentaryReminder>
         get() = TODO("Not yet implemented")
@@ -41,5 +41,5 @@ internal class AbWmSettingsDelegate(
         set(value) {}
 
     override val settingSleepSettings: AbWmSetting<WmSleepSettings>
-        get() = TODO("Not yet implemented")
+        get() = watchObservable.value!!.wmSettings?.settingSleepSettings
 }
