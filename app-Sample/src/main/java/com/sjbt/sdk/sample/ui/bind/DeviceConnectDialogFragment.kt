@@ -90,19 +90,20 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
                         viewBind.tvName.text = it.name
                         viewBind.tvAddress.text = it.address
                         isCancelable = !it.isTryingBind
-                        if (false) {
-                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
-                            viewBind.btnUnbind.setOnClickListener {
-                                //Cancel bind and exit
-                                deviceManager.cancelBind()
-                                dismissAllowingStateLoss()
-                            }
-                        } else {
-                            viewBind.btnUnbind.setText(R.string.device_unbind)
-                            viewBind.btnUnbind.setOnClickListener {
-                                lifecycleScope.launchWhenResumed {
-                                    UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
-                                }
+//                        if (it != null) {
+//                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
+//                            viewBind.btnUnbind.setOnClickListener {
+//                                //Cancel bind and exit
+//                                deviceManager.cancelBind()
+//                                dismissAllowingStateLoss()
+//                            }
+//                        } else {
+//
+//                        }
+                        viewBind.btnUnbind.setText(R.string.device_unbind)
+                        viewBind.btnUnbind.setOnClickListener {
+                            lifecycleScope.launchWhenResumed {
+                                UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
                             }
                         }
                     }

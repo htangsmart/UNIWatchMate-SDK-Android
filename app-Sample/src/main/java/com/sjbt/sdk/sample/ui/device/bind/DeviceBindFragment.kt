@@ -24,8 +24,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bertsir.zbar.Qr.ScanResult
 import com.base.api.UNIWatchMate
-import com.base.sdk.port.AbWmConnect
+import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.WmScanDevice
+import com.base.sdk.port.AbWmConnect
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -36,11 +37,7 @@ import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBindBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
-import com.sjbt.sdk.sample.utils.PermissionHelper
-import com.sjbt.sdk.sample.utils.flowLocationServiceState
-import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.viewLifecycle
-import com.sjbt.sdk.sample.utils.viewLifecycleScope
+import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import kotlinx.coroutines.launch
@@ -50,14 +47,11 @@ import timber.log.Timber
 /**
  * Scan and bind device.
  */
-class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDialogFragment.OnPromptListener, DeviceConnectDialogFragment.Listener {
+class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
+    PromptDialogFragment.OnPromptListener, DeviceConnectDialogFragment.Listener {
     private /*const*/ val promptBindSuccessId = 1
 
     private val viewBind: FragmentDeviceBindBinding by viewBinding()
-    private val bluetoothManager by lazy(LazyThreadSafetyMode.NONE) {
-        requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    }
-
     /**
      * Avoid repeated requests for permissions at the same time
      */
@@ -68,7 +62,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
     private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
         listener = object : OtherDevicesAdapter.Listener {
             override fun onItemClick(device: WmScanDevice) {
-                tryingBind(device.address?:"", device.name)
+                tryingBind(device.address ?: "", device.name)
             }
         }
     }
@@ -92,83 +86,30 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         }
     }
 
-    private val scannerHelper by lazy {
-        val helper = ScannerHelper(requireContext(), bluetoothManager)
-        helper.listener = object : ScannerHelper.Listener {
-
-            override fun requestPermission() {
-                lifecycleScope.launchWhenResumed {
-                    if (!isRequestingPermission) {
-                        isRequestingPermission = true
-                        PermissionHelper.requestBle(this@DeviceBindFragment) {
-                            isRequestingPermission = false
-                        }
-                    }
-                }
-            }
-
-            override fun bluetoothAlert(show: Boolean) {
-                toggleBluetoothAlert(show)
-            }
-
-            override fun scanErrorDelayAlert() {
-                viewLifecycleScope.launchWhenStarted {
-                    ScanErrorDelayDialogFragment().show(childFragmentManager, null)
-                }
-            }
-
-            override fun scanErrorRestartAlert() {
-                viewLifecycleScope.launchWhenStarted {
-                    ScanErrorRestartDialogFragment().show(childFragmentManager, null)
-                }
-            }
-
-            override fun onScanStart() {
-                if (view == null) return
-                //refresh bonded/connected devices if bottomSheet expanded and permission granted
-                if (viewBind.bottomSheetLayout.getBottomSheetBehavior().state == BottomSheetBehavior.STATE_EXPANDED) {
-                    refreshOtherDevices(true)
-                }
-                viewBind.fabScan.setImageResource(R.drawable.ic_animated_search)
-                (viewBind.fabScan.drawable as? Animatable)?.start()
-                viewBind.refreshLayout.isRefreshing = true
-            }
-
-            override fun onScanStop() {
-                if (view == null) return
-                (viewBind.fabScan.drawable as? Animatable)?.stop()
-                viewBind.fabScan.setImageResource(R.drawable.ic_baseline_search_24)
-                viewBind.refreshLayout.isRefreshing = false
-            }
-
-            override fun onScanResult(result: BluetoothDevice) {
-                scanDevicesAdapter.newScanResult(result)
-            }
-
-        }
-        helper
-    }
-
     private var bluetoothSnackbar: Snackbar? = null
 
     private fun tryingBind(address: String, name: String?) {
-        scannerHelper.stop()
-//        deviceManager.bind(
-//            address, if (name.isNullOrEmpty()) {
-//                UNKNOWN_DEVICE_NAME
-//            } else {
-//                name
-//            }
-//        )
+        this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
+        val userInfo = AbWmConnect.UserInfo("", "")
+        deviceManager.bind(
+            address, if (name.isNullOrEmpty()) {
+                UNKNOWN_DEVICE_NAME
+            } else {
+                name
+            }
+        )
+        UNIWatchMate.wmConnect.connect(address,
+            AbWmConnect.BindInfo(AbWmConnect.BindType.SCAN_QR, userInfo),
+            WmDeviceModel.SJ_WATCH)
         DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
+
     private fun tryingBind(scanResult: ScanResult) {
-        scannerHelper.stop()
         this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
         val userInfo = AbWmConnect.UserInfo("", "")
         val wmScanDevice = UNIWatchMate.mInstance?.parseScanQr(scanResult.getContent())
         wmScanDevice?.let {
-            if (wmScanDevice.address!=null ) {
+            if (wmScanDevice.address != null) {
                 deviceManager.bind(
                     wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
                         UNKNOWN_DEVICE_NAME
@@ -182,6 +123,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         }
         DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
+
     override fun onPromptCancel(promptId: Int, cancelReason: Int, tag: String?) {
         if (promptId == promptBindSuccessId) {
             findNavController().popBackStack()
@@ -211,41 +153,38 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         viewBind.refreshLayout.setOnRefreshListener {
             //Clear data when using pull to refresh. This is a different strategy than fabScan click event
             scanDevicesAdapter.clearItems()
-            if (!scannerHelper.start()) {
-                viewBind.refreshLayout.isRefreshing = false
-            }
-            viewLifecycle.launchRepeatOnStarted {
-                launch {
-                    UNIWatchMate.mInstance?.startDiscovery()?.asFlow()?.collect {
-                        this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
-                        scanDevicesAdapter.newScanResult(it)
-                    }
-                }
-            }
+//            if (!scannerHelper.start()) {
+//                viewBind.refreshLayout.isRefreshing = false
+//            }
+            startDiscover()
         }
 
-        viewBind.scanDevicesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        viewBind.scanDevicesRecyclerView.addItemDecoration(CustomDividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        viewBind.scanDevicesRecyclerView.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        viewBind.scanDevicesRecyclerView.addItemDecoration(CustomDividerItemDecoration(context,
+            LinearLayoutManager.VERTICAL))
         viewBind.scanDevicesRecyclerView.adapter = scanDevicesAdapter
 
-        viewBind.otherDevicesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        viewBind.otherDevicesRecyclerView.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         viewBind.otherDevicesRecyclerView.adapter = otherDevicesAdapter
 
-        viewBind.bottomSheetLayout.getBottomSheetBehavior().addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                //refresh bonded/connected devices if bottomSheet expanded and request permission if not granted
-                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                    refreshOtherDevices(false)
+        viewBind.bottomSheetLayout.getBottomSheetBehavior()
+            .addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    //refresh bonded/connected devices if bottomSheet expanded and request permission if not granted
+                    if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                        refreshOtherDevices(false)
+                    }
                 }
-            }
 
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                //do nothing
-            }
-        })
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    //do nothing
+                }
+            })
 
         viewBind.fabScan.setOnClickListener {
-            scannerHelper.toggle()
+           startDiscover()
         }
 
         viewLifecycle.launchRepeatOnStarted {
@@ -279,11 +218,22 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         }
         setFragmentResultListener(DEVICE_QR_CODE) { requestKey, bundle ->
             if (requestKey == DEVICE_QR_CODE) {
-                val scanResult:ScanResult = bundle.getSerializable(EXTRA_SCAN_RESULT) as ScanResult
+                val scanResult: ScanResult = bundle.getSerializable(EXTRA_SCAN_RESULT) as ScanResult
                 scanResult?.let {
                     if (!it.getContent().isNullOrEmpty()) {
                         tryingBind(it)
                     }
+                }
+            }
+        }
+    }
+
+    private fun startDiscover() {
+        viewLifecycle.launchRepeatOnStarted {
+            launch {
+                UNIWatchMate.mInstance?.startDiscovery()?.asFlow()?.collect {
+                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
+                    scanDevicesAdapter.newScanResult(it)
                 }
             }
         }
@@ -295,16 +245,20 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
         }
         PermissionHelper.requestBle(this) { granted ->
             if (granted) {
-                otherDevicesAdapter.bonded = OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
-                otherDevicesAdapter.connected = OtherDevicesAdapter.devices(bluetoothManager.getConnectedDevices(BluetoothProfile.GATT_SERVER))
-                otherDevicesAdapter.notifyDataSetChanged()
+//                otherDevicesAdapter.bonded =
+//                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
+//                otherDevicesAdapter.connected =
+//                    OtherDevicesAdapter.devices(bluetoothManager.getConnectedDevices(
+//                        BluetoothProfile.GATT_SERVER))
+//                otherDevicesAdapter.notifyDataSetChanged()
             }
         }
     }
 
     private fun toggleBluetoothAlert(show: Boolean) {
         if (show) {
-            val snackbar = bluetoothSnackbar ?: createBluetoothSnackbar().also { bluetoothSnackbar = it }
+            val snackbar =
+                bluetoothSnackbar ?: createBluetoothSnackbar().also { bluetoothSnackbar = it }
             if (!snackbar.isShownOrQueued) {
                 snackbar.show()
             }
@@ -314,7 +268,9 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind), PromptDi
     }
 
     private fun createBluetoothSnackbar(): Snackbar {
-        val snackbar = Snackbar.make(viewBind.root, R.string.device_state_bt_disabled, Snackbar.LENGTH_INDEFINITE)
+        val snackbar = Snackbar.make(viewBind.root,
+            R.string.device_state_bt_disabled,
+            Snackbar.LENGTH_INDEFINITE)
         snackbar.setAction(R.string.action_turn_on) {
             PermissionHelper.requestBle(this) { granted ->
                 if (granted) {

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.collect
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -187,7 +188,6 @@ internal class DeviceManagerImpl(
      */
     override val flowConnectorState = combine(
         flowDevice,
-//        UNIWatchMate.wmConnect.observeConnectState.startWithItem(WmConnectState.DISCONNECTED).asFlow().distinctUntilChanged()
         UNIWatchMate.wmConnect.observeConnectState.startWithItem(UNIWatchMate.wmConnect.getConnectState()).asFlow().distinctUntilChanged()
     ) { device , connectorState ->
         //Device trying bind success,save it
@@ -198,12 +198,6 @@ internal class DeviceManagerImpl(
         connectorState
 //        combineState(device, connectorState)
     }.stateIn(applicationScope, SharingStarted.Eagerly, WmConnectState.DISCONNECTED)
-
-//    override val flowConnectorState = UNIWatchMate.wmConnect.observeConnectState
-//        .asFlow().distinctUntilChanged()
-//        .stateIn(applicationScope, SharingStarted.Eagerly, ConnectorState.NO_DEVICE)
-//    override val flowSyncState: StateFlow<Int?> = connector.dataFeature()
-//        .observerSyncState().asFlow().stateIn(applicationScope, SharingStarted.Lazily, null)
 
     private val _flowSyncEvent = Channel<Int>()//通知SyncFragment去响应同步结果
     override val flowSyncEvent = _flowSyncEvent.receiveAsFlow()
@@ -227,8 +221,12 @@ internal class DeviceManagerImpl(
             }
         }
 
+//        UNIWatchMate.wmConnect.observeConnectState.subscribe {
+//                Timber.tag(TAG).e("observeConnectState it=$it")
+//        }
         applicationScope.launch {
 //            UNIWatchMate.wmConnect.connect()
+
         }
 
         applicationScope.launch {
@@ -265,26 +263,26 @@ internal class DeviceManagerImpl(
 //                }
 
                 runCatchingWithLog {
-                    Timber.tag(TAG).e("setExerciseGoal")
+//                    Timber.tag(TAG).e("setExerciseGoal")
 //                    sportGoalRepository.flowCurrent.value.let {
 //                        UNIWatchMate.mInstance?.wmSettings?.settingSportGoal?.set(it)?.await()
 //                    }
                 }
                 runCatchingWithLog {
-                    Timber.tag(TAG).e("setUserInfo")
+//                    Timber.tag(TAG).e("setUserInfo")
                     userInfoRepository.flowCurrent.value?.let {
-                        val birthDate = WmPersonalInfo.BirthDate(
-                            it.birthYear,
-                            it.birthMonth,
-                            it.birthDay
-                        )
-                        val wmPersonalInfo = WmPersonalInfo(
-                            it.height,
-                            it.weight,
-                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
-                            birthDate
-                        )
-                        UNIWatchMate.mInstance?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)
+//                        val birthDate = WmPersonalInfo.BirthDate(
+//                            it.birthYear,
+//                            it.birthMonth,
+//                            it.birthDay
+//                        )
+//                        val wmPersonalInfo = WmPersonalInfo(
+//                            it.height,
+//                            it.weight,
+//                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
+//                            birthDate
+//                        )
+//                        UNIWatchMate.mInstance?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)
                     }
                 }
 
