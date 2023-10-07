@@ -10,7 +10,7 @@ internal class AbWmSettingsDelegate(
 ) : AbWmSettings() {
 
     override var settingSportGoal: AbWmSetting<WmSportGoal>
-        get() = TODO("Not yet implemented")
+        get() = watchObservable.value!!.wmSettings?.settingSportGoal
         set(value) {}
     override var settingDateTime: AbWmSetting<WmDateTime>
         get() = watchObservable.value!!.wmSettings?.settingDateTime

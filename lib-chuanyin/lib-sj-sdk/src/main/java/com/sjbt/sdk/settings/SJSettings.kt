@@ -18,6 +18,4 @@ class SJSettings(sjUniWatch: SJUniWatch) : AbWmSettings() {
     override val settingDrinkWater: AbWmSetting<WmSedentaryReminder> = SettingSedentaryReminder()
     override val settingHeartRate: AbWmSetting<WmHeartRateAlerts> = SettingHeartRateAlerts()
     override val settingSleepSettings: AbWmSetting<WmSleepSettings> = SettingSleepSet(sjUniWatch)
-
-//        get() = TODO("Not yet implemented")
 }
