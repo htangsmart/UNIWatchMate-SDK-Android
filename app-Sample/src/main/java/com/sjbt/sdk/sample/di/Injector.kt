@@ -8,6 +8,7 @@ import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Because some developers may not use dagger or hilt.
@@ -18,16 +19,9 @@ object Injector {
         fun getAuthManager(): AuthManager {
         return SingleInstance.authManager
     }
-    /**
-     * 由于sdk不包含用户注册，使用默认UserId
-     * @return
-     */
-    fun getDefaultUserId(): Long {
-        return 1L
+    fun requireAuthedUserId(): Long {
+        return SingleInstance.authManager.getAuthedUserIdOrNull()!!
     }
-//    fun flowAuthedUserId(): StateFlow<Long?> {
-//        return SingleInstance.internalStorage.flowAuthedUserId()!!
-//    }
     fun getInternalStorage(): InternalStorage {
         return SingleInstance.internalStorage
     }

@@ -22,7 +22,7 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
 
     private val viewBind: FragmentEditUserInfoBinding by viewBinding()
     private val userInfoRepository = Injector.getUserInfoRepository()
-    private val authedUserId = Injector.getDefaultUserId()
+    private val authedUserId = Injector.requireAuthedUserId()
     private var info:UserInfo?=null
     private val userBirthday = "user_birthday"
     private var valueDate:Date?=null

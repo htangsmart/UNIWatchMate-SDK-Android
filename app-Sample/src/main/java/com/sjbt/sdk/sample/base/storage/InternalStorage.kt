@@ -41,7 +41,7 @@ internal class InternalStorageImpl(
         applicationContext.internalDataStore.data.map {
             val userId = it[AUTHED_USER_ID]
             if (userId == null || !userId.isValidUserId()) {
-                Injector.getDefaultUserId()
+                null
             } else {
                 userId
             }

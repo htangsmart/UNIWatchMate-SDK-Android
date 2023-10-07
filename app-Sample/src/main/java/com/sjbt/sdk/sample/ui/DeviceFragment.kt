@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
-import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -16,7 +15,6 @@ import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
 
 @StringRes
@@ -36,7 +34,7 @@ fun WmConnectState.toStringRes(): Int {
 class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
-//    private val viewModel: DeviceViewMode by viewModels()
+//  private val viewModel: DeviceViewMode by viewModels()
     private val deviceManager = Injector.getDeviceManager()
 
 

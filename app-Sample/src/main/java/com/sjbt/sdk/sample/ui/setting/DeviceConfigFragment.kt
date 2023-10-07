@@ -36,6 +36,7 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 //        viewBind.itemTurnWristLighting.setOnClickListener( blockClick)
         viewBind.itemDnd.setOnClickListener(blockClick)
         viewBind.itemScreenVibrate.setOnClickListener(blockClick)
+        viewBind.itemSoundTouchFeedback.setOnClickListener(blockClick)
 //        viewBind.itemWristLightingEnabled.getSwitchView()
 //            .setOnCheckedChangeListener { buttonView, isChecked ->
 //
@@ -77,9 +78,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewBind.itemFunction -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toFunctionConfig())
             }
-//            viewBind.itemHealthMonitor -> {
-//                findNavController().navigate(DeviceConfigFragmentDirections.toHealthMonitorConfig())
-//            }
+            viewBind.itemSoundTouchFeedback -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toSoundTouchFeedback())
+            }
 //            viewBind.itemSedentary -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toSedentaryConfig())
 //            }
