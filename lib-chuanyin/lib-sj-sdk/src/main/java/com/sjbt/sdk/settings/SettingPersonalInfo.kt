@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmPersonalInfo
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
@@ -30,7 +31,7 @@ class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>()
             override fun subscribe(emitter: SingleEmitter<WmPersonalInfo>) {
                 setEmitter = emitter
 
-                sjUniWatch.sendNodeCmdList(CmdHelper.getUpdatePersonalInfoAllCmd(obj))
+                sjUniWatch.sendNodeCmdList(RequestType.REQ_TYPE_WRITE,CmdHelper.getUpdatePersonalInfoAllCmd(obj))
             }
         })
     }

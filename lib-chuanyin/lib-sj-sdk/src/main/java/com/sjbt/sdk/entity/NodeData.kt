@@ -82,9 +82,10 @@ enum class ErrorCode {
 }
 
 enum class RequestType(val type: Int){
-    REQ_TYPE_READ(0),
-    REQ_TYPE_WRITE(1),
-    REQ_TYPE_EXECUTE(2),
+    REQ_TYPE_INVALID(0),
+    REQ_TYPE_READ(1),
+    REQ_TYPE_WRITE(2),
+    REQ_TYPE_EXECUTE(3),
 
     RESP_TYPE_EACH(100),
     RESP_TYPE_ALL_OK(101),

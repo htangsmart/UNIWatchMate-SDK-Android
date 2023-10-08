@@ -7,10 +7,9 @@ import java.io.File
 /**
  * 传输文件功能抽象类
  */
-abstract class AbWmTransferFile : IWmSupport {
-    abstract fun start(fileType: FileType, file: File): Observable<WmTransferState>
-    abstract fun startMultiple(fileType: FileType, file: List<File>): Observable<WmTransferState>
-    abstract fun isSupportMultiple(): Boolean
+abstract class AbWmTransferFile {
+    abstract fun isSupport(fileType: FileType): Boolean
+    abstract fun startTransfer(fileType: FileType, files: List<File>): Observable<WmTransferState>
     abstract fun cancelTransfer(): Single<Boolean>
 }
 
@@ -29,14 +28,14 @@ enum class FileType {
  * 传输状态
  */
 class WmTransferState(
-    progress: Double,//当前文件传输进度
     state: State,//传输任务总体状态
     success: Boolean,//当前文件是否传输成功
-    errReason: Int = -1,//如果出现错误，错误原因
-    index: Int,//正在传输第几个文件
     total: Int,//传输文件个数
     sendingFile: File//返回当前传输的文件
-)
+) {
+    var progress: Int = 0//当前文件传输进度
+    var index: Int = 0 //正在传输第几个文件
+}
 
 /**
  * 文件传输任务状态
