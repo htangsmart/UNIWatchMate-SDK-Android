@@ -62,8 +62,10 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view),
                 }
             }
             launch {
-                config = UNIWatchMate.wmSettings.settingAppView.get().blockingGet()
-                updateUI()
+                UNIWatchMate.wmSettings.settingAppView.get().toObservable().asFlow().collect {
+                    config = it
+                    updateUI()
+                }
             }
         }
 

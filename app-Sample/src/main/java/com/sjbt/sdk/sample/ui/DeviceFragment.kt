@@ -51,7 +51,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemSportPush.setOnClickListener(blockClick)
         viewBind.itemDial.setOnClickListener(blockClick)
         viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
-//        viewBind.itemCamera.clickTrigger(block = blockClick)
+        viewBind.itemCamera.setOnClickListener(blockClick)
 //        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
 //        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
 //        viewBind.itemCricket.clickTrigger(block = blockClick)
@@ -179,9 +179,10 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            viewBind.itemDial -> {
 //                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
 //            }
-//            viewBind.itemCamera -> {
+                viewBind.itemCamera -> {
+
 //                CameraActivity.start(requireContext(), false)
-//            }
+                }
 //            viewBind.itemModifyLogo -> {
 //                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
 //            }

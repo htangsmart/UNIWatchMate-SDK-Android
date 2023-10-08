@@ -15,13 +15,13 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_app_view_gridding"
-            style="@style/Widget.Sample.PreferenceView.Item.Image"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             app:preferenceImageTint="?colorPrimary"
             app:preferenceTitle="@string/app_view_gridding"/>
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_app_view_list"
-            style="@style/Widget.Sample.PreferenceView.Item.Image"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             app:preferenceImageTint="?colorPrimary"
             app:preferenceTitle="@string/app_view_list"/>
 

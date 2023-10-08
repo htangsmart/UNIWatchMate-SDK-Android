@@ -122,7 +122,10 @@
             android:id="@+id/item_dial"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_dial" />
-
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_camera"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/ds_camera_control"/>
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_basic_device_info"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
