@@ -138,8 +138,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun onClassicBtDisConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtDisConnect：" + device.address)
 
-                mCurrDevice?.let {
-
+                if (device == mCurrDevice) {
+                    btStateChange(WmConnectState.DISCONNECTED)
                     mTransferring = false
                     mTransferRetryCount = 0
                     mCanceledSend = true
@@ -148,15 +148,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                     appCamera.stopCameraPreview()
                     disconnect()
-//                        removeCallBackRunner(mConnectTimeoutRunner)
+
+                    //                        removeCallBackRunner(mConnectTimeoutRunner)
                 }
             }
 
             override fun onClassicBtConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtConnect：" + device.address)
-                if (device == mCurrDevice) {
-                    disconnect()
-                }
             }
 
             override fun onClassicBtDisabled() {
@@ -208,6 +206,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             }
         })
+
+        appCamera.startCameraThread()
     }
 
     override fun socketNotify(state: Int, obj: Any?) {
@@ -337,29 +337,65 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 }
 
-                                CMD_ID_8017 -> {
+                                CMD_ID_8017 -> {//获取触感
 
                                     val ringState = msg[16].toInt()
                                     val msgShake = msg[17].toInt()
                                     val crowShake = msg[18].toInt()
                                     val sysShake = msg[19].toInt()
                                     val armScreen = msg[20].toInt()
+                                    var keepNoVoice = 0
+                                    if (msg.size > 21) {
+                                        keepNoVoice = msg[21].toInt()
+                                    }
 
                                     val wmWistRaise = WmWistRaise(armScreen == 1)
 
-                                    settingWistRaise.getEmitter.onSuccess(wmWistRaise)
-                                    settingWistRaise.observeEmitter.onNext(wmWistRaise)
+                                    settingWistRaise.getWmWistRaise(wmWistRaise)
+                                    settingWistRaise.observeWmWistRaiseChange(wmWistRaise)
 
-//                                    val wmRing = WmSoundAndHaptic(ringState == 1, msgShake == 1, crowShake == 1, sysShake == 1)
-//                                    settingSoundAndHaptic.getEmitter.onSuccess()
+                                    val wmSoundAndHaptic = WmSoundAndHaptic(
+                                        ringState == 1,
+                                        msgShake == 1,
+                                        crowShake == 1,
+                                        sysShake == 1,
+                                        keepNoVoice == 1
+                                    )
+
+                                    settingSoundAndHaptic.getWmWistRaise(wmSoundAndHaptic)
+                                    settingSoundAndHaptic.observeWmWistRaiseChange(wmSoundAndHaptic)
+
                                 }
 
-                                CMD_ID_8018 -> {
+                                CMD_ID_8018 -> {//设置触感
+
+                                    val setSuccess = msg[16].toInt() == 1
+
+                                    if (setSuccess) {
+                                        settingSoundAndHaptic.setSuccess()
+                                        settingWistRaise.setSuccess()
+                                    }
 
                                 }
 
-                                CMD_ID_8019 -> {
+                                CMD_ID_8019 -> {//监听触感
+                                    sendNormalMsg(CmdHelper.deviceRingStateRespondCmd)
+                                    val ctype = msg[16].toInt()
+                                    val vValue = msg[17].toInt()
 
+                                    when (ctype) {
+
+                                        4 -> {
+                                            settingWistRaise.observeWmWistRaiseChange(ctype, vValue)
+                                        }
+
+                                        else -> {
+                                            settingSoundAndHaptic.observeWmWistRaiseChange(
+                                                ctype,
+                                                vValue
+                                            )
+                                        }
+                                    }
                                 }
 
                                 CMD_ID_8028 -> {//收到dev拍照命令
@@ -475,37 +511,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {
-                                    val byteBuffer =
-                                        ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN)
-                                    val camera_pre_allow = byteBuffer[16] //是否容许同步画面 0允许 1不允许
+                                    appCamera.cameraPreviewBuz(msg)
+                                }
 
-                                    val reason = byteBuffer[17]
-                                    val lenArray = ByteArray(4)
-                                    System.arraycopy(msg, 18, lenArray, 0, lenArray.size)
-                                    mOtaProcess = 0
-                                    mCellLength =
-                                        ByteBuffer.wrap(lenArray).order(ByteOrder.LITTLE_ENDIAN).int
-                                    mCellLength = mCellLength - 5
-                                    LogUtils.logBlueTooth("相机预览传输包大小：$mCellLength")
+                                CMD_ID_8003 -> {
+                                    val frameSuccess = msg[16]
 
-                                    appCamera.continueUpdateFrame = camera_pre_allow.toInt() == 1
+                                    LogUtils.logBlueTooth("发送成功：$frameSuccess")
+                                    LogUtils.logBlueTooth("发送下一帧：" + appCamera.mH264FrameMap.frameCount)
 
-                                    LogUtils.logBlueTooth("是否支持相机预览 continueUpdateFrame：$appCamera.continueUpdateFrame")
+                                    LogUtils.logBlueTooth("continueUpdateFrame 03:${appCamera.continueUpdateFrame}")
 
-                                    appCamera.cameraObserveOpenEmitter.onNext(camera_pre_allow.toInt() == 1)
+                                    appCamera.sendFrameData03(frameSuccess)
 
-                                    if (camera_pre_allow.toInt() == 1) {
-                                        LogUtils.logBlueTooth("预发送数据：" + appCamera.mH264FrameMap.getFrameCount())
-                                        if (!appCamera.mH264FrameMap.isEmpty()) {
-                                            LogUtils.logBlueTooth("发送的帧ID：$appCamera.mLatestIframeId")
-                                            appCamera.mCameraFrameInfo =
-                                                appCamera.mH264FrameMap.getFrame(appCamera.mLatestIframeId)
-                                            LogUtils.logBlueTooth("发送的帧信息：${appCamera.mCameraFrameInfo}")
-                                            appCamera.sendFrameDataAsync(appCamera.mCameraFrameInfo)
-                                        } else {
-                                            appCamera.needNewH264Frame = true
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -1020,6 +1038,108 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             sendNormalMsg(cmdArray)
         }
+
+        payloadPackage.itemList.forEach {
+            when (it.urn[0]) {
+                URN_1 -> {//蓝牙连接 暂用旧协议格式
+
+                }
+
+                URN_2 -> {//设置同步
+                    when (it.urn[1]) {
+                        URN_1 -> {//运动目标
+
+                            when (it.urn[2]) {
+                                URN_0 -> {
+
+                                    val byteBuffer =
+                                        ByteBuffer.wrap(it.data)
+                                    val step = byteBuffer.getInt()
+                                    val distance = byteBuffer.getInt()
+                                    val calories = byteBuffer.getInt()
+                                    val activityDuration =
+                                        byteBuffer.getShort()
+
+                                    val wmSportGoal = WmSportGoal(
+                                        step,
+                                        distance,
+                                        calories,
+                                        activityDuration
+                                    )
+
+                                    LogUtils.logBlueTooth("体育运动消息：" + wmSportGoal)
+
+                                }
+
+                                URN_1 -> {//步数
+
+                                }
+                                URN_2 -> {//热量（卡）
+
+                                }
+                                URN_3 -> {//距离（米）
+
+                                }
+                                URN_4 -> {//活动时长（分钟）
+
+                                }
+                            }
+                        }
+
+                        URN_2 -> {//健康信息
+                            when (it.urn[2]) {
+                                URN_0 -> {
+
+                                    val byteBuffer =
+                                        ByteBuffer.wrap(it.data)
+                                    val step = byteBuffer.getInt()
+                                    val distance = byteBuffer.getInt()
+                                    val calories = byteBuffer.getInt()
+                                    val activityDuration =
+                                        byteBuffer.getShort()
+
+                                    val wmSportGoal = WmSportGoal(
+                                        step,
+                                        distance,
+                                        calories,
+                                        activityDuration
+                                    )
+
+                                    LogUtils.logBlueTooth("健康消息：" + wmSportGoal)
+
+                                }
+                            }
+                        }
+
+                        URN_3 -> {//单位同步
+
+                        }
+
+                        URN_4 -> {//语言设置
+
+                        }
+
+                        URN_4 -> {//语言设置
+
+                        }
+
+                    }
+
+                }
+
+                URN_3 -> {//表盘
+
+                }
+
+                URN_4 -> {//应用
+
+                }
+
+                URN_5 -> {//运动同步
+
+                }
+            }
+        }
     }
 
     private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {
@@ -1159,7 +1279,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return Completable.create(object : CompletableOnSubscribe {
             override fun subscribe(emitter: CompletableEmitter) {
                 unbindEmitter = emitter
-                sendNormalMsg(CmdHelper.getUnBindCmd())
+
+                if (mConnectState == WmConnectState.CONNECTED) {
+                    sendNormalMsg(CmdHelper.getUnBindCmd())
+                } else {
+                    emitter.onError(RuntimeException("not connected"))
+                }
             }
         })
     }
