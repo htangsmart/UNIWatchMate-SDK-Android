@@ -21,6 +21,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     lateinit var cameraObserveOpenEmitter: ObservableEmitter<Boolean>
     lateinit var cameraSingleOpenEmitter: SingleEmitter<Boolean>
     lateinit var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>
+
     lateinit var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>
     lateinit var cameraObserveFrontBackEmitter: ObservableEmitter<WMCameraPosition>
 

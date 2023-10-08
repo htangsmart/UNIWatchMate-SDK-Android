@@ -18,6 +18,8 @@ import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.app.WMCameraFlashMode
+import com.base.sdk.port.app.WMCameraPosition
 import com.base.sdk.port.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
@@ -372,20 +374,52 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
-                                    val action = msg[16]
-                                    appCamera.cameraObserveOpenEmitter.onNext(action.toInt() == 1)
+                                    appCamera.cameraObserveOpenEmitter.onNext(msg[16].toInt() == 1)
                                 }
 
                                 CMD_ID_802A -> {//
-
+                                    appCamera.cameraSingleOpenEmitter.onSuccess(msg[16].toInt() == 1)
                                 }
 
                                 CMD_ID_802B -> {
+                                    val action = msg[16]
+                                    val stateOn = msg[17]
 
+                                    if (action == CHANGE_CAMERA) {
+                                        val front = stateOn.toInt() == 0
+                                        if (front) {
+                                            appCamera.cameraObserveFrontBackEmitter.onNext(
+                                                WMCameraPosition.WMCameraPositionFront
+                                            )
+                                        } else {
+                                            appCamera.cameraObserveFrontBackEmitter.onNext(
+                                                WMCameraPosition.WMCameraPositionRear
+                                            )
+                                        }
+
+                                    } else {
+                                        val flashOn = stateOn.toInt() == 1
+                                        if (flashOn) {
+                                            appCamera.cameraObserveFlashEmitter.onNext(
+                                                WMCameraFlashMode.WMCameraFlashModeOn
+                                            )
+                                        } else {
+                                            appCamera.cameraObserveFlashEmitter.onNext(
+                                                WMCameraFlashMode.WMCameraFlashModeOff
+                                            )
+                                        }
+                                    }
+
+                                    sendNormalMsg(
+                                        CmdHelper.getCameraRespondCmd(
+                                            CMD_ID_802B,
+                                            1.toByte()
+                                        )
+                                    )
                                 }
 
                                 CMD_ID_802C -> {
-
+//                                    appCamera.cameraFlashSwitchEmitter.onNext()
                                 }
 
                                 CMD_ID_802E -> {//绑定
@@ -426,7 +460,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         mCurrDevice?.let {
                                             ClsUtils.removeBond(BluetoothDevice::class.java, it)
                                         }
-                                    }else{
+                                    } else {
                                         unbindEmitter?.onError(RuntimeException("unbind failed"))
                                     }
                                 }
