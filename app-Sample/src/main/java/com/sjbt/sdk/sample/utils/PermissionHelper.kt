@@ -67,6 +67,8 @@ object PermissionHelper {
             //>=31
             else -> {
                 arrayListOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT
                 )
