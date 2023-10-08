@@ -1811,10 +1811,10 @@ object CmdHelper {
      *
      * @return
      */
-    fun getCameraPreviewCmd01(dataType: Byte): ByteArray {
+    fun getCameraPreviewCmd01(): ByteArray {
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(dataType)
+        byteBuffer.put(1.toByte())
         byteBuffer.flip()
         val payload = byteBuffer.array()
         return constructCmd(

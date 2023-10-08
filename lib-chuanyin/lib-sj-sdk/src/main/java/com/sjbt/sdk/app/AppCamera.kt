@@ -14,6 +14,8 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.DIVIDE_N_2
 import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.*
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
 
@@ -38,11 +40,11 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     private lateinit var mCameraHandler: Handler
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
-    private var mCellLength = 0
-    private var mDivide: Byte = 0
-    private var mOtaProcess = 0
-    private var mFramePackageCount = 0
-    private var mFrameLastLen = 0
+     var mCellLength = 0
+     var mDivide: Byte = 0
+     var mOtaProcess = 0
+     var mFramePackageCount = 0
+     var mFrameLastLen = 0
 
     init {
         mCameraThread = HandlerThread("camera_send_thread")
@@ -69,6 +71,15 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         return Single.create(object : SingleOnSubscribe<Boolean> {
             override fun subscribe(emitter: SingleEmitter<Boolean>) {
                 cameraSingleOpenEmitter = emitter
+                sjUniWatch.sendNormalMsg(
+                    CmdHelper.getAppCallDeviceCmd(
+                        if (open) {
+                            1.toByte()
+                        } else {
+                            0.toByte()
+                        }
+                    )
+                )
             }
         })
     }
@@ -94,14 +105,6 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             }
         })
 
-    override fun cameraFlashSwitch(type: WMCameraFlashMode): Observable<WMCameraFlashMode> {
-        return Observable.create(object : ObservableOnSubscribe<WMCameraFlashMode> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraFlashMode>) {
-                cameraFlashSwitchEmitter = emitter
-            }
-        })
-    }
-
     override var observeCameraFrontBack: Observable<WMCameraPosition> =
         Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
             override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
@@ -109,44 +112,67 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             }
         })
 
-    override fun cameraBackSwitch(isBack: WMCameraPosition): Observable<WMCameraPosition> {
-        return Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
-                cameraBackSwitchEmitter = emitter
+    override fun cameraFlashSwitch(wmCameraFlashMode: WMCameraFlashMode): Observable<WMCameraFlashMode> {
+        return Observable.create(object : ObservableOnSubscribe<WMCameraFlashMode> {
+            override fun subscribe(emitter: ObservableEmitter<WMCameraFlashMode>) {
+                cameraFlashSwitchEmitter = emitter
+
+                sjUniWatch.sendNormalMsg(
+                    CmdHelper.getCameraStateActionCmd(
+                        1,
+                        wmCameraFlashMode.ordinal.toByte()
+                    )
+                )
             }
         })
     }
 
-    var isPreviewAble = false
+    override fun cameraBackSwitch(wmCameraPosition: WMCameraPosition): Observable<WMCameraPosition> {
+        return Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
+            override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
+                cameraBackSwitchEmitter = emitter
+                sjUniWatch.sendNormalMsg(
+                    CmdHelper.getCameraStateActionCmd(
+                        0,
+                        wmCameraPosition.ordinal.toByte()
+                    )
+                )
+            }
+        })
+    }
+
     override fun isCameraPreviewEnable(): Boolean {
-        return isPreviewAble
+        return continueUpdateFrame
     }
 
     override fun isCameraPreviewReady(): Single<Boolean> {
         return Single.create(object : SingleOnSubscribe<Boolean> {
             override fun subscribe(emitter: SingleEmitter<Boolean>) {
                 cameraPreviewReadyEmitter = emitter
+
+                sjUniWatch.sendNormalMsg(
+                    CmdHelper.getCameraPreviewCmd01()
+                )
             }
         })
     }
 
     override fun updateCameraPreview(cameraFrameInfo: WmCameraFrameInfo) {
         LogUtils.logBlueTooth("更新frame continueUpdateFrame：$continueUpdateFrame")
-
-        if (cameraFrameInfo != null) {
-            if (cameraFrameInfo.frameType === 2) {
-                mLatestIframeId = cameraFrameInfo.frameId
+        cameraFrameInfo?.let {
+            if (it.frameType === 2) {
+                mLatestIframeId = it.frameId
                 LogUtils.logBlueTooth("最新的I帧：" + mLatestIframeId);
             } else {
-                mLatestPframeId = cameraFrameInfo.frameId
-                                LogUtils.logBlueTooth("最新的P帧：" + mLatestIframeId);
+                mLatestPframeId = it.frameId
+                LogUtils.logBlueTooth("最新的P帧：" + mLatestIframeId)
             }
-            mH264FrameMap.putFrame(cameraFrameInfo)
+            mH264FrameMap.putFrame(it)
 
             LogUtils.logBlueTooth("来新数据了:" + needNewH264Frame);
             if (needNewH264Frame) {
-                mCameraFrameInfo = cameraFrameInfo
-                sendFrameDataAsync(cameraFrameInfo)
+                mCameraFrameInfo = it
+                sendFrameDataAsync(it)
                 needNewH264Frame = false
             }
         }
@@ -204,6 +230,44 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         } else {
             mDivide = DIVIDE_N_2
             sjUniWatch.sendNormalMsg(CmdHelper.getCameraPreviewDataCmd02(dataArray, mDivide))
+        }
+    }
+
+    fun cameraPreviewBuz(msg: ByteArray) {
+        val byteBuffer =
+            ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN)
+
+        val camera_pre_allow = byteBuffer[16] //是否容许同步画面 0允许 1不允许
+
+        val reason = byteBuffer[17]
+        val lenArray = ByteArray(4)
+
+        System.arraycopy(msg, 18, lenArray, 0, lenArray.size)
+
+        mOtaProcess = 0
+        mCellLength =
+            ByteBuffer.wrap(lenArray).order(ByteOrder.LITTLE_ENDIAN).int
+
+        mCellLength = mCellLength - 5
+        LogUtils.logBlueTooth("相机预览传输包大小：${mCellLength}")
+
+        continueUpdateFrame = camera_pre_allow.toInt() == 1
+
+        cameraPreviewReadyEmitter.onSuccess(continueUpdateFrame)
+
+        LogUtils.logBlueTooth("是否支持相机预览 continueUpdateFrame：$continueUpdateFrame")
+
+        if (camera_pre_allow.toInt() == 1) {
+            LogUtils.logBlueTooth("预发送数据：" + mH264FrameMap.frameCount)
+            if (!mH264FrameMap.isEmpty()) {
+                LogUtils.logBlueTooth("发送的帧ID：${mLatestIframeId}")
+                mCameraFrameInfo =
+                    mH264FrameMap.getFrame(mLatestIframeId)
+                LogUtils.logBlueTooth("发送的帧信息：${mCameraFrameInfo}")
+                sendFrameDataAsync(mCameraFrameInfo)
+            } else {
+                needNewH264Frame = true
+            }
         }
     }
 
