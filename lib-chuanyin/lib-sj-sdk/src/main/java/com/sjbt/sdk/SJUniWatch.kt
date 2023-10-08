@@ -138,8 +138,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun onClassicBtDisConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtDisConnect：" + device.address)
 
-                mCurrDevice?.let {
-
+                if (device == mCurrDevice) {
+                    btStateChange(WmConnectState.DISCONNECTED)
                     mTransferring = false
                     mTransferRetryCount = 0
                     mCanceledSend = true
@@ -148,15 +148,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                     appCamera.stopCameraPreview()
                     disconnect()
-//                        removeCallBackRunner(mConnectTimeoutRunner)
+
+                    //                        removeCallBackRunner(mConnectTimeoutRunner)
                 }
             }
 
             override fun onClassicBtConnect(device: BluetoothDevice) {
                 SJLog.logBt(TAG, "onClassicBtConnect：" + device.address)
-                if (device == mCurrDevice) {
-                    disconnect()
-                }
             }
 
             override fun onClassicBtDisabled() {
@@ -337,29 +335,65 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 }
 
-                                CMD_ID_8017 -> {
+                                CMD_ID_8017 -> {//获取触感
 
                                     val ringState = msg[16].toInt()
                                     val msgShake = msg[17].toInt()
                                     val crowShake = msg[18].toInt()
                                     val sysShake = msg[19].toInt()
                                     val armScreen = msg[20].toInt()
+                                    var keepNoVoice = 0
+                                    if (msg.size > 21) {
+                                        keepNoVoice = msg[21].toInt()
+                                    }
 
                                     val wmWistRaise = WmWistRaise(armScreen == 1)
 
-                                    settingWistRaise.getEmitter.onSuccess(wmWistRaise)
-                                    settingWistRaise.observeEmitter.onNext(wmWistRaise)
+                                    settingWistRaise.getWmWistRaise(wmWistRaise)
+                                    settingWistRaise.observeWmWistRaiseChange(wmWistRaise)
 
-//                                    val wmRing = WmSoundAndHaptic(ringState == 1, msgShake == 1, crowShake == 1, sysShake == 1)
-//                                    settingSoundAndHaptic.getEmitter.onSuccess()
+                                    val wmSoundAndHaptic = WmSoundAndHaptic(
+                                        ringState == 1,
+                                        msgShake == 1,
+                                        crowShake == 1,
+                                        sysShake == 1,
+                                        keepNoVoice == 1
+                                    )
+
+                                    settingSoundAndHaptic.getWmWistRaise(wmSoundAndHaptic)
+                                    settingSoundAndHaptic.observeWmWistRaiseChange(wmSoundAndHaptic)
+
                                 }
 
-                                CMD_ID_8018 -> {
+                                CMD_ID_8018 -> {//设置触感
+
+                                    val setSuccess = msg[16].toInt() == 1
+
+                                    if(setSuccess){
+                                        settingSoundAndHaptic.setSuccess()
+                                        settingWistRaise.setSuccess()
+                                    }
 
                                 }
 
-                                CMD_ID_8019 -> {
+                                CMD_ID_8019 -> {//监听触感
+                                    sendNormalMsg(CmdHelper.deviceRingStateRespondCmd)
+                                    val ctype = msg[16].toInt()
+                                    val vValue = msg[17].toInt()
 
+                                    when (ctype) {
+
+                                        4 -> {
+                                            settingWistRaise.observeWmWistRaiseChange(ctype, vValue)
+                                        }
+
+                                        else -> {
+                                            settingSoundAndHaptic.observeWmWistRaiseChange(
+                                                ctype,
+                                                vValue
+                                            )
+                                        }
+                                    }
                                 }
 
                                 CMD_ID_8028 -> {//收到dev拍照命令
@@ -506,6 +540,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                             appCamera.needNewH264Frame = true
                                         }
                                     }
+                                }
+
+                                CMD_ID_8003 -> {
+                                    val frameSuccess = msg[16]
+
+                                    LogUtils.logBlueTooth("发送成功：$frameSuccess")
+                                    LogUtils.logBlueTooth("发送下一帧：" + appCamera.mH264FrameMap.getFrameCount())
+
+                                    LogUtils.logBlueTooth("continueUpdateFrame 03:${appCamera.continueUpdateFrame}")
+
+                                    appCamera.sendFrameData03(frameSuccess)
+
                                 }
                             }
                         }

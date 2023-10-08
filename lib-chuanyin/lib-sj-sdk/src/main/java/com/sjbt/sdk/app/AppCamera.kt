@@ -39,7 +39,6 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
     private var mCellLength = 0
-    private var mTransferring = false
     private var mDivide: Byte = 0
     private var mOtaProcess = 0
     private var mFramePackageCount = 0
@@ -137,14 +136,14 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         if (cameraFrameInfo != null) {
             if (cameraFrameInfo.frameType === 2) {
                 mLatestIframeId = cameraFrameInfo.frameId
-                //                LogUtils.logBlueTooth("最新的I帧：" + mLatestIframeId);
+                LogUtils.logBlueTooth("最新的I帧：" + mLatestIframeId);
             } else {
                 mLatestPframeId = cameraFrameInfo.frameId
-                //                LogUtils.logBlueTooth("最新的P帧：" + mLatestIframeId);
+                                LogUtils.logBlueTooth("最新的P帧：" + mLatestIframeId);
             }
             mH264FrameMap.putFrame(cameraFrameInfo)
 
-//            LogUtils.logBlueTooth("来新数据了:" + needNewH264Frame);
+            LogUtils.logBlueTooth("来新数据了:" + needNewH264Frame);
             if (needNewH264Frame) {
                 mCameraFrameInfo = cameraFrameInfo
                 sendFrameDataAsync(cameraFrameInfo)
@@ -182,7 +181,6 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                 }
 
                 try {
-                    mTransferring = true
                     val info: OtaCmdInfo = sjUniWatch.getCameraPreviewCmdInfo(
                         mFramePackageCount,
                         mFrameLastLen,
@@ -201,7 +199,6 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    mTransferring = false
                 }
             }
         } else {
@@ -210,8 +207,63 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         }
     }
 
+    fun sendFrameData03(frameSuccess: Byte) {
+        mCameraFrameInfo?.let {
+            if (continueUpdateFrame) {
+                if (mH264FrameMap.isEmpty()) {
+                    needNewH264Frame = true
+                    LogUtils.logBlueTooth("没数据了-》1")
+                    return
+                }
+
+                if (frameSuccess.toInt() == 1) { //发送成功
+                    //删除掉已经发送成功之前的帧
+                    mH264FrameMap.removeOldFrames(it.frameId)
+                    LogUtils.logBlueTooth("移除发送过的帧数")
+                    if (it.frameId === mLatestIframeId) {
+                        mCameraFrameInfo =
+                            mH264FrameMap.getFrame(mLatestPframeId)
+                        LogUtils.logBlueTooth("没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                    } else {
+                        if (mLatestIframeId > it.frameId) {
+                            mCameraFrameInfo =
+                                mH264FrameMap.getFrame(mLatestIframeId)
+                            LogUtils.logBlueTooth("有新的I帧,发送最新的I帧：${mCameraFrameInfo}")
+                        } else {
+                            mCameraFrameInfo =
+                                mH264FrameMap.getFrame(mLatestPframeId)
+                            LogUtils.logBlueTooth("没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                        }
+                    }
+                } else { //发送失败
+                    if (mCameraFrameInfo?.frameType === 0) {
+                        if (mLatestIframeId > it.frameId) {
+                            mCameraFrameInfo =
+                                mH264FrameMap.getFrame(mLatestIframeId)
+                            LogUtils.logBlueTooth("P发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                        } else {
+                            mCameraFrameInfo =
+                                mH264FrameMap.getFrame(mLatestPframeId)
+                            LogUtils.logBlueTooth("P发送失败,发送最新的P帧：${mCameraFrameInfo}")
+                        }
+                    } else {
+                        mCameraFrameInfo =
+                            mH264FrameMap.getFrame(mLatestIframeId)
+                        LogUtils.logBlueTooth("发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                    }
+                }
+
+                sendFrameDataAsync(mCameraFrameInfo)
+            } else {
+                LogUtils.logBlueTooth("相机关闭，停止发送")
+                mH264FrameMap.clear()
+            }
+        }
+    }
 
     override fun stopCameraPreview() {
-        TODO("Not yet implemented")
+        continueUpdateFrame = false
+        LogUtils.logBlueTooth("停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
+        mH264FrameMap.clear()
     }
 }
