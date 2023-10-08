@@ -35,8 +35,10 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
         viewBind.itemBloodPressure.setOnClickListener(blockClick)
 //        viewBind.itemTurnWristLighting.setOnClickListener( blockClick)
         viewBind.itemDnd.setOnClickListener(blockClick)
+        viewBind.itemSleep.setOnClickListener(blockClick)
         viewBind.itemScreenVibrate.setOnClickListener(blockClick)
         viewBind.itemSoundTouchFeedback.setOnClickListener(blockClick)
+        viewBind.itemAppView.setOnClickListener(blockClick)
 //        viewBind.itemWristLightingEnabled.getSwitchView()
 //            .setOnCheckedChangeListener { buttonView, isChecked ->
 //
@@ -81,6 +83,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewBind.itemSoundTouchFeedback -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toSoundTouchFeedback())
             }
+            viewBind.itemAppView -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toAppView())
+            }
 //            viewBind.itemSedentary -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toSedentaryConfig())
 //            }
@@ -93,9 +98,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 //            viewBind.itemTurnWristLighting -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
 //            }
-//            viewBind.itemDnd -> {
-//                findNavController().navigate(DeviceConfigFragmentDirections.toDndConfig())
-//            }
+            viewBind.itemSleep -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toSleepConfig())
+            }
 //            viewBind.itemScreenVibrate -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toScreenVibrateConfig())
 //            }

@@ -31,8 +31,9 @@ internal class AbWmSettingsDelegate(
         get() = TODO("Not yet implemented")
         set(value) {}
     override var settingAppView: AbWmSetting<WmAppView>
-        get() = watchObservable.value!!.wmSettings?.settingAppView
+        get() = TODO("Not yet implemented")
         set(value) {}
+
     override var settingDrinkWater: AbWmSetting<WmSedentaryReminder>
         get() = TODO("Not yet implemented")
         set(value) {}

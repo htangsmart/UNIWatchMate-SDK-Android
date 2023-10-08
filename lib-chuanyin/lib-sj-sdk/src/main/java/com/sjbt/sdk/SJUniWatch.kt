@@ -232,11 +232,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
-                                        if (it.bindType != BindType.CONNECT_BACK) {
+//                                        if (it.bindType != BindType.CONNECT_BACK) {
                                             sendNormalMsg(CmdHelper.getBindCmd(it))
-                                        } else {
-                                            btStateChange(WmConnectState.VERIFIED)
-                                        }
+//                                        } else {
+//                                            btStateChange(WmConnectState.VERIFIED)
+//                                        }
                                     }
                                 }
                             }
