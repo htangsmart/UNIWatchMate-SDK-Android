@@ -229,3 +229,7 @@ const val URN_E: Byte = 'E'.code.toByte()
 const val URN_F: Byte = 'F'.code.toByte()
 const val URN_G: Byte = 'G'.code.toByte()
 const val URN_H: Byte = 'H'.code.toByte()
+
+
+const val CHANGE_CAMERA = 0.toByte()
+const val CHANGE_FLASH = 1.toByte()
