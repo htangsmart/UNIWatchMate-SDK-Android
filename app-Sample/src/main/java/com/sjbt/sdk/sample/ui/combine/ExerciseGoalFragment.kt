@@ -45,7 +45,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
 
     //    private val deviceManager = Injector.getDeviceManager()
     private val exerciseGoalRepository = Injector.getExerciseGoalRepository()
-    private val authedUserId = Injector.getDefaultUserId()
+    private val authedUserId = Injector.requireAuthedUserId()
     private var isLengthMetric: Boolean = true
     private lateinit var exerciseGoal: WmSportGoal
 

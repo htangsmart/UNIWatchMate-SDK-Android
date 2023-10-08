@@ -160,6 +160,14 @@
     </string-array>
 
     <string name="ds_function_config">Function Config</string>
+    <string name="ds_sound_touch_config">Sound Touch Feedback Config</string>
+
+    <string name="ds_is_ring_when_call_come_in">Whether the bell rings when the call comes in</string>
+    <string name="ds_is_notification_touch">Whether there is a notification touch</string>
+    <string name="ds_is_crown_has_tactile_feedback">Whether the crown has tactile feedback</string>
+    <string name="ds_is_system_has_tactile_feedback">Whether the system has tactile feedback</string>
+    <string name="ds_is_mute">Whether mute</string>
+
     <string name="ds_wear_right_hand">Right Hand Wearing</string>
     <string name="ds_enhanced_measurement">Enhanced Measurement</string>
     <string name="ds_time_format_12_hour">Time Format-12 Hour</string>

@@ -235,6 +235,9 @@
         <action
             android:id="@+id/toFunctionConfig"
             app:destination="@id/functionConfigFragment" />
+        <action
+            android:id="@+id/toSoundTouchFeedback"
+            app:destination="@id/soundTouchConfigFragment" />
         <!--<action
             android:id="@+id/toHealthMonitorConfig"
             app:destination="@id/healthMonitorConfigFragment"/>
@@ -275,6 +278,11 @@
         android:name="com.sjbt.sdk.sample.ui.setting.FunctionConfigFragment"
         android:label="@string/ds_function_config"
         tools:layout="@layout/fragment_function_config" />
+    <fragment
+        android:id="@+id/soundTouchConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.SoundTouchFeedbackConfigFragment"
+        android:label="@string/ds_sound_touch_config"
+        tools:layout="@layout/fragment_sound_touch_config" />
 
     <!--    <fragment-->
     <!--        android:id="@+id/healthMonitorConfigFragment"-->

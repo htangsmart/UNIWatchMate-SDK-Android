@@ -62,9 +62,6 @@ class MyApplication : Application() {
      */
     private fun observeState() {
         val authManager = Injector.getAuthManager()
-        applicationScope.launch {
-            authManager.setUserId()
-        }
 
         //监听连接状态
         UNIWatchMate.observeConnectState.subscribe(object : Observer<WmConnectState> {

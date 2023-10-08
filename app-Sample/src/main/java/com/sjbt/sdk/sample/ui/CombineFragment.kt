@@ -1,15 +1,19 @@
 package com.sjbt.sdk.sample.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.sjbt.sdk.sample.R
-import com.sjbt.sdk.sample.base.AsyncViewModel
-import com.sjbt.sdk.sample.base.BaseFragment
-import com.sjbt.sdk.sample.base.SingleAsyncState
+import com.sjbt.sdk.sample.base.*
 import com.sjbt.sdk.sample.databinding.FragmentCombineBinding
+import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import com.sjbt.sdk.sample.utils.showFailed
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 /**
@@ -55,30 +59,30 @@ class CombineFragment : BaseFragment(R.layout.fragment_combine) {
 //        viewBind.itemExerciseGoal.clickTrigger {
 //            findNavController().navigate(CombineFragmentDirections.toExerciseGoal())
 //        }
-//        viewBind.btnSignOut.clickTrigger {
-//            viewModel.signOut()
-//        }
-//        lifecycle.launchRepeatOnStarted {
-//            launch {
-//                viewModel.flowState.collect {
-//                    if (it.async is Loading) {
-//                        promptProgress.showProgress(R.string.account_sign_out_ing)
-//                    } else {
-//                        promptProgress.dismiss()
-//                    }
-//                }
-//            }
-//            launch {
-//                viewModel.flowEvent.collect {
-//                    when (it) {
-//                        is AsyncEvent.OnFail -> promptToast.showFailed(it.error)
-//                        is AsyncEvent.OnSuccess<*> -> {
-//                            startActivity(Intent(requireContext(), LaunchActivity::class.java))
-//                            requireActivity().finish()
-//                        }
-//                    }
-//                }
-//            }
+        viewBind.btnSignOut.setOnClickListener {
+            viewModel.signOut()
+        }
+        lifecycle.launchRepeatOnStarted {
+            launch {
+                viewModel.flowState.collect {
+                    if (it.async is Loading) {
+                        promptProgress.showProgress(R.string.account_sign_out_ing)
+                    } else {
+                        promptProgress.dismiss()
+                    }
+                }
+            }
+            launch {
+                viewModel.flowEvent.collect {
+                    when (it) {
+                        is AsyncEvent.OnFail -> promptToast.showFailed(it.error)
+                        is AsyncEvent.OnSuccess<*> -> {
+                            startActivity(Intent(requireContext(), LaunchActivity::class.java))
+                            requireActivity().finish()
+                        }
+                    }
+                }
+            }
 //            launch {
 //                womenHealthRepository.flowCurrent.collect {
 //                    updateWomenHealth(it)
@@ -89,28 +93,28 @@ class CombineFragment : BaseFragment(R.layout.fragment_combine) {
 //                    Log.e("Kilnn", "deviceInfo:$it")
 //                }
 //            }
-//        }
+        }
     }
 
 }
 
 class CombineViewModel : AsyncViewModel<SingleAsyncState<Unit>>(SingleAsyncState()) {
 
-//    private val authManager = Injector.getAuthManager()
-//    private val deviceManager = Injector.getDeviceManager()
-//
-//    //ToNote:Because convert as val parameter, so need Observable.defer{} to wrap it
+    private val authManager = Injector.getAuthManager()
+    private val deviceManager = Injector.getDeviceManager()
+
+//    ToNote:Because convert as val parameter, so need Observable.defer{} to wrap it
 //    val flowDeviceInfo = Observable.defer {
 //        deviceManager.configFeature.observerDeviceInfo().startWithItem(deviceManager.configFeature.getDeviceInfo())
 //    }.asFlow().shareInView(viewModelScope)
-//
-//    fun signOut() {
-//        suspend {
-//            //Delay 3 seconds. Simulate the sign out process
-//            delay(3000)
-//            authManager.signOut()
-//        }.execute(SingleAsyncState<Unit>::async) {
-//            copy(async = it)
-//        }
-//    }
+
+    fun signOut() {
+        suspend {
+            //Delay 3 seconds. Simulate the sign out process
+            delay(1500)
+            authManager.signOut()
+        }.execute(SingleAsyncState<Unit>::async) {
+            copy(async = it)
+        }
+    }
 }

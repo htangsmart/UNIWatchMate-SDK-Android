@@ -26,7 +26,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:name="@string/ds_function_config"/>
-
+        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_sound_touch_feedback"
+            style="@style/Widget.Item.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:name="@string/ds_sound_touch_config"/>
         <com.sjbt.sdk.sample.widget.PreferenceItemView
             android:id="@+id/item_health_monitor"
             style="@style/Widget.Item.Text"

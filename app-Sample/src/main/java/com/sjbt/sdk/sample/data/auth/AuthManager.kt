@@ -36,7 +36,6 @@ interface AuthManager {
      * Sign out
      */
     suspend fun signOut()
-    suspend fun setUserId()
 
 }
 
@@ -85,10 +84,6 @@ internal class AuthManagerImpl(
 
     override suspend fun signOut() {
         internalStorage.setAuthedUserId(null)
-    }
-
-    override suspend fun setUserId() {
-        internalStorage.setAuthedUserId(1)
     }
 
     companion object {
