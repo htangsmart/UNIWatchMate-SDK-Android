@@ -25,7 +25,7 @@ internal class AbWmSettingsDelegate(
         get() = TODO("Not yet implemented")
         set(value) {}
     override var settingUnitInfo: AbWmSetting<WmUnitInfo>
-        get() = TODO("Not yet implemented")
+        get() = watchObservable.value!!.wmSettings?.settingUnitInfo
         set(value) {}
     override var settingWistRaise: AbWmSetting<WmWistRaise>
         get() = TODO("Not yet implemented")

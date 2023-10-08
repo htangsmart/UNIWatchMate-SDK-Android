@@ -607,7 +607,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtAdapter?.takeIf { !it.isEnabled }?.let {
             mBtEngine.clearMsgQueue()
             mBtEngine.clearStateMap()
-            btStateChange(WmConnectState.DISCONNECTED)
+//            btStateChange(WmConnectState.DISCONNECTED)
         }
 
         if (mCanceledSend) {
