@@ -1038,6 +1038,108 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             sendNormalMsg(cmdArray)
         }
+
+        payloadPackage.itemList.forEach {
+            when (it.urn[0]) {
+                URN_1 -> {//蓝牙连接 暂用旧协议格式
+
+                }
+
+                URN_2 -> {//设置同步
+                    when (it.urn[1]) {
+                        URN_1 -> {//运动目标
+
+                            when (it.urn[2]) {
+                                URN_0 -> {
+
+                                    val byteBuffer =
+                                        ByteBuffer.wrap(it.data)
+                                    val step = byteBuffer.getInt()
+                                    val distance = byteBuffer.getInt()
+                                    val calories = byteBuffer.getInt()
+                                    val activityDuration =
+                                        byteBuffer.getShort()
+
+                                    val wmSportGoal = WmSportGoal(
+                                        step,
+                                        distance,
+                                        calories,
+                                        activityDuration
+                                    )
+
+                                    LogUtils.logBlueTooth("体育运动消息：" + wmSportGoal)
+
+                                }
+
+                                URN_1 -> {//步数
+
+                                }
+                                URN_2 -> {//热量（卡）
+
+                                }
+                                URN_3 -> {//距离（米）
+
+                                }
+                                URN_4 -> {//活动时长（分钟）
+
+                                }
+                            }
+                        }
+
+                        URN_2 -> {//健康信息
+                            when (it.urn[2]) {
+                                URN_0 -> {
+
+                                    val byteBuffer =
+                                        ByteBuffer.wrap(it.data)
+                                    val step = byteBuffer.getInt()
+                                    val distance = byteBuffer.getInt()
+                                    val calories = byteBuffer.getInt()
+                                    val activityDuration =
+                                        byteBuffer.getShort()
+
+                                    val wmSportGoal = WmSportGoal(
+                                        step,
+                                        distance,
+                                        calories,
+                                        activityDuration
+                                    )
+
+                                    LogUtils.logBlueTooth("健康消息：" + wmSportGoal)
+
+                                }
+                            }
+                        }
+
+                        URN_3 -> {//单位同步
+
+                        }
+
+                        URN_4 -> {//语言设置
+
+                        }
+
+                        URN_4 -> {//语言设置
+
+                        }
+
+                    }
+
+                }
+
+                URN_3 -> {//表盘
+
+                }
+
+                URN_4 -> {//应用
+
+                }
+
+                URN_5 -> {//运动同步
+
+                }
+            }
+        }
     }
 
     private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {
@@ -1177,7 +1279,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return Completable.create(object : CompletableOnSubscribe {
             override fun subscribe(emitter: CompletableEmitter) {
                 unbindEmitter = emitter
-                sendNormalMsg(CmdHelper.getUnBindCmd())
+
+                if (mConnectState == WmConnectState.CONNECTED) {
+                    sendNormalMsg(CmdHelper.getUnBindCmd())
+                } else {
+                    emitter.onError(RuntimeException("not connected"))
+                }
             }
         })
     }

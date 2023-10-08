@@ -6,11 +6,11 @@ data class WmPersonalInfo(
     /**
      * Height(身高)
      */
-    val height: Int,
+    val height: Short,
     /**
      * Weight(体重)
      */
-    val weight: Int,
+    val weight: Short,
     /**
      * Gender(性别)
      */
@@ -24,7 +24,7 @@ data class WmPersonalInfo(
         MALE, FEMALE, OTHER
     }
 
-    data class BirthDate(val year: Int, val month: Int, val day: Int)
+    data class BirthDate(val year: Short, val month: Byte, val day: Byte)
 
     override fun toString(): String {
         return "WmPersonalInfo(height='$height', weight='$weight', gender='$gender', birthDate=$birthDate)"

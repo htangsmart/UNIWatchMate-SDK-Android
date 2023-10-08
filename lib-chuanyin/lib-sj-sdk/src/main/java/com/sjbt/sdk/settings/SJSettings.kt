@@ -9,7 +9,7 @@ class SJSettings(sjUniWatch: SJUniWatch) : AbWmSettings() {
 
     override val settingSportGoal: AbWmSetting<WmSportGoal> = SettingSportGoal(sjUniWatch)
     override val settingDateTime: AbWmSetting<WmDateTime> = SettingDateTime(sjUniWatch)
-    override val settingPersonalInfo: AbWmSetting<WmPersonalInfo> = SettingPersonalInfo()
+    override val settingPersonalInfo: AbWmSetting<WmPersonalInfo> = SettingPersonalInfo(sjUniWatch)
     override val settingSedentaryReminder: AbWmSetting<WmSedentaryReminder> = SettingSedentaryReminder()
     override val settingSoundAndHaptic: AbWmSetting<WmSoundAndHaptic> = SettingSoundAndHaptic(sjUniWatch)
     override val settingUnitInfo: AbWmSetting<WmUnitInfo> = SettingUnitInfo()

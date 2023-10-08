@@ -6,6 +6,7 @@ import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.settings.WmDateTime
+import com.base.sdk.entity.settings.WmPersonalInfo
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.google.gson.Gson
@@ -1921,6 +1922,55 @@ object CmdHelper {
                 )
             }
         }
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取设置健康信息的命令
+     */
+    fun getUpdatePersonalInfoAllCmd(
+        personalInfo: WmPersonalInfo
+    ): PayloadPackage {
+
+        val payloadPackage = PayloadPackage()
+
+//        if (personalInfo.height != 0 || personalInfo.weight != 0 || personalInfo.gender != 0 || personalInfo.activityDuration.toInt() != 0) {
+            val bbSport: ByteBuffer = ByteBuffer.allocate(2 + 2 + 1 + 4)
+            bbSport.putShort(personalInfo.height)
+            bbSport.putShort(personalInfo.weight)
+            bbSport.put(personalInfo.gender.ordinal.toByte())
+            bbSport.putShort(personalInfo.birthDate.year)
+            bbSport.put(personalInfo.birthDate.month)
+            bbSport.put(personalInfo.birthDate.day)
+            payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+//        } else {
+//            if (personalInfo.steps != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_1),
+//                    ByteBuffer.allocate(sizeOfNumber(personalInfo.steps)).putInt(personalInfo.steps)
+//                        .array()
+//                )
+//            } else if (personalInfo.calories != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_2),
+//                    ByteBuffer.allocate(sizeOfNumber(personalInfo.calories)).putInt(personalInfo.calories)
+//                        .array()
+//                )
+//            } else if (personalInfo.distance != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_3),
+//                    ByteBuffer.allocate(sizeOfNumber(personalInfo.distance)).putInt(personalInfo.distance)
+//                        .array()
+//                )
+//            } else if (personalInfo.activityDuration.toInt() != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_4),
+//                    ByteBuffer.allocate(sizeOfNumber(personalInfo.activityDuration))
+//                        .putShort(personalInfo.activityDuration).array()
+//                )
+//            }
+//        }
 
         return payloadPackage
     }
