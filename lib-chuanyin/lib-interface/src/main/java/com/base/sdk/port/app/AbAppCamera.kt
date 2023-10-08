@@ -11,9 +11,19 @@ import io.reactivex.rxjava3.core.Single
 abstract class AbAppCamera :IWmSupport {
 
     /**
-     * 监听设备端相机状态
+     * 监听设备端相机开启状态
      */
-    abstract var observeCameraState : Observable<Boolean>
+    abstract var observeCameraOpenState : Observable<Boolean>
+
+    /**
+     * 监听拍照状态
+     */
+    abstract var observeCameraTakePhoto : Observable<Boolean>
+
+    /**
+     * App打开/关闭相机
+     */
+    abstract fun openCloseCamera(open: Boolean): Single<Boolean>
 
     /**
      * 监听相机端闪光灯状态

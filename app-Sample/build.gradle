@@ -9,12 +9,49 @@ android {
     namespace 'com.sjbt.sdk.sample'
     compileSdk compile_sdk_version
 
+    signingConfigs {
+        //release版本使用的签名
+//        密码:uniwatchpwd
+//alias:uniwatchdemo
+//
+//Name:UniWatch
+//Unit:XianShenJu
+//Organization:XianShenJu
+//City:XiAn
+//Province:ShanXi
+//Country Cide:86
+        release {
+            storeFile file("uniwatchmate.jks")
+            storePassword "uniwatchpwd"
+            keyAlias "uniwatchdemo"
+            keyPassword "uniwatchpwd"
+
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    outputFileName = "uniwatch_sample_" + buildType.name + "_${variant.versionName}_${buildTime()}.apk"
+                }
+            }
+
+        }
+
+        //debug版本使用的签名
+        debug {
+            //自定义输出配置
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    outputFileName = "uniwatch_sample_" + buildType.name + "_${variant.versionName}_${buildTime()}.apk"
+                }
+            }
+        }
+    }
+
     defaultConfig {
         applicationId "com.sjbt.sdk.sample"
         minSdk min_sdk_version
         targetSdk target_sdk_version
         versionCode 1
         versionName "1.0"
+        signingConfig signingConfigs.release
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
@@ -31,6 +68,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -54,6 +92,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+}
+
+//当前时间
+def static buildTime() {
+    def date = new Date()
+    return date.format("yyyMMddHHmm")
 }
 
 dependencies {
