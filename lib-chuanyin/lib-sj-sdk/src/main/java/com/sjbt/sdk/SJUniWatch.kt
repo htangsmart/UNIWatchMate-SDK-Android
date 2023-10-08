@@ -9,7 +9,6 @@ import android.os.Build
 import android.text.TextUtils
 import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
-import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
@@ -18,10 +17,7 @@ import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
-import com.base.sdk.entity.settings.AppView
-import com.base.sdk.entity.settings.WmAppView
-import com.base.sdk.entity.settings.WmDeviceInfo
-import com.base.sdk.entity.settings.WmSportGoal
+import com.base.sdk.entity.settings.*
 import com.base.sdk.port.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
@@ -43,7 +39,6 @@ import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.*
 import io.reactivex.rxjava3.core.*
-import io.reactivex.rxjava3.functions.Action
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -187,7 +182,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun onBindState(device: BluetoothDevice, bondState: Int) {
                 if (bondState == BluetoothDevice.BOND_NONE) {
                     if (device == mCurrDevice) {
-                        mConnectTryCount = 0
+//                        mConnectTryCount = 0
                         mBtEngine.clearStateMap()
 
                         btStateChange(WmConnectState.DISCONNECTED)
@@ -232,11 +227,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
-                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                            sendNormalMsg(CmdHelper.getBindCmd(it))
-                                        } else {
-                                            btStateChange(WmConnectState.VERIFIED)
-                                        }
+//                                        if (it.bindType != BindType.CONNECT_BACK) {
+                                        sendNormalMsg(CmdHelper.getBindCmd(it))
+//                                        } else {
+//                                            btStateChange(WmConnectState.VERIFIED)
+//                                        }
                                     }
                                 }
                             }
@@ -340,15 +335,48 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 }
 
-                                CMD_ID_8028 -> {
+                                CMD_ID_8017 -> {
+
+                                    val ringState = msg[16].toInt()
+                                    val msgShake = msg[17].toInt()
+                                    val crowShake = msg[18].toInt()
+                                    val sysShake = msg[19].toInt()
+                                    val armScreen = msg[20].toInt()
+
+                                    val wmWistRaise = WmWistRaise(armScreen == 1)
+
+                                    settingWistRaise.getEmitter.onSuccess(wmWistRaise)
+                                    settingWistRaise.observeEmitter.onNext(wmWistRaise)
+
+//                                    val wmRing = WmSoundAndHaptic(ringState == 1, msgShake == 1, crowShake == 1, sysShake == 1)
+//                                    settingSoundAndHaptic.getEmitter.onSuccess()
+                                }
+
+                                CMD_ID_8018 -> {
 
                                 }
 
-                                CMD_ID_8029 -> {
+                                CMD_ID_8019 -> {
 
                                 }
 
-                                CMD_ID_802A -> {
+                                CMD_ID_8028 -> {//收到dev拍照命令
+                                    appCamera.cameraObserveTakePhotoEmitter.onNext(true)
+
+                                    sendNormalMsg(
+                                        CmdHelper.getCameraRespondCmd(
+                                            CMD_ID_8028,
+                                            1.toByte()
+                                        )
+                                    )
+                                }
+
+                                CMD_ID_8029 -> {//设备拉起或者关闭相机监听
+                                    val action = msg[16]
+                                    appCamera.cameraObserveOpenEmitter.onNext(action.toInt() == 1)
+                                }
+
+                                CMD_ID_802A -> {//
 
                                 }
 
@@ -394,9 +422,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     LogUtils.logBlueTooth("解绑成功:" + result)
 
                                     if (result == 1) {
+                                        unbindEmitter?.onComplete()
                                         mCurrDevice?.let {
                                             ClsUtils.removeBond(BluetoothDevice::class.java, it)
                                         }
+                                    }else{
+                                        unbindEmitter?.onError(RuntimeException("unbind failed"))
                                     }
                                 }
                             }
@@ -427,7 +458,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     LogUtils.logBlueTooth("是否支持相机预览 continueUpdateFrame：$appCamera.continueUpdateFrame")
 
-                                    appCamera.cameraStateEmitter.onNext(camera_pre_allow.toInt() == 1)
+                                    appCamera.cameraObserveOpenEmitter.onNext(camera_pre_allow.toInt() == 1)
 
                                     if (camera_pre_allow.toInt() == 1) {
                                         LogUtils.logBlueTooth("预发送数据：" + appCamera.mH264FrameMap.getFrameCount())
@@ -592,7 +623,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         mBtEngine.clearStateMap()
                         mBtEngine.clearMsgQueue()
 
-                        btStateChange(WmConnectState.DISCONNECTED)
+//                        btStateChange(WmConnectState.DISCONNECTED)
                     }
                 }
             }
@@ -1000,13 +1031,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
 
     override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
-
+        mBindInfo = bindInfo
         val params = UrlParse.getUrlParams(qrString)
 
         if (params.isNotEmpty()) {
             val schemeMacAddress = params["mac"]
             bindInfo.randomCode = params["random"]
-            return schemeMacAddress?.let { connect(it, bindInfo) }
+            return schemeMacAddress?.let {
+                connect(it, bindInfo)
+            }
         } else {
             return WmDevice(bindInfo.model)
         }
@@ -1087,9 +1120,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtEngine.closeSocket("user", true)
     }
 
+    private var unbindEmitter: CompletableEmitter? = null
     override fun reset(): Completable {
         return Completable.create(object : CompletableOnSubscribe {
             override fun subscribe(emitter: CompletableEmitter) {
+                unbindEmitter = emitter
                 sendNormalMsg(CmdHelper.getUnBindCmd())
             }
         })

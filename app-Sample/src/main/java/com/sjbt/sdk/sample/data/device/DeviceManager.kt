@@ -213,7 +213,7 @@ internal class DeviceManagerImpl(
                 } else {
                     UNIWatchMate.connect(
                         address = it.device.address,
-                        it.user.toSdkUser(BindType.CONNECT_BACK)
+                        it.user.toSdkUser(BindType.DISCOVERY)
                     )
                 }
             }
@@ -369,7 +369,7 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun reset() {
-        UNIWatchMate.reset()
+        UNIWatchMate.reset().await()
         clearDevice()
     }
 

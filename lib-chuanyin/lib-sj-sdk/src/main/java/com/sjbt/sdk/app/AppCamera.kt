@@ -18,12 +18,15 @@ import io.reactivex.rxjava3.core.*
 class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     val sjUniWatch = sjUniWatch
-    lateinit var cameraStateEmitter: ObservableEmitter<Boolean>
-    lateinit var cameraFlashEmitter: ObservableEmitter<WMCameraFlashMode>
-    lateinit var cameraFrontBackEmitter: ObservableEmitter<WMCameraPosition>
+    lateinit var cameraObserveOpenEmitter: ObservableEmitter<Boolean>
+    lateinit var cameraSingleOpenEmitter: SingleEmitter<Boolean>
+    lateinit var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>
+    lateinit var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>
+    lateinit var cameraObserveFrontBackEmitter: ObservableEmitter<WMCameraPosition>
+
     lateinit var cameraBackSwitchEmitter: ObservableEmitter<WMCameraPosition>
     lateinit var cameraFlashSwitchEmitter: ObservableEmitter<WMCameraFlashMode>
-    lateinit var cameraReadyEmitter: SingleEmitter<Boolean>
+    lateinit var cameraPreviewReadyEmitter: SingleEmitter<Boolean>
 
     //相机预览相关
     var mCameraFrameInfo: WmCameraFrameInfo? = null
@@ -62,17 +65,32 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         return true
     }
 
-    override var observeCameraState: Observable<Boolean> =
+    override fun openCloseCamera(open: Boolean): Single<Boolean> {
+        return Single.create(object : SingleOnSubscribe<Boolean> {
+            override fun subscribe(emitter: SingleEmitter<Boolean>) {
+                cameraSingleOpenEmitter = emitter
+            }
+        })
+    }
+
+    override var observeCameraOpenState: Observable<Boolean> =
         Observable.create(object : ObservableOnSubscribe<Boolean> {
             override fun subscribe(emitter: ObservableEmitter<Boolean>) {
-                cameraStateEmitter = emitter
+                cameraObserveOpenEmitter = emitter
+            }
+        })
+
+    override var observeCameraTakePhoto: Observable<Boolean> =
+        Observable.create(object : ObservableOnSubscribe<Boolean> {
+            override fun subscribe(emitter: ObservableEmitter<Boolean>) {
+                cameraObserveTakePhotoEmitter = emitter
             }
         })
 
     override var observeCameraFlash: Observable<WMCameraFlashMode> =
         Observable.create(object : ObservableOnSubscribe<WMCameraFlashMode> {
             override fun subscribe(emitter: ObservableEmitter<WMCameraFlashMode>) {
-                cameraFlashEmitter = emitter
+                cameraObserveFlashEmitter = emitter
             }
         })
 
@@ -87,7 +105,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     override var observeCameraFrontBack: Observable<WMCameraPosition> =
         Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
             override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
-                cameraFrontBackEmitter = emitter
+                cameraObserveFrontBackEmitter = emitter
             }
         })
 
@@ -107,7 +125,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     override fun isCameraPreviewReady(): Single<Boolean> {
         return Single.create(object : SingleOnSubscribe<Boolean> {
             override fun subscribe(emitter: SingleEmitter<Boolean>) {
-                cameraReadyEmitter = emitter
+                cameraPreviewReadyEmitter = emitter
             }
         })
     }

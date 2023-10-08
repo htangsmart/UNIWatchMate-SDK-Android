@@ -1893,29 +1893,29 @@ object CmdHelper {
             bbSport.putInt(sportGoal.calories)
             bbSport.putInt(sportGoal.distance)
             bbSport.putShort(sportGoal.activityDuration)
-            payloadPackage.putData(getUrnId(URN_1, URN_1), bbSport.array())
+            payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
         } else {
             if (sportGoal.steps != 0) {
                 payloadPackage.putData(
-                    getUrnId(URN_1, URN_1, URN_1),
+                    getUrnId(URN_2, URN_1, URN_1),
                     ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps)
                         .array()
                 )
             } else if (sportGoal.calories != 0) {
                 payloadPackage.putData(
-                    getUrnId(URN_1, URN_1, URN_2),
+                    getUrnId(URN_2, URN_1, URN_2),
                     ByteBuffer.allocate(sizeOfNumber(sportGoal.calories)).putInt(sportGoal.calories)
                         .array()
                 )
             } else if (sportGoal.distance != 0) {
                 payloadPackage.putData(
-                    getUrnId(URN_1, URN_1, URN_3),
+                    getUrnId(URN_2, URN_1, URN_3),
                     ByteBuffer.allocate(sizeOfNumber(sportGoal.distance)).putInt(sportGoal.distance)
                         .array()
                 )
             } else if (sportGoal.activityDuration.toInt() != 0) {
                 payloadPackage.putData(
-                    getUrnId(URN_1, URN_1, URN_4),
+                    getUrnId(URN_2, URN_1, URN_4),
                     ByteBuffer.allocate(sizeOfNumber(sportGoal.activityDuration))
                         .putShort(sportGoal.activityDuration).array()
                 )
