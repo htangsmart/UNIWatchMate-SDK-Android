@@ -10,15 +10,13 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentSleepConfigBinding
 import com.sjbt.sdk.sample.di.Injector
-import com.sjbt.sdk.sample.dialog.TimePickerDialogFragment
-import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.setAllChildEnabled
-import com.sjbt.sdk.sample.utils.viewLifecycle
+import com.sjbt.sdk.sample.dialog.*
+import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.topstep.fitcloud.sdk.v2.model.config.FcDNDConfig
 import com.topstep.fitcloud.sdk.v2.model.config.FcDeviceInfo
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
 
 /**
  * **Document**
@@ -73,14 +71,18 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
             }
         }
 
-//        viewBind.itemPeriodTime.getSwitchView().setOnCheckedChangeListener(this)
-//        viewBind.itemStartTime.clickTrigger(block = blockClick)
-//        viewBind.itemEndTime.clickTrigger(block = blockClick)
+        viewBind.itemSleepEnable.getSwitchView().setOnCheckedChangeListener(this)
+        viewBind.itemStartTime.setOnClickListener { blockClick }
+        viewBind.itemEndTime.setOnClickListener(blockClick)
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (buttonView.isPressed) {
             if (buttonView == viewBind.itemSleepEnable.getSwitchView()) {
+                config?.let {
+                    it.open = isChecked
+                    it.saveConfig()
+                }
             }
         }
     }
@@ -88,41 +90,43 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
     private val blockClick: (View) -> Unit = { view ->
         when (view) {
             viewBind.itemStartTime -> {
-//                showStartTimeDialog(config.startHour())
+                config?.let {
+                    showStartTimeDialog(it.startHour * 60 + it.startMinute)
+                }
             }
             viewBind.itemEndTime -> {
-//                showEndTimeDialog(config.getEnd())
+                config?.let {
+                    showEndTimeDialog(it.endHour * 60 + it.endMinute)
+                }
             }
         }
     }
 
     override fun onDialogTimePicker(tag: String?, timeMinute: Int) {
-//        if (DIALOG_START_TIME == tag) {
-//            config.toBuilder().setStart(timeMinute).create().saveConfig()
-//        } else if (DIALOG_END_TIME == tag) {
-//            config.toBuilder().setEnd(timeMinute).create().saveConfig()
-//        }
+        if (DIALOG_START_TIME == tag) {
+            config!!.startMinute=  timeMinute % 60
+            config!!.startHour=  timeMinute / 60
+        } else if (DIALOG_END_TIME == tag) {
+            config!!.endMinute=  timeMinute % 60
+            config!!.endHour=  timeMinute / 60
+        }
+        config?.saveConfig()
     }
 
-    private fun FcDNDConfig.saveConfig() {
-//        applicationScope.launchWithLog {
-//            deviceManager.configFeature.setDNDConfig(this@saveConfig).await()
-//        }
-//        this@DNDConfigFragment.config = this
+    private fun WmSleepSettings.saveConfig() {
+        applicationScope.launchWithLog {
+            UNIWatchMate?.wmSettings?.settingSleepSettings?.set(config!!).await()
+        }
         updateUI()
     }
 
     private fun updateUI() {
-        val isConfigEnabled = viewBind.layoutContent.isEnabled
-//        ewBind.itemAllDay.getSwitchView().isChecked = config.isEnabledAllDay()
-//        viewBind.itemPeriodTime.getSwitchView().isChecked = config.isEnabledPeriodTime()
-//        if (isConfigEnabled) {//When device is disconnected, disabled the click event
-//            viewBind.itemStartTime.isEnabled = config.isEnabledPeriodTime()
-//            viewBind.itemEndTime.isEnabled = config.isEnabledPeriodTime()
-//        }
-//        viewBind.itemStartTime.getTextView().text = FormatterUtil.minute2Hmm(config.getStart())
-//        viewBind.ite
-//        vimEndTime.getTextView().text = FormatterUtil.minute2Hmm(config.getEnd())
+        config?.let {
+            viewBind.itemSleepEnable.getSwitchView().isChecked = it.open
+            viewBind.itemStartTime.getTextView().text = FormatterUtil.hmm(it.startHour,it.startMinute)
+            viewBind.itemEndTime.getTextView().text = FormatterUtil.hmm(it.endHour,it.endMinute)
+        }
+
     }
 
 }

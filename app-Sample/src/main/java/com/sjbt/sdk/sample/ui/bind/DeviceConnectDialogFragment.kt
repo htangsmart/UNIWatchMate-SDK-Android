@@ -263,12 +263,12 @@ class DeviceConnectViewMode : AsyncViewModel<SingleAsyncState<Unit>>(SingleAsync
 
     fun unbind() {
         suspend {
-//            if(deviceManager.flowConnectorState.value==WmConnectState.VERIFIED){
-//                deviceManager.reset()
-//            }else{
-//                deviceManager.reset()
-//            }
-            deviceManager.reset()
+            if(deviceManager.flowConnectorState.value==WmConnectState.VERIFIED){
+                deviceManager.reset()
+            }else{
+                deviceManager.delDevice()
+            }
+//            deviceManager.reset()
         }.execute(SingleAsyncState<Unit>::async)
         {
             copy(async = it)
