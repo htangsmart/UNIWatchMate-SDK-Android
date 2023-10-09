@@ -55,7 +55,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemDial.setOnClickListener(blockClick)
         viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
         viewBind.itemCamera.setOnClickListener(blockClick)
-        viewBind.itemTransferFile.setOnClickListener(blockClick)
 //        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
 //        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
 //        viewBind.itemCricket.clickTrigger(block = blockClick)
