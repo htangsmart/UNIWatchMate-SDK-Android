@@ -1242,7 +1242,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun subscribe(emitter: CompletableEmitter) {
                 unbindEmitter = emitter
 
-                if (mConnectState == WmConnectState.CONNECTED) {
+                if (mConnectState == WmConnectState.VERIFIED) {
                     sendNormalMsg(CmdHelper.getUnBindCmd())
                 } else {
                     emitter.onError(RuntimeException("not connected"))
