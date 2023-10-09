@@ -33,7 +33,7 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
         viewBind.itemSedentary.setOnClickListener(blockClick)
         viewBind.itemDrinkWater.setOnClickListener(blockClick)
         viewBind.itemBloodPressure.setOnClickListener(blockClick)
-//        viewBind.itemTurnWristLighting.setOnClickListener( blockClick)
+        viewBind.itemTurnWristLighting.setOnClickListener( blockClick)
         viewBind.itemDnd.setOnClickListener(blockClick)
         viewBind.itemSleep.setOnClickListener(blockClick)
         viewBind.itemScreenVibrate.setOnClickListener(blockClick)
@@ -85,6 +85,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             }
             viewBind.itemAppView -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toAppView())
+            }
+            viewBind.itemTurnWristLighting -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
             }
 //            viewBind.itemSedentary -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toSedentaryConfig())

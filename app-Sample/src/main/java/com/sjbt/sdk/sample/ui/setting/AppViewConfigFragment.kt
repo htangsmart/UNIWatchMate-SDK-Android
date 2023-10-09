@@ -31,8 +31,7 @@ import kotlinx.coroutines.rx3.await
  * 1. [AppViewConfigFragment]
  * Display and modify
  */
-class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view),
-    CompoundButton.OnCheckedChangeListener {
+class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
 
     private val viewBind: FragmentAppViewBinding by viewBinding()
 
@@ -47,7 +46,9 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        hideAllView()
+        viewBind.itemAppViewGridding.getImageView().setImageResource(R.drawable.ic_baseline_done_24)
+        viewBind.itemAppViewList.getImageView().setImageResource(R.drawable.ic_baseline_done_24)
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 UNIWatchMate.wmSettings.settingAppView.observeChange().asFlow().collect {
@@ -69,22 +70,35 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view),
             }
         }
 
-        viewBind.itemAppViewGridding.getSwitchView().setOnCheckedChangeListener(this)
-        viewBind.itemAppViewList.getSwitchView().setOnCheckedChangeListener(this)
-
-    }
-
-    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
-        if (buttonView.isPressed) {
-            if (buttonView == viewBind.itemAppViewGridding.getSwitchView()) {
-//                config?.appViewList = isChecked
-            } else if (buttonView == viewBind.itemAppViewList.getSwitchView()) {
-
+        viewBind.itemAppViewGridding.setOnClickListener {
+            config?.let {
+                for (bean in it.appViewList) {
+                    if (bean.id == 1) {
+                        bean.status=1
+                    }else{
+                        bean.status=0
+                    }
+                }
+                it.saveConfig()
             }
         }
+
+        viewBind.itemAppViewList.setOnClickListener {
+            config?.let {
+                for (bean in it.appViewList) {
+                    if (bean.id == 3) {
+                        bean.status=1
+                    }else{
+                        bean.status=0
+                    }
+                }
+                it.saveConfig()
+            }
+        }
+
     }
 
-    private fun FcTurnWristLightingConfig.saveConfig() {
+    private fun WmAppView.saveConfig() {
         applicationScope.launchWithLog {
             config?.let { UNIWatchMate.wmSettings.settingAppView.set(it).await() }
         }
@@ -92,7 +106,23 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view),
     }
 
     private fun updateUI() {
+//        1是瀑布刘3是列表
+        hideAllView()
+        config?.let {
+            for (bean in it.appViewList) {
+                if (bean.id == 1) {
+                    viewBind.itemAppViewGridding.getImageView().visibility=if(bean.status==1) View.VISIBLE else View.INVISIBLE
+                }else if(bean.id == 3){
+                    viewBind.itemAppViewList.getImageView().visibility=if(bean.status==1) View.VISIBLE else View.INVISIBLE
+                }
+            }
+        }
+    }
 
+    private fun hideAllView() {
+
+        viewBind.itemAppViewGridding.getImageView().visibility=View.INVISIBLE
+        viewBind.itemAppViewList.getImageView().visibility=View.INVISIBLE
     }
 
 }
