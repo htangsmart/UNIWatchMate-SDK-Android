@@ -114,15 +114,15 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
 
     private fun updateUI() {
         val isConfigEnabled = viewBind.layoutContent.isEnabled
-
-//        viewBind.itemAllDay.getSwitchView().isChecked = config.isEnabledAllDay()
+//        ewBind.itemAllDay.getSwitchView().isChecked = config.isEnabledAllDay()
 //        viewBind.itemPeriodTime.getSwitchView().isChecked = config.isEnabledPeriodTime()
 //        if (isConfigEnabled) {//When device is disconnected, disabled the click event
 //            viewBind.itemStartTime.isEnabled = config.isEnabledPeriodTime()
 //            viewBind.itemEndTime.isEnabled = config.isEnabledPeriodTime()
 //        }
 //        viewBind.itemStartTime.getTextView().text = FormatterUtil.minute2Hmm(config.getStart())
-//        viewBind.itemEndTime.getTextView().text = FormatterUtil.minute2Hmm(config.getEnd())
+//        viewBind.ite
+//        vimEndTime.getTextView().text = FormatterUtil.minute2Hmm(config.getEnd())
     }
 
 }

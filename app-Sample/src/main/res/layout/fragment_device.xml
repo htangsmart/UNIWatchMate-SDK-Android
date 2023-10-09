@@ -130,6 +130,10 @@
             android:id="@+id/item_basic_device_info"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_basic_device_info" />
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_transfer_file"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/ds_basic_device_info" />
 
         <!-- <com.sjbt.sdk.sample.widget.PreferenceItemView
              android:id="@+id/item_modify_logo"

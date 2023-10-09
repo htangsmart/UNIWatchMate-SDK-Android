@@ -16,12 +16,15 @@ abstract class AbWmTransferFile {
 /**
  * 传输文件类型
  */
-enum class FileType {
-    OTA,//设备ota
-    DIAL,//表盘
-    MUSIC,//MP3类型
-    TXT,//Txt电子书
-    SPORT,//运动文件（备用未定）
+enum class FileType(type: Int) {
+    MUSIC(1),//MP3类型
+    OTA(2),//设备ota
+    DIAL(3),//表盘
+    JPEG(4),//表盘封面
+    OTA_UPEX(5),//设备ota_upex
+    TXT(6),//设备ota_upex
+    AVI(7),//设备ota_upex
+    SPORT(8),//运动文件（备用未定）
 }
 
 /**

@@ -18,8 +18,6 @@ import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
-import com.base.sdk.port.State
-import com.base.sdk.port.WmTransferState
 import com.base.sdk.port.app.WMCameraFlashMode
 import com.base.sdk.port.app.WMCameraPosition
 import com.base.sdk.port.log.WmLog
@@ -43,12 +41,7 @@ import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.*
-import com.sjbt.sdk.utils.FileUtils.readFileBytes
 import io.reactivex.rxjava3.core.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -238,7 +231,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                        LogUtils.logBlueTooth("bindinfo:"+it)
+                                        LogUtils.logBlueTooth("bindinfo:" + it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -513,6 +506,51 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         HEAD_SPORT_HEALTH -> {
+
+                            when (msgBean.cmdId.toShort()) {
+                                CMD_ID_800C -> {
+                                    val sleepOpen = msg[16].toInt()
+                                    val startHour = msg[17].toInt()
+                                    val startMin = msg[18].toInt()
+                                    val endHour = msg[19].toInt()
+                                    val endMin = msg[20].toInt()
+                                    val wmSleepSettings = WmSleepSettings(
+                                        sleepOpen == 1,
+                                        startHour,
+                                        startMin,
+                                        endHour,
+                                        endMin
+                                    )
+
+                                    settingSleepSet.getSleepSettingEmitter?.onSuccess(wmSleepSettings)
+                                    settingSleepSet.observeSleepSetting(
+                                        wmSleepSettings
+                                    )
+                                }
+                                CMD_ID_800D -> {
+                                    val sleepOpen2 = msg[16].toInt()
+                                    val startHour2 = msg[17].toInt()
+                                    val startMin2 = msg[18].toInt()
+                                    val endHour2 = msg[19].toInt()
+                                    val endMin2 = msg[20].toInt()
+
+                                    settingSleepSet.observeSleepSetting(
+                                        WmSleepSettings(
+                                            sleepOpen2 == 1,
+                                            startHour2,
+                                            startMin2,
+                                            endHour2,
+                                            endMin2
+                                        )
+                                    )
+                                    sendNormalMsg(CmdHelper.getRespondSuccessCmd(CMD_ID_800D))
+                                }
+
+                                CMD_ID_800E -> {
+                                    val setSleepResult = msg[16].toInt()
+                                    settingSleepSet.setSleepConfigSuccess(setSleepResult == 1)
+                                }
+                            }
 
                         }
 
@@ -922,19 +960,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                     CMD_STR_8003_TIME_OUT ->
                         if (mTransferRetryCount < MAX_RETRY_COUNT) {
-                        mTransferRetryCount++
-                        sendNormalMsg(
-                            CmdHelper.getTransfer03Cmd(
-                                mOtaProcess,
-                                wmTransferFile.getOtaDataInfoNew(mFileDataArray!!, mOtaProcess),
-                                mDivide
+                            mTransferRetryCount++
+                            sendNormalMsg(
+                                CmdHelper.getTransfer03Cmd(
+                                    mOtaProcess,
+                                    wmTransferFile.getOtaDataInfoNew(mFileDataArray!!, mOtaProcess),
+                                    mDivide
+                                )
                             )
-                        )
-                    } else {
+                        } else {
 //                        if (mTransferFileListener != null) {
 //                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8003 time out")
 //                        }
-                    }
+                        }
 
                     CMD_STR_8004_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         mTransferRetryCount++
