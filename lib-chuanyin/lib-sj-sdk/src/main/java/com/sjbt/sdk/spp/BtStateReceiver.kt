@@ -136,8 +136,8 @@ class BtStateReceiver(cxt: Context, private val mOnBtStateListener: OnBtStateLis
                         }
                     } catch (ex: IOException) {
                         ex.printStackTrace()
+                        mOnBtStateListener?.onClassicBtDisConnect(dis_connect_device)
                     }
-                    mOnBtStateListener?.onClassicBtDisConnect(dis_connect_device)
                 }
             }
         }

@@ -27,9 +27,29 @@ data class WmDeviceInfo(
     /**
      * device name(设备名称)
      */
-    val deviceName: String
+    val deviceName: String,
+    /**
+     * 适配表盘
+     */
+    val dialAbility: String,
+    /**
+     * 屏幕规格 screen model
+     */
+    val screen: String,
+    /**
+     * 设备当前语言 device language
+     */
+    var lang: Int,
+    /**
+     * 设备屏幕 宽 screen width
+     */
+    var cw: Int,
+    /**
+     * 设备屏幕 高 screen height
+     */
+    var ch: Int
 ) {
     override fun toString(): String {
-        return "WmDevice(model='$model', macAddress='$macAddress', version='$version', deviceId='$deviceId', bluetoothName='$bluetoothName', deviceName='$deviceName')"
+        return "WmDeviceInfo(model='$model', macAddress='$macAddress', version='$version', deviceId='$deviceId', bluetoothName='$bluetoothName', deviceName='$deviceName', screen='$screen', lang=$lang, cw=$cw, ch=$ch)"
     }
 }

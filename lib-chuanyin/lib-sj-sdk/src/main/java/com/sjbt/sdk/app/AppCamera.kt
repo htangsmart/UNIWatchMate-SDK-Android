@@ -10,8 +10,8 @@ import com.sjbt.sdk.MSG_INTERVAL_FRAME
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.H264FrameMap
 import com.sjbt.sdk.entity.OtaCmdInfo
-import com.sjbt.sdk.spp.cmd.CmdHelper
-import com.sjbt.sdk.spp.cmd.DIVIDE_N_2
+import com.sjbt.sdk.spp.cmd.*
+import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
@@ -40,11 +40,11 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     private lateinit var mCameraHandler: Handler
     var needNewH264Frame = false
     var continueUpdateFrame: Boolean = false
-     var mCellLength = 0
-     var mDivide: Byte = 0
-     var mOtaProcess = 0
-     var mFramePackageCount = 0
-     var mFrameLastLen = 0
+    var mCellLength = 0
+    var mDivide: Byte = 0
+    var mOtaProcess = 0
+    var mFramePackageCount = 0
+    var mFrameLastLen = 0
 
     init {
         mCameraThread = HandlerThread("camera_send_thread")
@@ -207,7 +207,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                 }
 
                 try {
-                    val info: OtaCmdInfo = sjUniWatch.getCameraPreviewCmdInfo(
+                    val info: OtaCmdInfo = getCameraPreviewCmdInfo(
                         mFramePackageCount,
                         mFrameLastLen,
                         cameraFrameInfo,
@@ -329,5 +329,64 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         continueUpdateFrame = false
         LogUtils.logBlueTooth("停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
         mH264FrameMap.clear()
+    }
+
+
+    fun getCameraPreviewCmdInfo(
+        mFramePackageCount: Int,
+        mFrameLastLen: Int,
+        frameInfo: WmCameraFrameInfo,
+        i: Int
+    ): OtaCmdInfo {
+        val info = OtaCmdInfo()
+        val dataArray: ByteArray = frameInfo.frameData
+        if (i == 0 && mFramePackageCount > 1) {
+            mDivide = DIVIDE_Y_F_2
+        } else {
+            if (mFramePackageCount == 1) {
+                mDivide = DIVIDE_N_2
+            } else if (i == mFramePackageCount - 1) {
+                mDivide = DIVIDE_Y_E_2
+            } else {
+                mDivide = DIVIDE_Y_M_2
+            }
+        }
+
+//        LogUtils.logBlueTooth("分包类型：" + mDivide);
+        if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
+//            LogUtils.logBlueTooth("最后一包长度：" + mFrameLastLen);
+            if (mFrameLastLen == 0) {
+                info.offSet = i * mCellLength
+                info.payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            } else {
+                info.offSet = i * mCellLength
+                info.payload = ByteArray(mFrameLastLen)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            }
+        } else {
+            info.offSet = i * mCellLength
+            if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
+                LogUtils.logBlueTooth("本帧大小:" + dataArray.size)
+                LogUtils.logBlueTooth("帧数据长度：" + BtUtils.intToHex(dataArray.size))
+                if (dataArray.size < mCellLength) {
+                    LogUtils.logBlueTooth("不分包：$mDivide")
+                    mCellLength = dataArray.size
+                }
+                val byteBuffer = ByteBuffer.allocate(mCellLength + 5).order(ByteOrder.LITTLE_ENDIAN)
+                byteBuffer.put(frameInfo.frameType.toByte())
+                byteBuffer.putInt(dataArray.size)
+                val payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, 0, payload, 0, payload.size)
+                LogUtils.logBlueTooth("数据payload：" + payload.size)
+                byteBuffer.put(payload)
+                info.payload = byteBuffer.array()
+                LogUtils.logBlueTooth("首包payload总长度：" + info.payload.size)
+            } else {
+                info.payload = ByteArray(mCellLength)
+                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
+            }
+        }
+        return info
     }
 }

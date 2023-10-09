@@ -5,15 +5,10 @@ package com.base.sdk.entity.settings
  */
 data class WmUnitInfo(
     /**
-     * Length unit
-     * CM, INCH
-     */
-    var lengthUnit: LengthUnit,
-    /**
      * Weight unit
      * KG, LB
      */
-    val weightUnit: WeightUnit,
+    var weightUnit: WeightUnit,
     /**
      * Temperature unit
      * CELSIUS, FAHRENHEIT
@@ -29,13 +24,8 @@ data class WmUnitInfo(
      * Distance unit
      * KM, MILE
      */
-    val distanceUnit: DistanceUnit
+    var distanceUnit: DistanceUnit
 ) {
-    enum class LengthUnit {
-        CM,
-        INCH
-    }
-
     enum class WeightUnit {
         KG,
         LB
@@ -64,7 +54,7 @@ data class WmUnitInfo(
     }
 
     override fun toString(): String {
-        return "WmUnitInfo(lengthUnit=$lengthUnit, weightUnit=$weightUnit, temperatureUnit=$temperatureUnit, timeFormat=$timeFormat)"
+        return "WmUnitInfo(weightUnit=$weightUnit, temperatureUnit=$temperatureUnit, timeFormat=$timeFormat)"
     }
 }
 

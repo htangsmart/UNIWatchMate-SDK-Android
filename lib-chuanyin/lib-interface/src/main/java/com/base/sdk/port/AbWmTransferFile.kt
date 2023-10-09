@@ -16,7 +16,7 @@ abstract class AbWmTransferFile {
 /**
  * 传输文件类型
  */
-enum class FileType(type: Int) {
+enum class FileType(val type: Int) {
     MUSIC(1),//MP3类型
     OTA(2),//设备ota
     DIAL(3),//表盘
@@ -30,14 +30,14 @@ enum class FileType(type: Int) {
 /**
  * 传输状态
  */
-class WmTransferState(
-    state: State,//传输任务总体状态
-    success: Boolean,//当前文件是否传输成功
-    total: Int,//传输文件个数
-    sendingFile: File//返回当前传输的文件
-) {
+class WmTransferState(var total: Int) {
+    var state: State = State.PRE_TRANSFER//传输任务总体状态
+    var sendingFile: File? = null//返回当前传输的文件
     var progress: Int = 0//当前文件传输进度
     var index: Int = 0 //正在传输第几个文件
+    override fun toString(): String {
+        return "WmTransferState(total=$total, state=$state, sendingFile=$sendingFile, progress=$progress, index=$index)"
+    }
 }
 
 /**
@@ -46,5 +46,5 @@ class WmTransferState(
 enum class State {
     PRE_TRANSFER,
     TRANSFERRING,
-    ALL_FINISH
+    FINISH
 }

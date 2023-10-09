@@ -42,6 +42,7 @@ class SettingDateTime(sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
         return Single.create(object : SingleOnSubscribe<WmDateTime> {
             override fun subscribe(emitter: SingleEmitter<WmDateTime>) {
                 getEmitter = emitter
+                getEmitter.onError(RuntimeException("time not support get!"))
             }
         })
     }

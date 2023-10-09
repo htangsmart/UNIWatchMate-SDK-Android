@@ -32,7 +32,7 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
             if (type == 4) {
                 it.isScreenWakeEnabled = value == 1
                 backWmWistRaise = it
-                setEmitter?.onSuccess(it)
+                observeEmitter?.onNext(it)
             }
         }
     }
@@ -40,6 +40,7 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
     fun setSuccess() {
         mWmWistRaise?.isScreenWakeEnabled = backWmWistRaise.isScreenWakeEnabled
         setEmitter?.onSuccess(backWmWistRaise)
+        observeEmitter?.onNext(backWmWistRaise)
     }
 
     override fun isSupport(): Boolean {
