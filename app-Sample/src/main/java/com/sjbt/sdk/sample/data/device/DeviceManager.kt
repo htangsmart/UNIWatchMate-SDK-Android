@@ -2,7 +2,6 @@ package com.sjbt.sdk.sample.data.device
 
 import android.content.Context
 import android.text.TextUtils
-import android.widget.Toast
 import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -12,6 +11,10 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDateTime
+import com.base.sdk.entity.settings.WmPersonalInfo
+import com.base.sdk.entity.settings.WmUnitInfo
+import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.data.config.SportGoalRepository
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
@@ -20,10 +23,8 @@ import com.sjbt.sdk.sample.entity.DeviceBindEntity
 import com.sjbt.sdk.sample.entity.toModel
 import com.sjbt.sdk.sample.model.device.ConnectorDevice
 import com.sjbt.sdk.sample.model.user.UserInfo
-import com.sjbt.sdk.sample.model.user.toSdkUser
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import com.sjbt.sdk.utils.UrlParse
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -32,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 interface DeviceManager {
@@ -206,17 +208,20 @@ internal class DeviceManagerImpl(
         applicationScope.launch {
             //Connect or disconnect when device changed
             //当登录设备或用户变化时，把个人资料更新到设备
-            deviceFromStorage.collect {device->
+            deviceFromStorage.collect { device ->
                 Timber.tag(TAG).e("it.device == $device", device)
-                if(deviceFromMemory.value == null){
+                if (deviceFromMemory.value == null) {
                     internalStorage.flowAuthedUserId.value?.let {
                         val userInfo = userInfoRepository.getUserInfo(it)
-                        userInfo?.let {userInfo->
-                            Timber.tag(TAG).e("UNIWatchMate.connect" )
-                            device?.let {storageDevice->
+                        userInfo?.let { userInfo ->
+                            device?.let { storageDevice ->
+                                Timber.tag(TAG).e("UNIWatchMate.connect")
                                 UNIWatchMate.connect(
                                     address = device!!.address,
-                                    WmBindInfo(userInfo.id.toString() ,"name",BindType.DISCOVERY,WmDeviceModel.SJ_WATCH)
+                                    WmBindInfo(userInfo.id.toString(),
+                                        "name",
+                                        BindType.DISCOVERY,
+                                        WmDeviceModel.SJ_WATCH)
                                 )
                             }
                         }
@@ -264,35 +269,44 @@ internal class DeviceManagerImpl(
 //                    runCatchingWithLog {
 ////                        syncDataRepository.saveTodayStep(userId, null)
 //                    }
-//                }
-
                 runCatchingWithLog {
-//                    Timber.tag(TAG).e("setExerciseGoal")
-//                    sportGoalRepository.flowCurrent.value.let {
-//                        UNIWatchMate.mInstance?.wmSettings?.settingSportGoal?.set(it)?.await()
-//                    }
+                    Timber.tag(TAG).i("setExerciseGoal")
                 }
                 runCatchingWithLog {
-//                    Timber.tag(TAG).e("setUserInfo")
+                    Timber.tag(TAG).i("settingDateTime")
+                    val nowMillis = System.currentTimeMillis()
+                    val wmDateTime =
+                        WmDateTime(TimeZone.getDefault().id,
+                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
+                            WmUnitInfo.DateFormat.YYYY_MM_DD,
+                            nowMillis,
+                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
+                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat()))
+                    Timber.tag(TAG).i("settingDateTime wmDateTime=${wmDateTime}")
+                    UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
+                }
+                runCatchingWithLog {
+                    Timber.tag(TAG).i("setUserInfo")
                     userInfoRepository.flowCurrent.value?.let {
-//                        val birthDate = WmPersonalInfo.BirthDate(
-//                            it.birthYear,
-//                            it.birthMonth,
-//                            it.birthDay
-//                        )
-//                        val wmPersonalInfo = WmPersonalInfo(
-//                            it.height,
-//                            it.weight,
-//                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
-//                            birthDate
-//                        )
-//                        UNIWatchMate.mInstance?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)
+                        val birthDate = WmPersonalInfo.BirthDate(
+                            it.birthYear.toShort(),
+                            it.birthMonth.toByte(),
+                            it.birthDay.toByte()
+                        )
+                        val wmPersonalInfo = WmPersonalInfo(
+                            it.height.toShort(),
+                            it.weight.toShort(),
+                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
+                            birthDate
+                        )
+                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }
 
                 if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     syncData()
                 }
+                Timber.tag(TAG).d("onConnected over")
             }
         } else {
             Timber.tag(TAG).w("onConnected error because no authed user")

@@ -109,9 +109,9 @@
             app:preferenceTitle="@string/ds_contacts" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_power_save_mode"
+            android:id="@+id/item_test_send_notification"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_power_save_mode" />
+            app:preferenceTitle="@string/ds_test_send_notification" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sport_push"

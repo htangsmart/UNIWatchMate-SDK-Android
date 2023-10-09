@@ -4,17 +4,23 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.apps.WmNotification
+import com.base.sdk.entity.apps.WmNotificationType
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.await
 import timber.log.Timber
 
 @StringRes
@@ -47,7 +53,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemQrCodes.setOnClickListener(blockClick)
         viewBind.itemAlarm.setOnClickListener(blockClick)
         viewBind.itemContacts.setOnClickListener(blockClick)
-        viewBind.itemPowerSaveMode.setOnClickListener(blockClick)
+        viewBind.itemTestSendNotification.setOnClickListener(blockClick)
         viewBind.itemSportPush.setOnClickListener(blockClick)
         viewBind.itemDial.setOnClickListener(blockClick)
         viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
@@ -167,9 +173,12 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            viewBind.itemContacts -> {
 //                findNavController().navigate(DeviceFragmentDirections.toContacts())
 //            }
-//            viewBind.itemPowerSaveMode -> {
-//                findNavController().navigate(DeviceFragmentDirections.toPowerSaveMode())
-//            }
+            viewBind.itemTestSendNotification -> {
+                applicationScope.launchWithLog {
+                    UNIWatchMate?.wmApps?.appNotification?.sendNotification(WmNotification(
+                        WmNotificationType.WECHAT,"title_notification","content_notification","sub_content_notification"))
+                }
+            }
 //            viewBind.itemGamePush -> {
 //                findNavController().navigate(DeviceFragmentDirections.toGamePush())
 //            }

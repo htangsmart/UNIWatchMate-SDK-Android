@@ -27,7 +27,7 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewBind.itemNotification.setOnClickListener(blockClick)
+//        viewBind.itemNotification.setOnClickListener(blockClick)
         viewBind.itemFunction.setOnClickListener(blockClick)
         viewBind.itemHealthMonitor.setOnClickListener(blockClick)
         viewBind.itemSedentary.setOnClickListener(blockClick)
@@ -74,9 +74,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
     private val blockClick: (View) -> Unit = { view ->
         when (view) {
 
-            viewBind.itemNotification -> {
-                findNavController().navigate(DeviceConfigFragmentDirections.toNotificationConfig())
-            }
+//            viewBind.itemNotification -> {
+//                findNavController().navigate(DeviceConfigFragmentDirections.toNotificationConfig())
+//            }
             viewBind.itemFunction -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toFunctionConfig())
             }

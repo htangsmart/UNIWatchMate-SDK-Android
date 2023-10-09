@@ -5,17 +5,21 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatDialogFragment
+import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmNotification
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentNotificationConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 
 /**
  * **Document**
@@ -32,7 +36,7 @@ class NotificationConfigFragment : BaseFragment(R.layout.fragment_notification_c
     CompoundButton.OnCheckedChangeListener {
 
     private val viewBind: FragmentNotificationConfigBinding by viewBinding()
-
+    private val deviceManager = Injector.getDeviceManager()
     //    private val deviceManager = Injector.getDeviceManager()
     private val applicationScope = Injector.getApplicationScope()
 
@@ -48,18 +52,24 @@ class NotificationConfigFragment : BaseFragment(R.layout.fragment_notification_c
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-//                deviceManager.flowStateConnected().collect {
-//                    viewBind.layoutContent.setAllChildEnabled(it)
+                deviceManager.flowStateConnected().collect {
+                    viewBind.layoutContent.setAllChildEnabled(it)
+                    updateUI()
+                }
+            }
+            launch {
+//                通知设置是新的，通知是旧的
+//                UNIWatchMate?.wmApps?.appNotification?.sendNotification(WmNotification())?.asFlow()?.collect {
+//                    config = it
 //                    updateUI()
 //                }
             }
             launch {
-//                deviceManager.configFeature.observerNotificationConfig().asFlow().collect {
-////                    if (config != it) {
-////                        config = it
-////                        updateUI()
-////                    }
-//                }
+//                UNIWatchMate?.wmSettings?.settingSleepSettings?.get()?.toObservable()?.asFlow()
+//                    ?.collect {
+//                        config = it
+//                        updateUI()
+//                    }
             }
         }
 
