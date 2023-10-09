@@ -169,10 +169,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 findNavController().navigate(DeviceFragmentDirections.toAlarm())
             }
 
-            viewBind.itemTransferFile -> {
-//                val txtList= mutableListOf<File>()
-//                UNIWatchMate.wmTransferFile.startTransfer(FileType.TXT,txtList)
-            }
 //            viewBind.itemContacts -> {
 //                findNavController().navigate(DeviceFragmentDirections.toContacts())
 //            }

@@ -258,7 +258,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                             it.soft_ver,
                                             it.dev_id,
                                             it.dev_name,
-                                            it.dev_name
+                                            it.dev_name,
+                                            it.dial_ability,
+                                            it.screen,
+                                            it.lang,
+                                            it.cw,
+                                            it.ch
                                         )
                                         syncDeviceInfo.deviceEmitter?.onSuccess(wm)
                                     }
