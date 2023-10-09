@@ -8,10 +8,12 @@ import io.reactivex.rxjava3.core.*
 
 class SettingSleepSet(sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>() {
 
-    lateinit var observeSleepSettingEmitter: ObservableEmitter<WmSleepSettings>
-    lateinit var setSleepSettingEmitter: SingleEmitter<WmSleepSettings>
-    lateinit var getSleepSettingEmitter: SingleEmitter<WmSleepSettings>
+    var observeSleepSettingEmitter: ObservableEmitter<WmSleepSettings>? = null
+    var setSleepSettingEmitter: SingleEmitter<WmSleepSettings>? = null
+    var getSleepSettingEmitter: SingleEmitter<WmSleepSettings>? = null
     private val sjUniWatch = sjUniWatch
+
+    private var wmSleepSettings: WmSleepSettings? = null
 
     override fun isSupport(): Boolean {
         return true
@@ -23,6 +25,19 @@ class SettingSleepSet(sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>() {
                 observeSleepSettingEmitter = emitter
             }
         })
+    }
+
+    fun setSleepConfigSuccess(result: Boolean) {
+        if (result) {
+            setSleepSettingEmitter?.onSuccess(wmSleepSettings)
+        } else {
+            setSleepSettingEmitter?.onSuccess(null)
+        }
+    }
+
+    fun observeSleepSetting(wmSleepSettings: WmSleepSettings) {
+        this.wmSleepSettings = wmSleepSettings
+        observeSleepSettingEmitter?.onNext(wmSleepSettings)
     }
 
     override fun set(obj: WmSleepSettings): Single<WmSleepSettings> {

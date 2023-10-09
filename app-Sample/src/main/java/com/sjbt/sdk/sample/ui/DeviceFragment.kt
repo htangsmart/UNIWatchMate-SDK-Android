@@ -8,6 +8,7 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
+import com.base.sdk.port.FileType
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
@@ -22,6 +23,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
+import java.io.File
 
 @StringRes
 fun WmConnectState.toStringRes(): Int {
@@ -58,6 +60,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemDial.setOnClickListener(blockClick)
         viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
         viewBind.itemCamera.setOnClickListener(blockClick)
+        viewBind.itemTransferFile.setOnClickListener(blockClick)
 //        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
 //        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
 //        viewBind.itemCricket.clickTrigger(block = blockClick)
@@ -169,6 +172,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            }
             viewBind.itemAlarm -> {
                 findNavController().navigate(DeviceFragmentDirections.toAlarm())
+            }
+
+            viewBind.itemTransferFile -> {
+//                val txtList= mutableListOf<File>()
+//                UNIWatchMate.wmTransferFile.startTransfer(FileType.TXT,txtList)
             }
 //            viewBind.itemContacts -> {
 //                findNavController().navigate(DeviceFragmentDirections.toContacts())
