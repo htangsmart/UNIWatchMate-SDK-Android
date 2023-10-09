@@ -270,7 +270,10 @@ internal class DeviceManagerImpl(
 ////                        syncDataRepository.saveTodayStep(userId, null)
 //                    }
                 runCatchingWithLog {
-                    Timber.tag(TAG).i("setExerciseGoal")
+                    Timber.tag(TAG).i("getDeviceInfo")
+                    UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.toObservable()?.asFlow()?.collect{
+
+                    }
                 }
                 runCatchingWithLog {
                     Timber.tag(TAG).i("settingDateTime")
@@ -284,6 +287,9 @@ internal class DeviceManagerImpl(
                             TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat()))
                     Timber.tag(TAG).i("settingDateTime wmDateTime=${wmDateTime}")
                     UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
+                }
+                runCatchingWithLog {
+                    Timber.tag(TAG).i("setExerciseGoal")
                 }
                 runCatchingWithLog {
                     Timber.tag(TAG).i("setUserInfo")

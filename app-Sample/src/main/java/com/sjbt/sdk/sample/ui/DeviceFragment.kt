@@ -9,19 +9,17 @@ import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
 import com.base.sdk.port.FileType
+import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
-import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.launchWithLog
-import com.sjbt.sdk.sample.utils.setAllChildEnabled
-import com.sjbt.sdk.sample.utils.viewLifecycle
+import com.sjbt.sdk.sample.ui.camera.CameraActivity
+import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.await
 import timber.log.Timber
 import java.io.File
 
@@ -43,7 +41,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
 
-    //  private val viewModel: DeviceViewMode by viewModels()
     private val deviceManager = Injector.getDeviceManager()
 
 
@@ -120,15 +117,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //                    viewBind.itemVersionInfo.getTextView().text = it.hardwareInfoDisplay()
 //                }
             }
-            launch {
-//                viewModel.flowState.collect {
-//                    if (it.asyncCheckUpgrade is Loading) {
-//                        promptProgress.showProgress(R.string.tip_please_wait)
-//                    } else {
-//                        promptProgress.dismiss()
-//                    }
-//                }
-            }
+
             launch {
 //                viewModel.flowEvent.collect {
 //                    when (it) {
@@ -175,8 +164,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             }
 
             viewBind.itemTransferFile -> {
-//                val txtList= mutableListOf<File>()
-//                UNIWatchMate.wmTransferFile.startTransfer(FileType.TXT,txtList)
+                val txtList = mutableListOf<File>()
+                UNIWatchMate.wmTransferFile.startTransfer(FileType.TXT, txtList)
             }
 //            viewBind.itemContacts -> {
 //                findNavController().navigate(DeviceFragmentDirections.toContacts())
@@ -184,7 +173,12 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             viewBind.itemTestSendNotification -> {
                 applicationScope.launchWithLog {
                     UNIWatchMate?.wmApps?.appNotification?.sendNotification(WmNotification(
-                        WmNotificationType.WECHAT,"title_notification","content_notification","sub_content_notification"))
+                        WmNotificationType.WECHAT,
+                        "title_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
+                        "content_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
+                        "sub_content_notification"))?.subscribe { result ->
+                        Timber.tag("appNotification").i("appNotification result=$result")
+                    }
                 }
             }
 //            viewBind.itemGamePush -> {
@@ -197,8 +191,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
 //            }
                 viewBind.itemCamera -> {
-
-//                CameraActivity.start(requireContext(), false)
+                    PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
+                        if (it) {
+                            CameraActivity.launchActivity(activity)
+                        }
+                    }
                 }
 //            viewBind.itemModifyLogo -> {
 //                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
@@ -217,8 +214,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 ////If you jump directly , you can select a local file for OTA. This may be more convenient for testing
 ////                findNavController().navigate(DeviceFragmentDirections.toHardwareUpgrade(null))
 //            }
+            }
         }
-    }
 
 //    override fun navToConnectHelp() {
 //        findNavController().navigate(DeviceFragmentDirections.toConnectHelp())
@@ -232,18 +229,5 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //        val asyncCheckUpgrade: Async<HardwareUpgradeInfo?> = Uninitialized
 //    )
 
-}
+    }
 
-//class DeviceViewMode : AsyncViewModel<DeviceFragment.State>(DeviceFragment.State()) {
-
-//    private val versionRepository = Injector.getVersionRepository()
-//
-//    fun checkUpgrade() {
-//        suspend {
-//            versionRepository.checkUpgrade()
-//        }.execute(DeviceFragment.State::asyncCheckUpgrade) {
-//            copy(asyncCheckUpgrade = it)
-//        }
-//    }
-
-//}

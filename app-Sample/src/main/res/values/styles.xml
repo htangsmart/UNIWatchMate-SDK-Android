@@ -91,4 +91,60 @@
         <item name="prompt_icon_tint_color">@color/colorPrimary</item>
         <item name="prompt_text_color">?android:textColorSecondary</item>
     </style>
+
+
+    <!-- 定义对话框样式 -->
+    <style name="CustomDialogWhite" parent="android:style/Theme.Dialog">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+
+    <style name="CustomDialogTrans" parent="@style/CustomDialogWhite">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!--控制dialog进出动画-->
+    <style name="dialog_animation_top_enter" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/dialog_top_enter</item>
+        <!-- 进入时的动画 -->
+        <item name="android:windowExitAnimation">@anim/dialog_top_exit</item>
+        <!-- 退出时的动画 -->
+    </style>
+
+    <style name="dialog_animation_bottom_enter" parent="android:Animation">
+        <item name="android:windowEnterAnimation">@anim/dialog_bottom_enter</item>
+        <!-- 进入时的动画 -->
+        <item name="android:windowExitAnimation">@anim/dialog_bottom_exit</item>
+        <!-- 退出时的动画 -->
+    </style>
+
+    <style name="ActivityInOutAnim" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/in_from_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/out_to_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/in_from_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/out_to_right</item>
+    </style>
+
+    <style name="dialog_container">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/shape_dialog_bg_normal</item>
+    </style>
+
+    <style name="dialog_tip">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:lineHeight">20dp</item>
+        <item name="android:layout_marginRight">20dp</item>
+        <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:textColor">@color/color_222222</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>

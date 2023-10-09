@@ -31,8 +31,9 @@ import kotlinx.coroutines.rx3.await
  * 1. [AppViewConfigFragment]
  * Display and modify
  */
+const val APP_VIEW_GRID_ID = 1
+const val APP_VIEW_LIST_ID = 3
 class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
-
     private val viewBind: FragmentAppViewBinding by viewBinding()
 
     private val deviceManager = Injector.getDeviceManager()
@@ -73,7 +74,7 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
         viewBind.itemAppViewGridding.setOnClickListener {
             config?.let {
                 for (bean in it.appViewList) {
-                    if (bean.id == 1) {
+                    if (bean.id == APP_VIEW_GRID_ID) {
                         bean.status=1
                     }else{
                         bean.status=0
@@ -86,7 +87,7 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
         viewBind.itemAppViewList.setOnClickListener {
             config?.let {
                 for (bean in it.appViewList) {
-                    if (bean.id == 3) {
+                    if (bean.id == APP_VIEW_LIST_ID) {
                         bean.status=1
                     }else{
                         bean.status=0
@@ -110,9 +111,9 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
         hideAllView()
         config?.let {
             for (bean in it.appViewList) {
-                if (bean.id == 1) {
+                if (bean.id == APP_VIEW_GRID_ID) {
                     viewBind.itemAppViewGridding.getImageView().visibility=if(bean.status==1) View.VISIBLE else View.INVISIBLE
-                }else if(bean.id == 3){
+                }else if(bean.id == APP_VIEW_LIST_ID){
                     viewBind.itemAppViewList.getImageView().visibility=if(bean.status==1) View.VISIBLE else View.INVISIBLE
                 }
             }
@@ -120,7 +121,6 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
     }
 
     private fun hideAllView() {
-
         viewBind.itemAppViewGridding.getImageView().visibility=View.INVISIBLE
         viewBind.itemAppViewList.getImageView().visibility=View.INVISIBLE
     }

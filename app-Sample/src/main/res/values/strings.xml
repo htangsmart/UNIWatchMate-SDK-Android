@@ -328,7 +328,8 @@
     <!--Camera control-->
     <string name="ds_camera_control">Camera Control</string>
     <string name="ds_basic_device_info">Basic device information</string>
-
+    <!--Camera control-->
+    <string name="ds_transfer_file">ds_transfer_file</string>
     <!--Device Settings:Find Phone-->
     <string name="ds_find_phone_found">Found mobile phone</string>
     <string name="ds_find_phone_stop">Click to stop finding</string>
@@ -362,4 +363,24 @@
 
 <!--sleep config-->
     <string name="ds_sleep_config">sleep config</string>
+
+<!--Camera-->
+    <string name="sure">Sure</string>
+    <string name="cancel">Cancel</string>
+    <string name="camera_permission_reject">Camera permission denied, temporarily unusable.</string>
+    <string name="camera_open_tip">Please open the watch\'s camera remote control.</string>
+    <string name="open_camera_permission">Open Permissions</string>
+    <string name="open_camera_permission_tip">Camera permission denied, temporarily unable to use.</string>
+    <string name="open_storage_permission_tip">Photo save permission denied, can\'t use temporarily.</string>
+    <string name="open_location_permission_tip">Please enable location services for more accurate weather forecasts.</string>
+    <string name="open_location_permission">go open</string>
+    <string name="open_gps_tips">Enable location services, get more accurate weather forecast ></string>
+    <string name="camera_err">Photo Error</string>
+    <string name="relogin_tips">Key account info updated, please log in again for your info security.</string>
+    <string name="pic_save_to_gallery">Save photo to album</string>
+    <string name="disconnect_tips">Device connection has been disconnected, please select another device.</string>
+    <string name="submit">Confirm</string>
+    <string name="confirm">Confirm</string>
+    <string name="gentlly_remind">Warm Reminder</string>
+
 </resources>

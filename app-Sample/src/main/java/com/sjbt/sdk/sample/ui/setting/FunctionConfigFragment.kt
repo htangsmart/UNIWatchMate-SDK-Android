@@ -48,15 +48,16 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                config = UNIWatchMate.wmSettings.settingUnitInfo.get().blockingGet()
+                UNIWatchMate.wmSettings.settingUnitInfo.get().toObservable().asFlow().collect{
+                    config = it
+                    updateUI()
+                }
             }
 
             launch {
                 UNIWatchMate.wmSettings.settingUnitInfo.observeChange().asFlow().collect {
-                    if (config != it) {
-                        config = it
-                        updateUI()
-                    }
+                    config = it
+                    updateUI()
                 }
             }
         }

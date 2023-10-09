@@ -72,7 +72,7 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
         }
 
         viewBind.itemSleepEnable.getSwitchView().setOnCheckedChangeListener(this)
-        viewBind.itemStartTime.setOnClickListener { blockClick }
+        viewBind.itemStartTime.setOnClickListener(blockClick)
         viewBind.itemEndTime.setOnClickListener(blockClick)
     }
 
@@ -104,11 +104,11 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
 
     override fun onDialogTimePicker(tag: String?, timeMinute: Int) {
         if (DIALOG_START_TIME == tag) {
-            config!!.startMinute=  timeMinute % 60
-            config!!.startHour=  timeMinute / 60
+            config!!.startMinute = timeMinute % 60
+            config!!.startHour = timeMinute / 60
         } else if (DIALOG_END_TIME == tag) {
-            config!!.endMinute=  timeMinute % 60
-            config!!.endHour=  timeMinute / 60
+            config!!.endMinute = timeMinute % 60
+            config!!.endHour = timeMinute / 60
         }
         config?.saveConfig()
     }
@@ -123,8 +123,9 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
     private fun updateUI() {
         config?.let {
             viewBind.itemSleepEnable.getSwitchView().isChecked = it.open
-            viewBind.itemStartTime.getTextView().text = FormatterUtil.hmm(it.startHour,it.startMinute)
-            viewBind.itemEndTime.getTextView().text = FormatterUtil.hmm(it.endHour,it.endMinute)
+            viewBind.itemStartTime.getTextView().text =
+                FormatterUtil.hmm(it.startHour, it.startMinute)
+            viewBind.itemEndTime.getTextView().text = FormatterUtil.hmm(it.endHour, it.endMinute)
         }
 
     }

@@ -50,17 +50,19 @@ class TurnWristLightingConfigFragment : BaseFragment(R.layout.fragment_turn_wris
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.wmSettings.settingWistRaise.observeChange().asFlow().collect {
-                    config = it
-                    updateUI()
-                }
-            }
-            launch {
                 UNIWatchMate.observeConnectState.asFlow().collect {
                     viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
                     updateUI()
                 }
             }
+
+            launch {
+                UNIWatchMate.wmSettings.settingWistRaise.observeChange().asFlow().collect {
+                    config = it
+                    updateUI()
+                }
+            }
+
             launch {
                  UNIWatchMate.wmSettings.settingWistRaise.get().toObservable().asFlow().collect{
                     config = it

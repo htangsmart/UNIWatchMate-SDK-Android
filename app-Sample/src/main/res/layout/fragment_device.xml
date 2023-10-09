@@ -137,7 +137,7 @@
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_transfer_file"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_basic_device_info" />
+            app:preferenceTitle="@string/ds_transfer_file" />
 
         <!-- <com.sjbt.sdk.sample.widget.PreferenceItemView
              android:id="@+id/item_modify_logo"

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/dialog_container">
+
+    <TextView
+        style="@style/dialog_tip"
+        android:layout_marginTop="@dimen/dp_10"
+        android:text="@string/gentlly_remind"
+        />
+
+    <TextView
+        android:id="@+id/tv_tip"
+        android:layout_marginTop="@dimen/dp_20"
+        style="@style/dialog_tip"
+        />
+
+    <TextView
+        android:id="@+id/btn_ok"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:layout_weight="1"
+        android:layout_marginHorizontal="@dimen/dp_20"
+        android:layout_marginVertical="@dimen/dp_20"
+        android:gravity="center"
+        android:text="@string/confirm"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_size_16"
+        app:bl_corners_radius="@dimen/dp_15"
+        app:bl_enabled_gradient_angle="0"
+        app:bl_enabled_gradient_endColor="@color/color_white"
+        app:bl_enabled_gradient_startColor="@color/color_white"
+        app:bl_enabled_gradient_type="linear"
+        app:bl_solid_color="@color/color_4dfff"
+        app:bl_unEnabled_gradient_endColor="@color/color_4dfff"
+        app:bl_unEnabled_gradient_startColor="@color/color_4dfff" />
+
+</LinearLayout>

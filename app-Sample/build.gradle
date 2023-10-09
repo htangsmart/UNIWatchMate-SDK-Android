@@ -50,7 +50,7 @@ android {
         minSdk min_sdk_version
         targetSdk target_sdk_version
         versionCode 1
-        versionName "1.0.1"
+        versionName "1.0.2"
         signingConfig signingConfigs.release
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -196,7 +196,13 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
+    //代替shape简单实现圆角背景
+    implementation 'com.github.JavaNoober.BackgroundLibrary:library:1.7.2'
+    //代替selector简单实现selector注入
+    implementation 'com.github.tianzhijiexian:SelectorInjection:1.1.6'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+
 }

@@ -42,6 +42,17 @@ object PermissionHelper {
         requestPermission(fragment, permissions, grantResult)
     }
 
+    fun requestAppCameraAndStoreage(fragment: Fragment, grantResult: ((Boolean) -> Unit)) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            grantResult.invoke(true)
+            return
+        }
+        val permissions =  arrayListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        requestPermission(fragment, permissions, grantResult)
+    }
     fun hasCamera(context: Context): Boolean {
         return hasPermissions(context, arrayListOf(Manifest.permission.CAMERA))
     }
