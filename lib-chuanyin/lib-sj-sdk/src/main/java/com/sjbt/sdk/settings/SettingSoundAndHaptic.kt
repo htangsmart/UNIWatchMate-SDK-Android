@@ -7,35 +7,81 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHaptic>() {
-    lateinit var observeEmitter: ObservableEmitter<WmSoundAndHaptic>
-    lateinit var setEmitter: SingleEmitter<WmSoundAndHaptic>
-    lateinit var getEmitter: SingleEmitter<WmSoundAndHaptic>
+    var observeEmitter: ObservableEmitter<WmSoundAndHaptic>? = null
+    var setEmitter: SingleEmitter<WmSoundAndHaptic>? = null
+    var getEmitter: SingleEmitter<WmSoundAndHaptic>? = null
 
     private var sjUniWatch = sjUniWatch
     private var wmSoundAndHaptic: WmSoundAndHaptic? = null
+    private var backWmSoundAndHaptic = WmSoundAndHaptic();
 
     fun getWmWistRaise(wmWistRaise: WmSoundAndHaptic) {
+        backWmSoundAndHaptic = wmWistRaise
+        wmSoundAndHaptic = WmSoundAndHaptic(
+            wmWistRaise.isRingtoneEnabled,
+            wmWistRaise.isNotificationHaptic,
+            wmWistRaise.isCrownHapticFeedback,
+            wmWistRaise.isSystemHapticFeedback,
+            wmWistRaise.isMuted
+        )
         getEmitter?.onSuccess(wmWistRaise)
     }
 
     fun observeWmWistRaiseChange(wmWistRaise: WmSoundAndHaptic) {
+        backWmSoundAndHaptic = wmWistRaise
+        wmSoundAndHaptic = WmSoundAndHaptic(
+            wmWistRaise.isRingtoneEnabled,
+            wmWistRaise.isNotificationHaptic,
+            wmWistRaise.isCrownHapticFeedback,
+            wmWistRaise.isSystemHapticFeedback,
+            wmWistRaise.isMuted
+        )
         observeEmitter?.onNext(wmWistRaise)
     }
 
     fun observeWmWistRaiseChange(type: Int, value: Int) {
         wmSoundAndHaptic?.let {
             when (type) {
+                0 -> {
+                    it.isRingtoneEnabled = value == 1
+                    backWmSoundAndHaptic.isRingtoneEnabled = value == 1
+                }
+
+                1 -> {
+                    it.isNotificationHaptic = value == 1
+                    backWmSoundAndHaptic.isNotificationHaptic = value == 1
+                }
+
+                2 -> {
+                    it.isCrownHapticFeedback = value == 1
+                    backWmSoundAndHaptic.isCrownHapticFeedback = value == 1
+                }
+
+                3 -> {
+                    it.isSystemHapticFeedback = value == 1
+                    backWmSoundAndHaptic.isSystemHapticFeedback = value == 1
+                }
+
                 4 -> {
-                    setEmitter.onSuccess(it)
+                    it.isMuted = value == 1
+                    backWmSoundAndHaptic.isMuted = value == 1
                 }
             }
+
+            setEmitter?.onSuccess(backWmSoundAndHaptic)
+
         }
     }
 
     fun setSuccess() {
-        wmSoundAndHaptic?.let {
-            setEmitter.onSuccess(it)
-        }
+        wmSoundAndHaptic?.isRingtoneEnabled = backWmSoundAndHaptic.isRingtoneEnabled
+        wmSoundAndHaptic?.isNotificationHaptic = backWmSoundAndHaptic.isNotificationHaptic
+        wmSoundAndHaptic?.isMuted = backWmSoundAndHaptic.isMuted
+        wmSoundAndHaptic?.isCrownHapticFeedback = backWmSoundAndHaptic.isCrownHapticFeedback
+        wmSoundAndHaptic?.isSystemHapticFeedback = backWmSoundAndHaptic.isSystemHapticFeedback
+
+        setEmitter?.onSuccess(backWmSoundAndHaptic)
+        observeEmitter?.onNext(backWmSoundAndHaptic)
     }
 
     override fun isSupport(): Boolean {
@@ -54,6 +100,7 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
         return Single.create(object : SingleOnSubscribe<WmSoundAndHaptic> {
             override fun subscribe(emitter: SingleEmitter<WmSoundAndHaptic>) {
                 setEmitter = emitter
+                backWmSoundAndHaptic = obj
 
                 wmSoundAndHaptic?.let {
                     if (it.isRingtoneEnabled != obj.isRingtoneEnabled) {
@@ -67,7 +114,7 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getSetDeviceRingStateCmd(
                                 1.toByte(),
-                                if (obj.isRingtoneEnabled) 1 else 0
+                                if (obj.isNotificationHaptic) 1 else 0
                             )
                         )
                     } else if (it.isCrownHapticFeedback != obj.isCrownHapticFeedback) {
@@ -75,7 +122,7 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getSetDeviceRingStateCmd(
                                 2.toByte(),
-                                if (obj.isRingtoneEnabled) 1 else 0
+                                if (obj.isCrownHapticFeedback) 1 else 0
                             )
                         )
                     } else if (it.isSystemHapticFeedback != obj.isSystemHapticFeedback) {
@@ -83,14 +130,14 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getSetDeviceRingStateCmd(
                                 3.toByte(),
-                                if (obj.isRingtoneEnabled) 1 else 0
+                                if (obj.isSystemHapticFeedback) 1 else 0
                             )
                         )
                     } else if (it.isMuted != obj.isMuted) {
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getSetDeviceRingStateCmd(
                                 5.toByte(),
-                                if (obj.isRingtoneEnabled) 1 else 0
+                                if (obj.isMuted) 1 else 0
                             )
                         )
                     } else {
@@ -106,6 +153,7 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
         return Single.create(object : SingleOnSubscribe<WmSoundAndHaptic> {
             override fun subscribe(emitter: SingleEmitter<WmSoundAndHaptic>) {
                 getEmitter = emitter
+                sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
             }
         })
     }

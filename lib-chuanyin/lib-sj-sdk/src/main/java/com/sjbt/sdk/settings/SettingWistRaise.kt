@@ -7,37 +7,39 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
-    lateinit var observeEmitter: ObservableEmitter<WmWistRaise>
-    lateinit var setEmitter: SingleEmitter<WmWistRaise>
-    lateinit var getEmitter: SingleEmitter<WmWistRaise>
+    var observeEmitter: ObservableEmitter<WmWistRaise>? = null
+    var setEmitter: SingleEmitter<WmWistRaise>? = null
+    var getEmitter: SingleEmitter<WmWistRaise>? = null
 
     private var sjUniWatch = sjUniWatch
-
     private var mWmWistRaise: WmWistRaise? = null
+    private var backWmWistRaise = WmWistRaise();
 
     fun getWmWistRaise(wmWistRaise: WmWistRaise) {
+        backWmWistRaise = wmWistRaise
+        mWmWistRaise = WmWistRaise(wmWistRaise.isScreenWakeEnabled)
         getEmitter?.onSuccess(wmWistRaise)
     }
 
     fun observeWmWistRaiseChange(wmWistRaise: WmWistRaise) {
+        backWmWistRaise = wmWistRaise
+        mWmWistRaise = WmWistRaise(wmWistRaise.isScreenWakeEnabled)
         observeEmitter?.onNext(wmWistRaise)
     }
 
     fun observeWmWistRaiseChange(type: Int, value: Int) {
         mWmWistRaise?.let {
-            when (type) {
-                4 -> {
-                    it.isScreenWakeEnabled = value == 1
-                    setEmitter.onSuccess(it)
-                }
+            if (type == 4) {
+                it.isScreenWakeEnabled = value == 1
+                backWmWistRaise = it
+                setEmitter?.onSuccess(it)
             }
         }
     }
 
     fun setSuccess() {
-        mWmWistRaise?.let {
-            setEmitter.onSuccess(it)
-        }
+        mWmWistRaise?.isScreenWakeEnabled = backWmWistRaise.isScreenWakeEnabled
+        setEmitter?.onSuccess(backWmWistRaise)
     }
 
     override fun isSupport(): Boolean {
@@ -56,6 +58,7 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
         return Single.create(object : SingleOnSubscribe<WmWistRaise> {
             override fun subscribe(emitter: SingleEmitter<WmWistRaise>) {
                 setEmitter = emitter
+                backWmWistRaise.isScreenWakeEnabled = obj.isScreenWakeEnabled
                 sjUniWatch.sendNormalMsg(
                     CmdHelper.getSetDeviceRingStateCmd(
                         4,
@@ -70,6 +73,7 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
         return Single.create(object : SingleOnSubscribe<WmWistRaise> {
             override fun subscribe(emitter: SingleEmitter<WmWistRaise>) {
                 getEmitter = emitter
+                sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
             }
         })
     }
