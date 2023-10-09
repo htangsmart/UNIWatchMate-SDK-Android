@@ -10,15 +10,16 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentSleepConfigBinding
 import com.sjbt.sdk.sample.di.Injector
-import com.sjbt.sdk.sample.dialog.TimePickerDialogFragment
+import com.sjbt.sdk.sample.dialog.*
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.topstep.fitcloud.sdk.v2.model.config.FcDNDConfig
 import com.topstep.fitcloud.sdk.v2.model.config.FcDeviceInfo
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
 
 /**
  * **Document**
@@ -73,9 +74,9 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
             }
         }
 
-//        viewBind.itemPeriodTime.getSwitchView().setOnCheckedChangeListener(this)
-//        viewBind.itemStartTime.clickTrigger(block = blockClick)
-//        viewBind.itemEndTime.clickTrigger(block = blockClick)
+        viewBind.itemSleepEnable.getSwitchView().setOnCheckedChangeListener(this)
+        viewBind.itemStartTime.setOnClickListener { blockClick }
+        viewBind.itemEndTime.setOnClickListener(blockClick)
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -88,27 +89,31 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
     private val blockClick: (View) -> Unit = { view ->
         when (view) {
             viewBind.itemStartTime -> {
-//                showStartTimeDialog(config.startHour())
+                config?.let {
+                    showStartTimeDialog(it.startHour * 60 + it.startMinute)
+                }
             }
             viewBind.itemEndTime -> {
-//                showEndTimeDialog(config.getEnd())
+                config?.let {
+                    showEndTimeDialog(it.endHour * 60 + it.endMinute)
+                }
             }
         }
     }
 
     override fun onDialogTimePicker(tag: String?, timeMinute: Int) {
-//        if (DIALOG_START_TIME == tag) {
+        if (DIALOG_START_TIME == tag) {
 //            config.toBuilder().setStart(timeMinute).create().saveConfig()
-//        } else if (DIALOG_END_TIME == tag) {
+        } else if (DIALOG_END_TIME == tag) {
 //            config.toBuilder().setEnd(timeMinute).create().saveConfig()
-//        }
+        }
+        config?.saveConfig()
     }
 
-    private fun FcDNDConfig.saveConfig() {
-//        applicationScope.launchWithLog {
-//            deviceManager.configFeature.setDNDConfig(this@saveConfig).await()
-//        }
-//        this@DNDConfigFragment.config = this
+    private fun WmSleepSettings.saveConfig() {
+        applicationScope.launchWithLog {
+            UNIWatchMate?.wmSettings?.settingSleepSettings?.set(config!!).await()
+        }
         updateUI()
     }
 

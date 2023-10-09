@@ -77,7 +77,7 @@ interface DeviceManager {
     /**
      * Unbind device and clear the device info in the storage.
      */
-    suspend fun unbind()
+    suspend fun delDevice()
 
     /**
      * Reset device and clear the device info in the storage.
@@ -363,14 +363,14 @@ internal class DeviceManagerImpl(
         }
     }
 
-    override suspend fun unbind() {
-        UNIWatchMate.disconnect()
+    override suspend fun delDevice() {
+//        UNIWatchMate.disconnect()
 //        connector.settingsFeature().unbindUser()
 //            .ignoreElement().onErrorComplete()
 //            .andThen(
 //                connector.settingsFeature().unbindAudioDevice().onErrorComplete()
 //            ).await()
-//        clearDevice()
+        clearDevice()
     }
 
     override suspend fun reset() {
