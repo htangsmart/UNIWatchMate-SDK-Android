@@ -12,12 +12,7 @@ import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.FileUtils
 import com.sjbt.sdk.utils.LogUtils
-import com.sjbt.sdk.utils.readFileBytes
 import io.reactivex.rxjava3.core.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -44,8 +39,10 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
     private var mTransferring = false
 
     val mSportMap = HashMap<FileType, Boolean>()
-    lateinit var cancelTransfer: SingleEmitter<Boolean>
-    lateinit var observableTransferEmitter: ObservableEmitter<WmTransferState>
+    var cancelTransfer: SingleEmitter<Boolean>? = null
+    var observableTransferEmitter: ObservableEmitter<WmTransferState>? = null
+
+    var transferState: WmTransferState? = null
 
     override fun isSupport(fileType: FileType): Boolean {
         return mSportMap[fileType] == true
@@ -63,7 +60,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 
     fun transferEnd() {
         try {
-//            mBtEngine.clearMsgQueue()
+            sjUniWatch.clearMsg()
             mOtaProcess = 0
             mTransferRetryCount = 0
             mTransferring = false
@@ -75,6 +72,15 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
     }
 
     override fun startTransfer(fileType: FileType, files: List<File>): Observable<WmTransferState> {
+        mTransferFiles = files
+        transferState = WmTransferState(
+            mTransferFiles!!.size
+        ).also {
+            it.state = State.PRE_TRANSFER
+            it.index = 0
+            it.progress = 0
+        }
+
         return Observable.create(object : ObservableOnSubscribe<WmTransferState> {
             override fun subscribe(emitter: ObservableEmitter<WmTransferState>) {
                 observableTransferEmitter = emitter
@@ -87,7 +93,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 
                 sjUniWatch.sendNormalMsg(
                     CmdHelper.getTransferFile01Cmd(
-                        fileType.ordinal.toByte(),
+                        fileType.type.toByte(),
                         fileLen.toInt(),
                         files.size
                     )
@@ -108,26 +114,23 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 if (ota_allow.toInt() == 1) {
                     mSendingFile = mTransferFiles!![0]
 
-                    mSendingFile?.let { file ->
-                        file.readFileBytes()?.let {
-                            sjUniWatch.sendNormalMsg(
-                                CmdHelper.getTransferFile02Cmd(
-                                    it.size,
-                                    file.name
-                                )
-                            )
-                        }
+                    transferState?.let {
+                        it.sendingFile = mSendingFile
+                        it.state = State.TRANSFERRING
+                        observableTransferEmitter?.onNext(transferState)
+                    }
 
-                    }?.let {
-                        observableTransferEmitter.onError(
-                            RuntimeException("error file list , resaon:-1")
+                    mSendingFile?.let { file ->
+                        sjUniWatch.sendNormalMsg(
+                            CmdHelper.getTransferFile02Cmd(
+                                file.length().toInt(),
+                                file.name
+                            )
                         )
                     }
 
                 } else {
-                    observableTransferEmitter.onError(
-                        RuntimeException("device not allow transfer file , resaon:$reason")
-                    )
+                    transferError("device not allow transfer file , resaon:$reason")
                 }
             }
             CMD_ID_8002 -> {
@@ -137,35 +140,23 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mCellLength = ByteBuffer.wrap(lenArray)
                     .order(ByteOrder.LITTLE_ENDIAN).int - 4
                 LogUtils.logBlueTooth("cell_length:$mCellLength")
-                if (mCellLength != 0) {
+                if (mCellLength > 0) {
 
-                    GlobalScope.launch {
-                        // 在后台线程执行耗时操作
-                        withContext(Dispatchers.IO) {
-                            // 执行耗时操作
-                            mFileDataArray =
-                                FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
+                    Thread {
+                        mFileDataArray =
+                            FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
 
-                            mFileDataArray?.let {
-                                continueSendFileData(0, it)
-                            }?.let {
-                                observableTransferEmitter.onError(
-                                    RuntimeException("transfer file fail,reason: -1")
-                                )
-                            }
+                        mFileDataArray?.let {
+                            LogUtils.logBlueTooth("开启线程读取文件字节流长度：" + it.size)
+                            continueSendFileData(0, it)
                         }
-                        // 操作完成后在主线程更新 UI
-                        withContext(Dispatchers.Main) {
-                            // 更新 UI
-                        }
-                    }
+
+                    }.start()
 
                 } else {
                     mCanceledSend = true
                     transferEnd()
-                    observableTransferEmitter.onError(
-                        RuntimeException("transfer file fail,reason: cmd 02")
-                    )
+                    transferError("transfer file fail,reason: cmd 02")
                 }
             }
 
@@ -189,38 +180,23 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     mTransferRetryCount = 0
                     LogUtils.logBlueTooth("掰正的消息：$mOtaProcess")
 
-                    GlobalScope.launch {
-                        // 在后台线程执行耗时操作
-                        withContext(Dispatchers.IO) {
-                            // 执行耗时操作
-                            mFileDataArray =
-                                FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
+                    Thread {
+                        // 执行耗时操作
+                        mFileDataArray =
+                            FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
 
-                            mFileDataArray?.let {
+                        mFileDataArray?.let {
 
-                                if (mOtaProcess.toInt() != mPackageCount - 1) {
-                                    mOtaProcess++
-                                    continueSendFileData(
-                                        mOtaProcess,
-                                        it
-                                    )
-                                }
-
-                            }?.let {
-                                observableTransferEmitter.onError(
-                                    RuntimeException("transfer file fail,reason: -1")
+                            if (mOtaProcess.toInt() != mPackageCount - 1) {
+                                mOtaProcess++
+                                continueSendFileData(
+                                    mOtaProcess,
+                                    it
                                 )
                             }
 
-
                         }
-                        // 操作完成后在主线程更新 UI
-                        withContext(Dispatchers.Main) {
-                            // 更新 UI
-                        }
-                    }
-
-
+                    }.start()
                 }
             }
 
@@ -236,35 +212,29 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     if (mSendFileCount >= mTransferFiles!!.size) {
                         mTransferring = false
 
-                        val transferState = WmTransferState(
-                            State.ALL_FINISH,
-                            true,
-                            mTransferFiles!!.size,
-                            mSendingFile!!
-                        )
+                        transferState?.let {
+                            it.state = State.FINISH
+                            it.sendingFile = mSendingFile
+                            it.progress = 100
+                            it.index = mSendFileCount
 
-                        transferState.progress = 100
-                        transferState.index = mSendFileCount
+                            observableTransferEmitter?.onNext(it)
+                            observableTransferEmitter?.onComplete()
 
-                        observableTransferEmitter.onNext(
-                            transferState
-                        )
+                            transferState = null
+                        }
+
                         transferEnd()
                     } else {
 
-                        val transferState = WmTransferState(
-                            State.TRANSFERRING,
-                            true,
-                            mTransferFiles!!.size,
-                            mSendingFile!!
-                        )
+                        transferState?.let {
+                            it.state = State.TRANSFERRING
+                            it.sendingFile = mSendingFile
+                            it.progress = 100
+                            it.index = mSendFileCount
 
-                        transferState.progress = 100
-                        transferState.index = mSendFileCount
-
-                        observableTransferEmitter.onNext(
-                            transferState
-                        )
+                            observableTransferEmitter?.onNext(it)
+                        }
 
                         mSendingFile = mTransferFiles!![mSendFileCount]
 
@@ -278,9 +248,15 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 } else {
                     mTransferring = false
 
-                    observableTransferEmitter.onError(
-                        RuntimeException("file transfer error reason:04 Error")
-                    )
+                    transferState?.let {
+                        it.state = State.FINISH
+                        it.sendingFile = mSendingFile
+                        it.progress = mOtaProcess
+                        it.index = mSendFileCount
+
+                        observableTransferEmitter?.onNext(it)
+                        observableTransferEmitter?.onComplete()
+                    }
 
                     transferEnd()
                 }
@@ -290,7 +266,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = false
                 mCanceledSend = true
 
-                cancelTransfer.onSuccess(true)
+                cancelTransfer?.onSuccess(true)
                 transferEnd()
             }
 
@@ -300,11 +276,16 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 val reason_cancel = ByteBuffer.wrap(msg)[16]
                 LogUtils.logBlueTooth("设备取消传输原因：$reason_cancel")
                 transferEnd()
-
-                observableTransferEmitter.onError(
-                    RuntimeException("file transfer error reason:06 Error")
-                )
+                transferError("file transfer error reason:06 Error")
             }
+        }
+    }
+
+    private fun transferError(errMsg: String) {
+        if (observableTransferEmitter?.isDisposed == false) {
+            observableTransferEmitter?.onError(
+                RuntimeException(errMsg)
+            )
         }
     }
 
@@ -314,15 +295,6 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         if (mLastDataLength != 0) {
             mPackageCount = mPackageCount + 1
         }
-
-        val fileTransferState = WmTransferState(
-            State.TRANSFERRING,
-            false,
-            mSelectFileCount,
-            mSendingFile!!
-        )
-
-        observableTransferEmitter.onNext(fileTransferState)
 
         for (i in startProcess.toInt() until mPackageCount) {
             mOtaProcess = i
@@ -343,19 +315,12 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 
                 val process_percent = 100f * (mOtaProcess + 1) / mPackageCount
 
-                fileTransferState.progress = process_percent.toInt()
-                //                            LogUtils.logBlueTooth("进度：" + (mOtaProcess + 1) + " 总个数：" + mPackageCount + " process_percent:" + process_percent);
-//                        if (mTransferFileListener != null) {
-//                            mTransferFileListener.transferProcess(
-//                                mTransferFiles!![mSendFileCount].name,
-//                                mSendFileCount + 1,
-//                                mSelectFileCount,
-//                                process_percent
-//                            )
-//                        }
-
-                fileTransferState.index = mSendFileCount + 1
-                observableTransferEmitter.onNext(fileTransferState)
+                transferState?.let {
+                    it.progress = process_percent.toInt()
+                    it.index = mSendFileCount + 1
+                    it.state = State.TRANSFERRING
+                    observableTransferEmitter?.onNext(it)
+                }
 
                 Thread.sleep(MSG_INTERVAL.toLong())
 //                if (mOtaProcess == mPackageCount - 1) {
@@ -367,7 +332,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = false
                 LogUtils.logBlueTooth("连续发送过程中出错：" + e.message)
 
-                observableTransferEmitter.onError(e)
+                observableTransferEmitter?.onError(e)
 
             }
         }
