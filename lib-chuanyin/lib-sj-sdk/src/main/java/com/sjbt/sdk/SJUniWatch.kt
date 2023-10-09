@@ -1246,7 +1246,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 if (mConnectState == WmConnectState.VERIFIED) {
                     sendNormalMsg(CmdHelper.getUnBindCmd())
                 } else {
-                    emitter.onError(RuntimeException("not connected"))
+                    emitter.onError(RuntimeException("not VERIFIED"))
                 }
             }
         })

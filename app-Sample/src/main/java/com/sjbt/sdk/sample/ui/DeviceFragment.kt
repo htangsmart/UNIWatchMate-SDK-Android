@@ -11,9 +11,9 @@ import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -34,7 +34,8 @@ fun WmConnectState.toStringRes(): Int {
 class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
-//  private val viewModel: DeviceViewMode by viewModels()
+
+    //  private val viewModel: DeviceViewMode by viewModels()
     private val deviceManager = Injector.getDeviceManager()
 
 
@@ -49,7 +50,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemPowerSaveMode.setOnClickListener(blockClick)
         viewBind.itemSportPush.setOnClickListener(blockClick)
         viewBind.itemDial.setOnClickListener(blockClick)
-//        viewBind.itemCamera.clickTrigger(block = blockClick)
+        viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
+        viewBind.itemCamera.setOnClickListener(blockClick)
 //        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
 //        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
 //        viewBind.itemCricket.clickTrigger(block = blockClick)
@@ -74,7 +76,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
             launch {
                 deviceManager.flowConnectorState.collect {
-                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowConnectorState=$it") }
+                    this::class.simpleName?.let { it1 ->
+                        Timber.tag(it1).i("flowConnectorState=$it")
+                    }
                     viewBind.tvDeviceState.setText(it.toStringRes())
                     viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
@@ -148,6 +152,12 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             viewBind.itemDeviceConfig -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceConfig())
             }
+            viewBind.itemBasicDeviceInfo -> {
+                findNavController().navigate(DeviceFragmentDirections.toDeviceInfo())
+            }
+
+            viewBind.itemDeviceConfig -> {
+            }
 //            viewBind.itemQrCodes -> {
 //                findNavController().navigate(DeviceFragmentDirections.toQrCodes())
 //            }
@@ -169,9 +179,10 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            viewBind.itemDial -> {
 //                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
 //            }
-//            viewBind.itemCamera -> {
+                viewBind.itemCamera -> {
+
 //                CameraActivity.start(requireContext(), false)
-//            }
+                }
 //            viewBind.itemModifyLogo -> {
 //                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
 //            }

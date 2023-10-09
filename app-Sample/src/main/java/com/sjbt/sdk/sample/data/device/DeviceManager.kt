@@ -8,6 +8,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.BindType
+import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.data.WmBatteryInfo
@@ -191,7 +192,7 @@ internal class DeviceManagerImpl(
         //Device trying bind success,save it
         Timber.tag(TAG)
             .e("flowConnectorState flowDevice == ${flowDevice.value}  connectorState == $connectorState")
-        if (device != null && device.isTryingBind && connectorState == WmConnectState.DISCONNECTED) {
+        if (device != null && device.isTryingBind && connectorState == WmConnectState.VERIFIED) {
             saveDevice(device)
         }
         connectorState
@@ -205,17 +206,21 @@ internal class DeviceManagerImpl(
         applicationScope.launch {
             //Connect or disconnect when device changed
             //当登录设备或用户变化时，把个人资料更新到设备
-            userInfoRepository.flowCurrent.combine(flowDevice) { user, device ->
-                ConnectionParam(user, device)
-            }.collect {
-                Timber.tag(TAG).e("it.device == ${it.device}  it.user == ${it.user}", it)
-                if (it.device == null || it.user == null) {
-//                    UNIWatchMate.mInstance?.wmConnect?.disconnect()
-                } else {
-//                    UNIWatchMate.connect(
-//                        address = it.device.address,
-//                        it.user.toSdkUser(BindType.DISCOVERY)
-//                    )
+            deviceFromStorage.collect {device->
+                Timber.tag(TAG).e("it.device == $device", device)
+                if(deviceFromMemory.value == null){
+                    internalStorage.flowAuthedUserId.value?.let {
+                        val userInfo = userInfoRepository.getUserInfo(it)
+                        userInfo?.let {userInfo->
+                            Timber.tag(TAG).e("UNIWatchMate.connect" )
+                            device?.let {storageDevice->
+                                UNIWatchMate.connect(
+                                    address = device!!.address,
+                                    WmBindInfo(userInfo.id.toString() ,"name",BindType.DISCOVERY,WmDeviceModel.SJ_WATCH)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -380,6 +385,7 @@ internal class DeviceManagerImpl(
         clearDevice()
     }
 
+
     /**
      * Save device with current user
      */
@@ -401,10 +407,12 @@ internal class DeviceManagerImpl(
      * Clear current user's device
      */
     private suspend fun clearDevice() {
-        deviceFromMemory.value = null
         internalStorage.flowAuthedUserId.value?.let { userId ->
+            Timber.tag(TAG).e("clearDeviceBind.userId =$userId")
             settingDao.clearDeviceBind(userId)
         }
+        Timber.tag(TAG).e("deviceFromMemory.value = null")
+        deviceFromMemory.value = null
     }
 //
 //    override fun getNextRetrySeconds(): Int {

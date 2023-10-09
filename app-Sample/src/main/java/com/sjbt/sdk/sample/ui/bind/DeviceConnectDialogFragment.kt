@@ -46,6 +46,7 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
     private val viewModel by viewModels<DeviceConnectViewMode>()
 
     private var timberJob: Job? = null
+    private var wmConnectState: WmConnectState? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,20 +91,19 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
                         viewBind.tvName.text = it.name
                         viewBind.tvAddress.text = it.address
                         isCancelable = !it.isTryingBind
-//                        if (it != null) {
-//                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
-//                            viewBind.btnUnbind.setOnClickListener {
-//                                //Cancel bind and exit
-//                                deviceManager.cancelBind()
-//                                dismissAllowingStateLoss()
-//                            }
-//                        } else {
-//
-//                        }
-                        viewBind.btnUnbind.setText(R.string.device_unbind)
-                        viewBind.btnUnbind.setOnClickListener {
-                            lifecycleScope.launchWhenResumed {
-                                UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
+                        if (it.isTryingBind) {
+                            viewBind.btnUnbind.setText(R.string.device_cancel_bind)
+                            viewBind.btnUnbind.setOnClickListener {
+                                //Cancel bind and exit
+                                deviceManager.cancelBind()
+                                dismissAllowingStateLoss()
+                            }
+                        } else {
+                            viewBind.btnUnbind.setText(R.string.device_unbind)
+                            viewBind.btnUnbind.setOnClickListener {
+                                lifecycleScope.launchWhenResumed {
+                                    UnbindConfirmDialogFragment().showNow(childFragmentManager, null)
+                                }
                             }
                         }
                     }
@@ -112,6 +112,7 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
             launch {
                 deviceManager.flowConnectorState.collect {
                     timberJob?.cancel()
+                    wmConnectState=it
                     when (it) {
 
                         WmConnectState.DISCONNECTED -> {
@@ -262,6 +263,11 @@ class DeviceConnectViewMode : AsyncViewModel<SingleAsyncState<Unit>>(SingleAsync
 
     fun unbind() {
         suspend {
+//            if(deviceManager.flowConnectorState.value==WmConnectState.VERIFIED){
+//                deviceManager.reset()
+//            }else{
+//                deviceManager.reset()
+//            }
             deviceManager.reset()
         }.execute(SingleAsyncState<Unit>::async)
         {
@@ -281,6 +287,7 @@ class UnbindConfirmDialogFragment : AppCompatDialogFragment() {
             .setMessage(R.string.device_unbind_confirm_msg)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(android.R.string.ok) { _, _ ->
+//
                 viewModel.unbind()
             }
         return builder.create()

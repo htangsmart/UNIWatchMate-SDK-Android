@@ -22,6 +22,9 @@
         <action
             android:id="@+id/toDeviceConfig"
             app:destination="@id/deviceConfigFragment" />
+        <action
+            android:id="@+id/toDeviceInfo"
+            app:destination="@id/deviceBasicInfo" />
         <!--        <action-->
         <!--            android:id="@+id/toQrCodes"-->
         <!--            app:destination="@id/qrCodesFragment"/>-->
@@ -195,9 +198,9 @@
         <!--        <action-->
         <!--            android:id="@+id/toConnectHelp"-->
         <!--            app:destination="@id/connectHelpFragment"/>-->
-                <action
-                    android:id="@+id/toBgRunSettings"
-                    app:destination="@id/bgRunSettingsFragment"/>
+        <action
+            android:id="@+id/toBgRunSettings"
+            app:destination="@id/bgRunSettingsFragment" />
     </fragment>
 
     <fragment
@@ -217,12 +220,16 @@
     <!--        android:label="@string/connect_help"-->
     <!--        tools:layout="@layout/fragment_connect_help"/>-->
 
-        <fragment
-            android:id="@+id/bgRunSettingsFragment"
-            android:name="com.sjbt.sdk.sample.ui.device.bgrun.BgRunSettingsFragment"
-            android:label="@string/bg_run_settings_module"
-            tools:layout="@layout/fragment_bg_run_settings"/>
-
+    <fragment
+        android:id="@+id/bgRunSettingsFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.bgrun.BgRunSettingsFragment"
+        android:label="@string/bg_run_settings_module"
+        tools:layout="@layout/fragment_bg_run_settings" />
+    <fragment
+        android:id="@+id/deviceBasicInfo"
+        android:name="com.sjbt.sdk.sample.ui.device.DeviceInfoFragment"
+        android:label="@string/ds_basic_device_info"
+        tools:layout="@layout/fragment_device_info" />
     <fragment
         android:id="@+id/deviceConfigFragment"
         android:name="com.sjbt.sdk.sample.ui.setting.DeviceConfigFragment"
@@ -238,6 +245,10 @@
         <action
             android:id="@+id/toSoundTouchFeedback"
             app:destination="@id/soundTouchConfigFragment" />
+        <action
+            android:id="@+id/toAppView"
+            app:destination="@id/appViewFragment" />
+
         <!--<action
             android:id="@+id/toHealthMonitorConfig"
             app:destination="@id/healthMonitorConfigFragment"/>
@@ -252,13 +263,13 @@
             app:destination="@id/bpConfigFragment"/>-->
         <action
             android:id="@+id/toTurnWristLightingConfig"
-            app:destination="@id/turnWristLightingConfigFragment"/>
-      <!--  <action
-            android:id="@+id/toDndConfig"
-            app:destination="@id/dndConfigFragment"/>
+            app:destination="@id/turnWristLightingConfigFragment" />
         <action
-            android:id="@+id/toScreenVibrateConfig"
-            app:destination="@id/screenVibrateConfigFragment"/>-->
+            android:id="@+id/toSleepConfig"
+            app:destination="@id/sleepConfigFragment" />
+        <!--<action
+          android:id="@+id/toScreenVibrateConfig"
+          app:destination="@id/screenVibrateConfigFragment"/>-->
     </fragment>
 
     <!--    <fragment-->
@@ -283,6 +294,11 @@
         android:name="com.sjbt.sdk.sample.ui.setting.SoundTouchFeedbackConfigFragment"
         android:label="@string/ds_sound_touch_config"
         tools:layout="@layout/fragment_sound_touch_config" />
+    <fragment
+        android:id="@+id/appViewFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.AppViewConfigFragment"
+        android:label="@string/app_view"
+        tools:layout="@layout/fragment_app_view" />
 
     <!--    <fragment-->
     <!--        android:id="@+id/healthMonitorConfigFragment"-->
@@ -327,17 +343,17 @@
     <!--        android:label="@string/ds_blood_pressure_config"-->
     <!--        tools:layout="@layout/fragment_blood_pressure_config"/>-->
 
-        <fragment
-            android:id="@+id/turnWristLightingConfigFragment"
-            android:name="com.sjbt.sdk.sample.ui.setting.TurnWristLightingConfigFragment"
-            android:label="@string/ds_turn_wrist_lighting_config"
-            tools:layout="@layout/fragment_turn_wrist_lighting_config"/>
+    <fragment
+        android:id="@+id/turnWristLightingConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.TurnWristLightingConfigFragment"
+        android:label="@string/ds_turn_wrist_lighting_config"
+        tools:layout="@layout/fragment_turn_wrist_lighting_config" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/dndConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.DNDConfigFragment"-->
-    <!--        android:label="@string/ds_dnd_config"-->
-    <!--        tools:layout="@layout/fragment_dnd_config"/>-->
+    <fragment
+        android:id="@+id/sleepConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.SleepConfigFragment"
+        android:label="@string/ds_sleep_config"
+        tools:layout="@layout/fragment_sleep_config" />
 
     <!--    <fragment-->
     <!--        android:id="@+id/screenVibrateConfigFragment"-->

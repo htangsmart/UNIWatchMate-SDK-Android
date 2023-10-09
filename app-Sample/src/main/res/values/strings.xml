@@ -326,6 +326,7 @@
 
     <!--Camera control-->
     <string name="ds_camera_control">Camera Control</string>
+    <string name="ds_basic_device_info">Basic device information</string>
 
     <!--Device Settings:Find Phone-->
     <string name="ds_find_phone_found">Found mobile phone</string>
@@ -353,4 +354,11 @@
     <string name="device_state_verified">Verified</string>
     <string name="device_state_other">other</string>
 
+<!--app view-->
+    <string name="app_view_gridding">gridding</string>
+    <string name="app_view_list">list</string>
+    <string name="app_view">app_view</string>
+
+<!--sleep config-->
+    <string name="ds_sleep_config">sleep config</string>
 </resources>

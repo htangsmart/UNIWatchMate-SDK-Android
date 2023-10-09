@@ -39,7 +39,7 @@ class TurnWristLightingConfigFragment : BaseFragment(R.layout.fragment_turn_wris
     private val deviceManager = Injector.getDeviceManager()
     private val applicationScope = Injector.getApplicationScope()
 
-    private lateinit var config: WmWistRaise
+    private  var config: WmWistRaise?=null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +62,10 @@ class TurnWristLightingConfigFragment : BaseFragment(R.layout.fragment_turn_wris
                 }
             }
             launch {
-                config = UNIWatchMate.wmSettings.settingWistRaise.get().blockingGet()
-                updateUI()
+                 UNIWatchMate.wmSettings.settingWistRaise.get().toObservable().asFlow().collect{
+                    config = it
+                    updateUI()
+                }
             }
         }
 
@@ -73,24 +75,23 @@ class TurnWristLightingConfigFragment : BaseFragment(R.layout.fragment_turn_wris
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (buttonView.isPressed) {
             if (buttonView == viewBind.itemIsEnabled.getSwitchView()) {
-                config.isScreenWakeEnabled = isChecked
+                config?.isScreenWakeEnabled = isChecked
+                config?.saveConfig()
             }
         }
     }
 
-    private fun FcTurnWristLightingConfig.saveConfig() {
+    private fun WmWistRaise.saveConfig() {
         applicationScope.launchWithLog {
-            UNIWatchMate.wmSettings.settingWistRaise.set(config).await()
+            UNIWatchMate.wmSettings.settingWistRaise.set(config!!).await()
         }
         updateUI()
     }
 
     private fun updateUI() {
-        val isConfigEnabled = viewBind.layoutContent.isEnabled
+        config?.apply {
+            viewBind.itemIsEnabled.getSwitchView().isChecked = isScreenWakeEnabled
 
-        viewBind.itemIsEnabled.getSwitchView().isChecked = config.isScreenWakeEnabled
-        if (isConfigEnabled) {//When device is disconnected, disabled the click event
-            viewBind.layoutContent.setAllChildEnabled(config.isScreenWakeEnabled)
         }
     }
 

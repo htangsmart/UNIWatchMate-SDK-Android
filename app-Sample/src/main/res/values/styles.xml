@@ -49,6 +49,8 @@
         <item name="preferenceType">type_text</item>
         <item name="preferenceTextAppearance">?textAppearanceBody2</item>
         <item name="preferenceTextColor">?android:textColorSecondary</item>
+        <item name="preferenceIndicator">@mipmap/ic_section_arrow_next</item>
+        <item name="showPreferenceIndicator">true</item>
     </style>
 
     <!--PreferenceItem:type_switch-->
