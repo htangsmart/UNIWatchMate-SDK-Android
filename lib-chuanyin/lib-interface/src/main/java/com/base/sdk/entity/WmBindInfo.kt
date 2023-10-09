@@ -10,6 +10,9 @@ data class WmBindInfo(
     val model: WmDeviceModel
 ) {
     var randomCode: String? = null
+    override fun toString(): String {
+        return "WmBindInfo(userId='$userId', userName='$userName', bindType=$bindType, model=$model, randomCode=$randomCode)"
+    }
 }
 
 enum class BindType {

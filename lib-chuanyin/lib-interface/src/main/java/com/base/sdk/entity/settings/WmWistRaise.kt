@@ -7,7 +7,7 @@ data class WmWistRaise(
     /**
      * Whether to enable wrist lift(是否开启抬腕)
      */
-    var isScreenWakeEnabled: Boolean
+    var isScreenWakeEnabled: Boolean = false
 ) {
     override fun toString(): String {
         return "WmWistRaise(isScreenWakeEnabled=$isScreenWakeEnabled)"

@@ -2,6 +2,7 @@ package com.sjbt.sdk.sample.data.device
 
 import android.content.Context
 import android.text.TextUtils
+import android.widget.Toast
 import androidx.annotation.IntDef
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -374,7 +375,13 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun reset() {
-        UNIWatchMate.reset().await()
+        UNIWatchMate.reset().doOnSubscribe {
+
+        }.doOnError {
+            it.printStackTrace()
+        }.doOnComplete {
+
+        }
         clearDevice()
     }
 

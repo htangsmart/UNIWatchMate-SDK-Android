@@ -238,6 +238,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
+                                        LogUtils.logBlueTooth("bindinfo:"+it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
