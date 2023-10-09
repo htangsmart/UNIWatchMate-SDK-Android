@@ -11,10 +11,7 @@ import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentSleepConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
-import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.launchWithLog
-import com.sjbt.sdk.sample.utils.setAllChildEnabled
-import com.sjbt.sdk.sample.utils.viewLifecycle
+import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.topstep.fitcloud.sdk.v2.model.config.FcDeviceInfo
 import kotlinx.coroutines.launch
@@ -82,6 +79,10 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (buttonView.isPressed) {
             if (buttonView == viewBind.itemSleepEnable.getSwitchView()) {
+                config?.let {
+                    it.open = isChecked
+                    it.saveConfig()
+                }
             }
         }
     }
@@ -103,9 +104,11 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
 
     override fun onDialogTimePicker(tag: String?, timeMinute: Int) {
         if (DIALOG_START_TIME == tag) {
-//            config.toBuilder().setStart(timeMinute).create().saveConfig()
+            config!!.startMinute=  timeMinute % 60
+            config!!.startHour=  timeMinute / 60
         } else if (DIALOG_END_TIME == tag) {
-//            config.toBuilder().setEnd(timeMinute).create().saveConfig()
+            config!!.endMinute=  timeMinute % 60
+            config!!.endHour=  timeMinute / 60
         }
         config?.saveConfig()
     }
@@ -118,16 +121,12 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
     }
 
     private fun updateUI() {
-        val isConfigEnabled = viewBind.layoutContent.isEnabled
+        config?.let {
+            viewBind.itemSleepEnable.getSwitchView().isChecked = it.open
+            viewBind.itemStartTime.getTextView().text = FormatterUtil.hmm(it.startHour,it.startMinute)
+            viewBind.itemEndTime.getTextView().text = FormatterUtil.hmm(it.endHour,it.endMinute)
+        }
 
-//        viewBind.itemAllDay.getSwitchView().isChecked = config.isEnabledAllDay()
-//        viewBind.itemPeriodTime.getSwitchView().isChecked = config.isEnabledPeriodTime()
-//        if (isConfigEnabled) {//When device is disconnected, disabled the click event
-//            viewBind.itemStartTime.isEnabled = config.isEnabledPeriodTime()
-//            viewBind.itemEndTime.isEnabled = config.isEnabledPeriodTime()
-//        }
-//        viewBind.itemStartTime.getTextView().text = FormatterUtil.minute2Hmm(config.getStart())
-//        viewBind.itemEndTime.getTextView().text = FormatterUtil.minute2Hmm(config.getEnd())
     }
 
 }
