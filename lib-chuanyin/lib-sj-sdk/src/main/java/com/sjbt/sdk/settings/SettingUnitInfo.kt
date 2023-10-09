@@ -2,12 +2,16 @@ package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.setting.AbWmSetting
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
-class SettingUnitInfo : AbWmSetting<WmUnitInfo>() {
+class SettingUnitInfo(sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
     lateinit var observeEmitter: ObservableEmitter<WmUnitInfo>
     lateinit var setEmitter: SingleEmitter<WmUnitInfo>
     lateinit var getEmitter: SingleEmitter<WmUnitInfo>
+
+    private val mSjUniWatch = sjUniWatch
 
     override fun isSupport(): Boolean {
         return true
@@ -25,6 +29,7 @@ class SettingUnitInfo : AbWmSetting<WmUnitInfo>() {
         return Single.create(object : SingleOnSubscribe<WmUnitInfo> {
             override fun subscribe(emitter: SingleEmitter<WmUnitInfo>) {
                 setEmitter = emitter
+                mSjUniWatch.sendWriteNodeCmdList(CmdHelper.getUnitSettingCmd(obj))
             }
         })
     }

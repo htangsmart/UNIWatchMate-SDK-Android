@@ -31,7 +31,7 @@ class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>()
             override fun subscribe(emitter: SingleEmitter<WmPersonalInfo>) {
                 setEmitter = emitter
 
-                sjUniWatch.sendNodeCmdList(RequestType.REQ_TYPE_WRITE,CmdHelper.getUpdatePersonalInfoAllCmd(obj))
+                sjUniWatch.sendWriteNodeCmdList(CmdHelper.getUpdatePersonalInfoAllCmd(obj))
             }
         })
     }

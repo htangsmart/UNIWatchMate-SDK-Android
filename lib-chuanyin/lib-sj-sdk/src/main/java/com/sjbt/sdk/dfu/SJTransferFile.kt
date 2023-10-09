@@ -36,7 +36,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
     private var mPackageCount = 0
     private var mLastDataLength: Int = 0
     private var mTransferRetryCount = 0
-    private var mTransferring = false
+    var mTransferring = false
 
     val mSportMap = HashMap<FileType, Boolean>()
     var cancelTransfer: SingleEmitter<Boolean>? = null
@@ -396,6 +396,61 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
         }
         return info
+    }
+
+    fun timeOut(msg: ByteArray) {
+        if (mCanceledSend) {
+            sjUniWatch.clearMsg()
+            return
+        }
+
+        val msgBean = CmdHelper.getPayLoadJson(msg)
+        when (msgBean.head) {
+            HEAD_FILE_SPP_A_2_D -> {
+                mTransferring = false
+                when (msgBean.cmdIdStr) {
+                    CMD_STR_8001_TIME_OUT -> {}
+                    CMD_STR_8002_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                        mTransferRetryCount++
+                        mSendingFile = mTransferFiles!![mSendFileCount]
+                        sjUniWatch.sendNormalMsg(
+                            CmdHelper.getTransferFile02Cmd(
+                                FileUtils.readFileBytes(
+                                    mSendingFile
+                                ).size, mSendingFile!!.name
+                            )
+                        )
+                    } else {
+                        transferEnd()
+                    }
+                    CMD_STR_8003_TIME_OUT ->
+                        if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                            mTransferRetryCount++
+                            sjUniWatch.sendNormalMsg(
+                                CmdHelper.getTransfer03Cmd(
+                                    mOtaProcess,
+                                    getOtaDataInfoNew(mFileDataArray!!, mOtaProcess),
+                                    mDivide
+                                )
+                            )
+                        } else {
+//                        if (mTransferFileListener != null) {
+//                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8003 time out")
+//                        }
+                        }
+
+                    CMD_STR_8004_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                        mTransferRetryCount++
+                        val ota_data = CmdHelper.transfer04Cmd
+                        sjUniWatch.sendNormalMsg(ota_data)
+                    } else {
+//                        if (mTransferFileListener != null) {
+//                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8004 time out")
+//                        }
+                    }
+                }
+            }
+        }
     }
 
 }

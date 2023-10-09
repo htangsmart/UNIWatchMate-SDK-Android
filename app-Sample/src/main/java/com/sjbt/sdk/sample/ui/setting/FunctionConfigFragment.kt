@@ -82,8 +82,8 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
                 }
                 viewBind.itemLengthUnitImperial.getSwitchCompat() -> {
                     config?.let {
-                        it.lengthUnit =
-                            if (isChecked) WmUnitInfo.LengthUnit.CM else WmUnitInfo.LengthUnit.INCH
+                        it.distanceUnit =
+                            if (isChecked) WmUnitInfo.DistanceUnit.KM else WmUnitInfo.DistanceUnit.MILE
                     }
                 }
                 viewBind.itemTemperatureUnitFahrenheit.getSwitchCompat() -> {
@@ -115,7 +115,7 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
             viewBind.itemTimeFormat12Hour.getSwitchCompat().isChecked =
                 it.timeFormat == WmUnitInfo.TimeFormat.TWELVE_HOUR
             viewBind.itemLengthUnitImperial.getSwitchCompat().isChecked =
-                it.lengthUnit == WmUnitInfo.LengthUnit.CM
+                it.distanceUnit == WmUnitInfo.DistanceUnit.KM
             viewBind.itemTemperatureUnitFahrenheit.getSwitchCompat().isChecked =
                 it.temperatureUnit == WmUnitInfo.TemperatureUnit.CELSIUS
         }

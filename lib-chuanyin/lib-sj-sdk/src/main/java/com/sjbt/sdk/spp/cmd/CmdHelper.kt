@@ -1880,6 +1880,15 @@ object CmdHelper {
     }
 
     /**
+     * 获取设备上体育目标配置
+     */
+    fun getDeviceSportGoalCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_2, URN_1), ByteArray(0))
+        return payloadPackage
+    }
+
+    /**
      * 获取设置体育目标的命令
      */
     fun getUpdateSportGoalAllCmd(
@@ -1888,40 +1897,40 @@ object CmdHelper {
 
         val payloadPackage = PayloadPackage()
 
-        if (sportGoal.steps != 0 || sportGoal.calories != 0 || sportGoal.distance != 0 || sportGoal.activityDuration.toInt() != 0) {
-            val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
-            bbSport.putInt(sportGoal.steps)
-            bbSport.putInt(sportGoal.calories)
-            bbSport.putInt(sportGoal.distance)
-            bbSport.putShort(sportGoal.activityDuration)
-            payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
-        } else {
-            if (sportGoal.steps != 0) {
-                payloadPackage.putData(
-                    getUrnId(URN_2, URN_1, URN_1),
-                    ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps)
-                        .array()
-                )
-            } else if (sportGoal.calories != 0) {
-                payloadPackage.putData(
-                    getUrnId(URN_2, URN_1, URN_2),
-                    ByteBuffer.allocate(sizeOfNumber(sportGoal.calories)).putInt(sportGoal.calories)
-                        .array()
-                )
-            } else if (sportGoal.distance != 0) {
-                payloadPackage.putData(
-                    getUrnId(URN_2, URN_1, URN_3),
-                    ByteBuffer.allocate(sizeOfNumber(sportGoal.distance)).putInt(sportGoal.distance)
-                        .array()
-                )
-            } else if (sportGoal.activityDuration.toInt() != 0) {
-                payloadPackage.putData(
-                    getUrnId(URN_2, URN_1, URN_4),
-                    ByteBuffer.allocate(sizeOfNumber(sportGoal.activityDuration))
-                        .putShort(sportGoal.activityDuration).array()
-                )
-            }
-        }
+//        if (sportGoal.steps != 0 || sportGoal.calories != 0 || sportGoal.distance != 0 || sportGoal.activityDuration.toInt() != 0) {
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
+        bbSport.putInt(sportGoal.steps)
+        bbSport.putInt(sportGoal.calories)
+        bbSport.putInt(sportGoal.distance)
+        bbSport.putShort(sportGoal.activityDuration)
+        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+//        } else {
+//            if (sportGoal.steps != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_1),
+//                    ByteBuffer.allocate(sizeOfNumber(sportGoal.steps)).putInt(sportGoal.steps)
+//                        .array()
+//                )
+//            } else if (sportGoal.calories != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_2),
+//                    ByteBuffer.allocate(sizeOfNumber(sportGoal.calories)).putInt(sportGoal.calories)
+//                        .array()
+//                )
+//            } else if (sportGoal.distance != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_3),
+//                    ByteBuffer.allocate(sizeOfNumber(sportGoal.distance)).putInt(sportGoal.distance)
+//                        .array()
+//                )
+//            } else if (sportGoal.activityDuration.toInt() != 0) {
+//                payloadPackage.putData(
+//                    getUrnId(URN_2, URN_1, URN_4),
+//                    ByteBuffer.allocate(sizeOfNumber(sportGoal.activityDuration))
+//                        .putShort(sportGoal.activityDuration).array()
+//                )
+//            }
+//        }
 
         return payloadPackage
     }
@@ -1936,14 +1945,14 @@ object CmdHelper {
         val payloadPackage = PayloadPackage()
 
 //        if (personalInfo.height != 0 || personalInfo.weight != 0 || personalInfo.gender != 0 || personalInfo.activityDuration.toInt() != 0) {
-            val bbSport: ByteBuffer = ByteBuffer.allocate(2 + 2 + 1 + 4)
-            bbSport.putShort(personalInfo.height)
-            bbSport.putShort(personalInfo.weight)
-            bbSport.put(personalInfo.gender.ordinal.toByte())
-            bbSport.putShort(personalInfo.birthDate.year)
-            bbSport.put(personalInfo.birthDate.month)
-            bbSport.put(personalInfo.birthDate.day)
-            payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+        val bbSport: ByteBuffer = ByteBuffer.allocate(2 + 2 + 1 + 4)
+        bbSport.putShort(personalInfo.height)
+        bbSport.putShort(personalInfo.weight)
+        bbSport.put(personalInfo.gender.ordinal.toByte())
+        bbSport.putShort(personalInfo.birthDate.year)
+        bbSport.put(personalInfo.birthDate.month)
+        bbSport.put(personalInfo.birthDate.day)
+        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
 //        } else {
 //            if (personalInfo.steps != 0) {
 //                payloadPackage.putData(
@@ -1971,6 +1980,23 @@ object CmdHelper {
 //                )
 //            }
 //        }
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取设置健康信息的命令
+     */
+    fun getUnitSettingCmd(
+        wmUnitInfo: WmUnitInfo
+    ): PayloadPackage {
+
+        val payloadPackage = PayloadPackage()
+        val bbSport: ByteBuffer = ByteBuffer.allocate(3)
+        bbSport.put(wmUnitInfo.timeFormat.ordinal.toByte())
+        bbSport.put(wmUnitInfo.temperatureUnit.ordinal.toByte())
+        bbSport.put(wmUnitInfo.distanceUnit.ordinal.toByte())
+        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
 
         return payloadPackage
     }
