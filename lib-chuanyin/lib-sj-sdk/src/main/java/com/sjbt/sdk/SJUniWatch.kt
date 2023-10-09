@@ -18,6 +18,8 @@ import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.State
+import com.base.sdk.port.WmTransferState
 import com.base.sdk.port.app.WMCameraFlashMode
 import com.base.sdk.port.app.WMCameraPosition
 import com.base.sdk.port.log.WmLog
@@ -27,6 +29,7 @@ import com.sjbt.sdk.dfu.SJTransferFile
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
+import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.entity.old.AppViewBean
 import com.sjbt.sdk.entity.old.BasicInfo
 import com.sjbt.sdk.entity.old.BiuBatteryBean
@@ -40,7 +43,12 @@ import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.*
+import com.sjbt.sdk.utils.FileUtils.readFileBytes
 import io.reactivex.rxjava3.core.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -529,7 +537,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         HEAD_FILE_SPP_A_2_D -> {
-
+                            wmTransferFile.transferFileBuz(msgBean, msg)
                         }
 
                         HEAD_NODE_TYPE -> {
@@ -653,6 +661,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             e.printStackTrace()
         }
     }
+
 
     private fun msgTimeOut(msg: ByteArray) {
 
@@ -910,12 +919,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     } else {
                         transferEnd()
                     }
-                    CMD_STR_8003_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                    CMD_STR_8003_TIME_OUT ->
+                        if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         mTransferRetryCount++
                         sendNormalMsg(
                             CmdHelper.getTransfer03Cmd(
                                 mOtaProcess,
-                                getOtaDataInfoNew(mFileDataArray!!, mOtaProcess),
+                                wmTransferFile.getOtaDataInfoNew(mFileDataArray!!, mOtaProcess),
                                 mDivide
                             )
                         )
@@ -923,8 +933,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                        if (mTransferFileListener != null) {
 //                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8003 time out")
 //                        }
-
-
                     }
 
                     CMD_STR_8004_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
@@ -941,54 +949,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    private fun getOtaDataInfoNew(dataArray: ByteArray, otaProcess: Int): OtaCmdInfo {
-        val info = OtaCmdInfo()
-        mDivide = if (otaProcess == 0 && mPackageCount > 1) {
-            DIVIDE_Y_F_2
-        } else {
-            if (otaProcess == mPackageCount - 1) {
-                DIVIDE_Y_E_2
-            } else {
-                DIVIDE_Y_M_2
-            }
-        }
-
-//        LogUtils.logBlueTooth("分包类型：" + mDivide);
-        if (otaProcess != mPackageCount - 1) {
-            info.offSet = otaProcess * mCellLength
-            info.payload = ByteArray(mCellLength)
-            System.arraycopy(
-                dataArray,
-                otaProcess * mCellLength,
-                info.payload,
-                0,
-                info.payload.size
-            )
-        } else {
-//            LogUtils.logBlueTooth("最后一包长度：" + mLastDataLength);
-            if (mLastDataLength == 0) {
-                info.offSet = otaProcess * mCellLength
-                info.payload = ByteArray(mCellLength)
-                System.arraycopy(
-                    dataArray,
-                    otaProcess * mCellLength,
-                    info.payload,
-                    0,
-                    info.payload.size
-                )
-            } else {
-                info.offSet = otaProcess * mCellLength
-                info.payload = ByteArray(mLastDataLength)
-                System.arraycopy(
-                    dataArray,
-                    otaProcess * mCellLength,
-                    info.payload,
-                    0,
-                    info.payload.size
-                )
-            }
-        }
-        return info
+    fun clearMsg() {
+        mBtEngine.clearMsgQueue()
     }
 
     private fun transferEnd() {
@@ -1023,8 +985,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     //发送Node节点消息
-    fun sendNodeCmdList(payloadPackage: PayloadPackage) {
-        payloadPackage.toByteArray().forEach {
+    fun sendNodeCmdList(requestType: RequestType, payloadPackage: PayloadPackage) {
+        payloadPackage.toByteArray(requestType = requestType).forEach {
             var payload: ByteArray = it
 
             val cmdArray = CmdHelper.constructCmd(

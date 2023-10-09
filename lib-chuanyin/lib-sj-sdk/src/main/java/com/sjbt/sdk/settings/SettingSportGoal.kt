@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.*
@@ -33,7 +34,7 @@ class SettingSportGoal(sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
                 setEmitter = emitter
                 val payloadPackage = CmdHelper.getUpdateSportGoalAllCmd(obj)
 
-                mSjUniWatch.sendNodeCmdList(payloadPackage)
+                mSjUniWatch.sendNodeCmdList(RequestType.REQ_TYPE_WRITE, payloadPackage)
             }
         })
     }
