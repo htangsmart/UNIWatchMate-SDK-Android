@@ -5,7 +5,6 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmWeather
-import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmPersonalInfo
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
@@ -13,6 +12,7 @@ import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
+import com.sjbt.sdk.entity.old.TimeSyncBean
 import com.sjbt.sdk.log.SJLog.logSendMsg
 import com.sjbt.sdk.utils.*
 import org.json.JSONException
@@ -403,32 +403,38 @@ object CmdHelper {
      *
      * @return
      */
+    /**
+     * 获取同步时间命令
+     *
+     * @return
+     */
     val syncTimeCmd: ByteArray
         get() {
-            logSendMsg("4.5 同步时间信息:")
-            val currDate = TimeUtils.getNowString(TimeUtils.getSafeDateFormat("yyyy-MM-dd"))
-            val timeZone = SimpleTimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
-            val currTime =
-                TimeUtils.getNowString(TimeUtils.getSafeDateFormat("yyyy-MM-dd HH:mm:ss"))
-            val timeStamp = System.currentTimeMillis() / 1000
-            val timeSyncBean = WmDateTime(
-                timeZone,
-                WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
-                WmUnitInfo.DateFormat.YYYY_MM_DD,
-                timeStamp,
-                currDate,
-                currTime
+            LogUtils.logBlueTooth("4.5 同步时间信息:")
+            val timeSyncBean = TimeSyncBean()
+            timeSyncBean.setCurrDate(
+                TimeUtils.getNowString(
+                    TimeUtils.getSafeDateFormat(
+                        "yyyy-MM-dd"
+                    )
+                )
             )
+            timeSyncBean.setTimeZoo(
+                SimpleTimeZone.getDefault().getDisplayName(false, TimeZone.SHORT)
+            )
+            timeSyncBean.setCurrTime(
+                TimeUtils.getNowString(
+                    TimeUtils.getSafeDateFormat(
+                        "yyyy-MM-dd HH:mm:ss"
+                    )
+                )
+            )
+            timeSyncBean.setTimestamp(System.currentTimeMillis() / 1000)
+            timeSyncBean.setTimeformat(1)
+            LogUtils.logCommon("时间同步：$timeSyncBean")
             val payload = gson.toJson(timeSyncBean).toByteArray(StandardCharsets.UTF_8)
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-            return constructCmd(
-                HEAD_COMMON,
-                CMD_ID_8007.toShort(),
-                DIVIDE_N_JSON,
-                0,
-                crc,
-                payload
-            )
+            return constructCmd(HEAD_COMMON, CMD_ID_8007, DIVIDE_N_JSON, 0, crc, payload)
         }
 
     /**
