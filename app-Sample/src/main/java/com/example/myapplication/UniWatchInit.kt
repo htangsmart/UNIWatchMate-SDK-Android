@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import com.base.api.BuildConfig
 import com.base.api.UNIWatchMate
+import com.base.sdk.port.log.AbWmLog
 import com.fitcloud.sdk.FcUniWatch
 import com.polidea.rxandroidble3.LogConstants
 import com.polidea.rxandroidble3.LogOptions
@@ -108,6 +109,4 @@ class FcUniWatchImpl(application: Application) : FcUniWatch(application) {
         sdk.setReConnectFrequent(false)//在后台时减少回连的次数，节省电量
         return sdk
     }
-
-
 }

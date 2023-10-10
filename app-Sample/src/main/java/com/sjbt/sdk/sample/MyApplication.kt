@@ -38,15 +38,16 @@ class MyApplication : Application() {
         //第二步：通过setDeviceModel选定SDK(发现设备场景)，如果是扫码场景则用scanQr，二选一
         UNIWatchMate.setDeviceModel(WmDeviceModel.SJ_WATCH)
         //UNIWatchMate.scanQr("www.shenju.watch?mac=00:00:56:78:9A:BC?name=SJ 8020N")
-
         //全局监听
         observeState()
 
         //监听sdk变化
         UNIWatchMate.observeUniWatchChange().subscribe {
             it.setLogEnable(true)
-            WmLog.e(TAG, "SDK changed")
         }
+
+        UNIWatchMate.wmLog.logI(TAG, "APP onCreate")
+
         initAllProcess()
     }
     private fun initAllProcess() {
@@ -71,8 +72,6 @@ class MyApplication : Application() {
             }
 
             override fun onNext(connectState: WmConnectState) {
-
-                WmLog.e(TAG, "connect state: $connectState")
 
                 when (connectState) {
                     WmConnectState.BT_DISABLE -> {

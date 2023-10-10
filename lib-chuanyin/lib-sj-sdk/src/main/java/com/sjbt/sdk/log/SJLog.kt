@@ -1,33 +1,40 @@
 package com.sjbt.sdk.log
 
-import com.base.sdk.port.log.WmLog
+import com.base.sdk.port.log.AbWmLog
+import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.TAG_SJ
+import timber.log.Timber
 
-object SJLog {
+class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
 
-    open var logEnable: Boolean = false
-
-    fun logBt(tag: String, state: String) {
-        if (logEnable) {
-            WmLog.d(tag, state)
+    override fun logE(tag: String, msg: String) {
+        if (sjUniWatch.sdkLogEnable) {
+            Timber.tag(TAG_SJ + tag).e(msg)
         }
     }
 
-    fun logE(tag: String, state: String) {
-        if (logEnable) {
-            WmLog.e(tag, state)
+    override fun logD(tag: String, msg: String) {
+        if (sjUniWatch.sdkLogEnable) {
+            Timber.tag(TAG_SJ + tag).d(msg)
+        }
+    }
+
+    override fun logI(tag: String, msg: String) {
+        if (sjUniWatch.sdkLogEnable) {
+            Timber.tag(TAG_SJ + tag).i(msg)
+        }
+    }
+
+    override fun logW(tag: String, msg: String) {
+        if (sjUniWatch.sdkLogEnable) {
+            Timber.tag(TAG_SJ + tag).w(msg)
         }
     }
 
     fun logSendMsg(msg: String) {
-        if (logEnable) {
-            WmLog.d(TAG_SJ + "MSG-SEND：", msg)
+        if (sjUniWatch.sdkLogEnable) {
+            Timber.tag(TAG_SJ+"MSG:").w(msg)
         }
     }
 
-    fun logReadMsg(msg: String) {
-        if (logEnable) {
-            WmLog.d(TAG_SJ + "MSG-READ：", msg)
-        }
-    }
 }

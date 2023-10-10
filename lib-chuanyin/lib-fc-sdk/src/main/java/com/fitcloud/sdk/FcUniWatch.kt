@@ -15,6 +15,7 @@ import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
+import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
 import com.fitcloud.sdk.settings.FcSettings
@@ -57,6 +58,13 @@ abstract class FcUniWatch(
         get() = TODO("Not yet implemented")
     override val wmTransferFile: AbWmTransferFile
         get() = TODO("Not yet implemented")
+
+    override val wmLog: AbWmLog
+        get() = TODO("Not yet implemented")
+
+    override fun setLogEnable(logEnable: Boolean) {
+        TODO("Not yet implemented")
+    }
 
     override fun connect(address: String, bindInfo: WmBindInfo): WmDevice? {
         if (bindInfo.model != getDeviceModel())
@@ -143,5 +151,6 @@ abstract class FcUniWatch(
             field = value
             fcSDK?.isForeground = value
         }
+
 
 }

@@ -12,25 +12,23 @@ import com.sjbt.sdk.entity.H264FrameMap
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
-import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
+class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
-    val sjUniWatch = sjUniWatch
     lateinit var cameraObserveOpenEmitter: ObservableEmitter<Boolean>
     lateinit var cameraSingleOpenEmitter: SingleEmitter<Boolean>
     lateinit var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>
-
     lateinit var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>
     lateinit var cameraObserveFrontBackEmitter: ObservableEmitter<WMCameraPosition>
-
     lateinit var cameraBackSwitchEmitter: ObservableEmitter<WMCameraPosition>
     lateinit var cameraFlashSwitchEmitter: ObservableEmitter<WMCameraFlashMode>
     lateinit var cameraPreviewReadyEmitter: SingleEmitter<Boolean>
 
+    val TAG = "AppCamera"
+    
     //相机预览相关
     var mCameraFrameInfo: WmCameraFrameInfo? = null
     var mH264FrameMap: H264FrameMap = H264FrameMap()
@@ -159,18 +157,19 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     override fun updateCameraPreview(cameraFrameInfo: WmCameraFrameInfo) {
-        LogUtils.logBlueTooth("更新frame continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logI(TAG,"更新frame continueUpdateFrame：$continueUpdateFrame")
+                
         cameraFrameInfo?.let {
             if (it.frameType === 2) {
                 mLatestIframeId = it.frameId
-                LogUtils.logBlueTooth("最新的I帧：" + mLatestIframeId);
+                sjUniWatch.wmLog.logI(TAG,"最新的I帧：" + mLatestIframeId);
             } else {
                 mLatestPframeId = it.frameId
-                LogUtils.logBlueTooth("最新的P帧：" + mLatestIframeId)
+                sjUniWatch.wmLog.logI(TAG,"最新的P帧：" + mLatestIframeId)
             }
             mH264FrameMap.putFrame(it)
 
-            LogUtils.logBlueTooth("来新数据了:" + needNewH264Frame);
+            sjUniWatch.wmLog.logI(TAG,"来新数据了:" + needNewH264Frame);
             if (needNewH264Frame) {
                 mCameraFrameInfo = it
                 sendFrameDataAsync(it)
@@ -182,7 +181,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
     fun sendFrameDataAsync(frameInfo: WmCameraFrameInfo?) {
         if (frameInfo == null) {
             needNewH264Frame = true
-            LogUtils.logBlueTooth("没数据了-》2")
+            sjUniWatch.wmLog.logI(TAG,"没数据了-》2")
             return
         }
         mCameraHandler.post { sendFrameData(frameInfo) }
@@ -215,7 +214,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                             cameraFrameInfo,
                             i
                         )
-                        //                    LogUtils.logBlueTooth("执行发送：" + info + " 分包类型：" + mDivide);
+                        //                    sjUniWatch.wmLog.logI(TAG,"执行发送：" + info + " 分包类型：" + mDivide);
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getCameraPreviewDataCmd02(
                                 info.payload,
@@ -253,21 +252,21 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             ByteBuffer.wrap(lenArray).order(ByteOrder.LITTLE_ENDIAN).int
 
         mCellLength = mCellLength - 5
-        LogUtils.logBlueTooth("相机预览传输包大小：${mCellLength}")
+        sjUniWatch.wmLog.logI(TAG,"相机预览传输包大小：${mCellLength}")
 
         continueUpdateFrame = camera_pre_allow.toInt() == 1
 
         cameraPreviewReadyEmitter.onSuccess(continueUpdateFrame)
 
-        LogUtils.logBlueTooth("是否支持相机预览 continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logI(TAG,"是否支持相机预览 continueUpdateFrame：$continueUpdateFrame")
 
         if (camera_pre_allow.toInt() == 1) {
-            LogUtils.logBlueTooth("预发送数据：" + mH264FrameMap.frameCount)
+            sjUniWatch.wmLog.logI(TAG,"预发送数据：" + mH264FrameMap.frameCount)
             if (!mH264FrameMap.isEmpty()) {
-                LogUtils.logBlueTooth("发送的帧ID：${mLatestIframeId}")
+                sjUniWatch.wmLog.logI(TAG,"发送的帧ID：${mLatestIframeId}")
                 mCameraFrameInfo =
                     mH264FrameMap.getFrame(mLatestIframeId)
-                LogUtils.logBlueTooth("发送的帧信息：${mCameraFrameInfo}")
+                sjUniWatch.wmLog.logI(TAG,"发送的帧信息：${mCameraFrameInfo}")
                 sendFrameDataAsync(mCameraFrameInfo)
             } else {
                 needNewH264Frame = true
@@ -280,27 +279,27 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             if (continueUpdateFrame) {
                 if (mH264FrameMap.isEmpty()) {
                     needNewH264Frame = true
-                    LogUtils.logBlueTooth("没数据了-》1")
+                    sjUniWatch.wmLog.logI(TAG,"没数据了-》1")
                     return
                 }
 
                 if (frameSuccess.toInt() == 1) { //发送成功
                     //删除掉已经发送成功之前的帧
                     mH264FrameMap.removeOldFrames(it.frameId)
-                    LogUtils.logBlueTooth("移除发送过的帧数")
+                    sjUniWatch.wmLog.logI(TAG,"移除发送过的帧数")
                     if (it.frameId === mLatestIframeId) {
                         mCameraFrameInfo =
                             mH264FrameMap.getFrame(mLatestPframeId)
-                        LogUtils.logBlueTooth("没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                        sjUniWatch.wmLog.logI(TAG,"没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
                     } else {
                         if (mLatestIframeId > it.frameId) {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestIframeId)
-                            LogUtils.logBlueTooth("有新的I帧,发送最新的I帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logI(TAG,"有新的I帧,发送最新的I帧：${mCameraFrameInfo}")
                         } else {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestPframeId)
-                            LogUtils.logBlueTooth("没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logI(TAG,"没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
                         }
                     }
                 } else { //发送失败
@@ -308,22 +307,22 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                         if (mLatestIframeId > it.frameId) {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestIframeId)
-                            LogUtils.logBlueTooth("P发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logI(TAG,"P发送失败,发送最新的I帧：${mCameraFrameInfo}")
                         } else {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestPframeId)
-                            LogUtils.logBlueTooth("P发送失败,发送最新的P帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logI(TAG,"P发送失败,发送最新的P帧：${mCameraFrameInfo}")
                         }
                     } else {
                         mCameraFrameInfo =
                             mH264FrameMap.getFrame(mLatestIframeId)
-                        LogUtils.logBlueTooth("发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                        sjUniWatch.wmLog.logI(TAG,"发送失败,发送最新的I帧：${mCameraFrameInfo}")
                     }
                 }
 
                 sendFrameDataAsync(mCameraFrameInfo)
             } else {
-                LogUtils.logBlueTooth("相机关闭，停止发送")
+                sjUniWatch.wmLog.logI(TAG,"相机关闭，停止发送")
                 mH264FrameMap.clear()
             }
         }
@@ -331,7 +330,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     override fun stopCameraPreview() {
         continueUpdateFrame = false
-        LogUtils.logBlueTooth("停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logI(TAG,"停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
         mH264FrameMap.clear()
     }
 
@@ -358,9 +357,9 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                 }
             }
 
-//        LogUtils.logBlueTooth("分包类型：" + mDivide);
+//        sjUniWatch.wmLog.logI(TAG,"分包类型：" + mDivide);
             if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
-//            LogUtils.logBlueTooth("最后一包长度：" + mFrameLastLen);
+//            sjUniWatch.wmLog.logI(TAG,"最后一包长度：" + mFrameLastLen);
                 if (mFrameLastLen == 0) {
                     info.offSet = i * mCellLength
                     info.payload = ByteArray(mCellLength)
@@ -373,10 +372,10 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
             } else {
                 info.offSet = i * mCellLength
                 if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
-                    LogUtils.logBlueTooth("本帧大小:" + it.size)
-                    LogUtils.logBlueTooth("帧数据长度：" + BtUtils.intToHex(it.size))
+                    sjUniWatch.wmLog.logI(TAG,"本帧大小:" + it.size)
+                    sjUniWatch.wmLog.logI(TAG,"帧数据长度：" + BtUtils.intToHex(it.size))
                     if (it.size < mCellLength) {
-                        LogUtils.logBlueTooth("不分包：$mDivide")
+                        sjUniWatch.wmLog.logI(TAG,"不分包：$mDivide")
                         mCellLength = it.size
                     }
                     val byteBuffer = ByteBuffer.allocate(mCellLength + 5).order(ByteOrder.LITTLE_ENDIAN)
@@ -384,10 +383,10 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                     byteBuffer.putInt(it.size)
                     val payload = ByteArray(mCellLength)
                     System.arraycopy(it, 0, payload, 0, payload.size)
-                    LogUtils.logBlueTooth("数据payload：" + payload.size)
+                    sjUniWatch.wmLog.logI(TAG,"数据payload：" + payload.size)
                     byteBuffer.put(payload)
                     info.payload = byteBuffer.array()
-                    LogUtils.logBlueTooth("首包payload总长度：" + info.payload.size)
+                    sjUniWatch.wmLog.logI(TAG,"首包payload总长度：" + info.payload.size)
                 } else {
                     info.payload = ByteArray(mCellLength)
                     System.arraycopy(it, i * mCellLength, info.payload, 0, info.payload.size)

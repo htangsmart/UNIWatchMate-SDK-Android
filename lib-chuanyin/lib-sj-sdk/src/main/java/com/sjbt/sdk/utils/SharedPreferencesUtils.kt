@@ -37,7 +37,7 @@ class SharedPreferencesUtils private constructor(context: Context) {
 
     companion object {
 
-        private const val PREFS_NAME = "my_prefs"
+        private const val PREFS_NAME = "sjbt_sdk_preference"
 
         @Volatile
         private var instance: SharedPreferencesUtils? = null

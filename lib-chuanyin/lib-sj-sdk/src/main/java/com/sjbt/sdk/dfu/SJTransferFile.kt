@@ -11,15 +11,14 @@ import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.FileUtils
-import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.core.*
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
+class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 
-    private val sjUniWatch = sjUniWatch
+    val TAG = "SJTransferFile"
 
     //文件传输相关
     private var mTransferFiles: List<File>? = null
@@ -73,6 +72,8 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 
     override fun startTransfer(fileType: FileType, files: List<File>): Observable<WmTransferState> {
         mTransferFiles = files
+        mSelectFileCount = files.size
+
         transferState = WmTransferState(
             mTransferFiles!!.size
         ).also {
@@ -110,7 +111,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 val byteBuffer = ByteBuffer.wrap(msg)
                 val ota_allow = byteBuffer[16] //是否容许升级 0允许 1不允许
                 val reason = byteBuffer[17] //是否容许升级 0允许 1不允许
-                LogUtils.logBle("1.允许传输:$ota_allow")
+                sjUniWatch.wmLog.logI(TAG, "1.允许传输:$ota_allow")
                 if (ota_allow.toInt() == 1) {
                     mSendingFile = mTransferFiles!![0]
 
@@ -139,7 +140,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mOtaProcess = 0
                 mCellLength = ByteBuffer.wrap(lenArray)
                     .order(ByteOrder.LITTLE_ENDIAN).int - 4
-                LogUtils.logBlueTooth("cell_length:$mCellLength")
+                sjUniWatch.wmLog.logI(TAG,"cell_length:$mCellLength")
                 if (mCellLength > 0) {
 
                     Thread {
@@ -147,7 +148,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                             FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
 
                         mFileDataArray?.let {
-                            LogUtils.logBlueTooth("开启线程读取文件字节流长度：" + it.size)
+                            sjUniWatch.wmLog.logI(TAG,"开启线程读取文件字节流长度：" + it.size)
                             continueSendFileData(0, it)
                         }
 
@@ -166,11 +167,11 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = true
                 mErrorSend = isRight.toInt() != 1
                 mOtaProcess = buffer.getInt(17)
-                LogUtils.logBlueTooth("返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount")
+                sjUniWatch.wmLog.logI(TAG,"返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount")
                 if (mErrorSend) { //失败
                     //                                        removeCallBackRunner(mTransferTimeoutRunner)
                     //                                        mOtaProcess = mOtaProcess > 0 ? mOtaProcess - 1 : mOtaProcess;
-                    LogUtils.logBlueTooth("出错后序号：$mOtaProcess")
+                    sjUniWatch.wmLog.logI(TAG,"出错后序号：$mOtaProcess")
                     if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         sendErrorMsg(mOtaProcess)
                     } else {
@@ -178,7 +179,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     }
                 } else { //成功
                     mTransferRetryCount = 0
-                    LogUtils.logBlueTooth("掰正的消息：$mOtaProcess")
+                    sjUniWatch.wmLog.logI(TAG,"掰正的消息：$mOtaProcess")
 
                     Thread {
                         // 执行耗时操作
@@ -205,7 +206,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mOtaProcess = 0
                 //                                    removeCallBackRunner(mTransferTimeoutRunner)
                 val data_success = ByteBuffer.wrap(msg)[16]
-                LogUtils.logBlueTooth("发送结果:$data_success")
+                sjUniWatch.wmLog.logI(TAG,"发送结果:$data_success")
                 sjUniWatch.clearMsg()
                 if (data_success == 1.toByte()) {
                     mSendFileCount++
@@ -274,7 +275,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = false
                 mCanceledSend = true
                 val reason_cancel = ByteBuffer.wrap(msg)[16]
-                LogUtils.logBlueTooth("设备取消传输原因：$reason_cancel")
+                sjUniWatch.wmLog.logI(TAG,"设备取消传输原因：$reason_cancel")
                 transferEnd()
                 transferError("file transfer error reason:06 Error")
             }
@@ -289,7 +290,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         }
     }
 
-    fun continueSendFileData(startProcess: Int, dataArray: ByteArray) {
+    private fun continueSendFileData(startProcess: Int, dataArray: ByteArray) {
         mPackageCount = dataArray.size / mCellLength
         mLastDataLength = dataArray.size % mCellLength
         if (mLastDataLength != 0) {
@@ -299,7 +300,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         for (i in startProcess.toInt() until mPackageCount) {
             mOtaProcess = i
             if (mCanceledSend || mErrorSend) { //取消或者中途出错
-                LogUtils.logBlueTooth("消息取消或者出错：$mOtaProcess")
+                sjUniWatch.wmLog.logI(TAG,"消息取消或者出错：$mOtaProcess")
                 mTransferring = false
                 break
             }
@@ -330,7 +331,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
                 mTransferring = false
-                LogUtils.logBlueTooth("连续发送过程中出错：" + e.message)
+                sjUniWatch.wmLog.logI(TAG,"连续发送过程中出错：" + e.message)
 
                 observableTransferEmitter?.onError(e)
 
@@ -360,7 +361,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
         }
 
-//        LogUtils.logBlueTooth("分包类型：" + mDivide);
+//        sjUniWatch.wmLog.logI(TAG,"分包类型：" + mDivide);
         if (otaProcess != mPackageCount - 1) {
             info.offSet = otaProcess * mCellLength
             info.payload = ByteArray(mCellLength)
@@ -372,7 +373,7 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 info.payload.size
             )
         } else {
-//            LogUtils.logBlueTooth("最后一包长度：" + mLastDataLength);
+//            sjUniWatch.wmLog.logI(TAG,"最后一包长度：" + mLastDataLength);
             if (mLastDataLength == 0) {
                 info.offSet = otaProcess * mCellLength
                 info.payload = ByteArray(mCellLength)
@@ -437,6 +438,8 @@ class SJTransferFile(sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 //                        if (mTransferFileListener != null) {
 //                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8003 time out")
 //                        }
+
+
                         }
 
                     CMD_STR_8004_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {

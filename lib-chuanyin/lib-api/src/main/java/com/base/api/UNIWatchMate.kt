@@ -10,6 +10,7 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
+import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.sync.AbWmSyncs
@@ -29,7 +30,7 @@ object UNIWatchMate : AbUniWatch() {
     override val wmSettings: AbWmSettings = AbWmSettingsDelegate(uniWatchObservable)
     override val wmApps: AbWmApps = AbWmAppDelegate(uniWatchObservable)
     override val wmSync: AbWmSyncs = AbWmSyncDelegate(uniWatchObservable)
-
+    override val wmLog: AbWmLog = AbWmLogDelegate(uniWatchObservable)
     override val wmTransferFile: AbWmTransferFile = AbWmTransferDelegate(uniWatchObservable)
 
     fun init(application: Application, uniWatches: List<AbUniWatch>) {
@@ -108,4 +109,7 @@ object UNIWatchMate : AbUniWatch() {
         return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit)
     }
 
+    override fun setLogEnable(logEnable: Boolean) {
+        uniWatchSubject.value?.setLogEnable(logEnable)
+    }
 }
