@@ -147,4 +147,14 @@
         <item name="android:textColor">@color/color_222222</item>
         <item name="android:textSize">16sp</item>
     </style>
+
+    <style name="MwAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <!--        <item name="android:windowAnimationStyle">@style/ActivityInOutAnim</item>-->
+        <item name="android:windowBackground">@color/black</item>
+    </style>
 </resources>

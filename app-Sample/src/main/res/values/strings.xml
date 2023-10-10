@@ -72,7 +72,7 @@
     <!--Sync-->
     <string name="module_sync">Sync</string>
     <string name="sync_state_idle">Pull down to sync data</string>
-<!--    <string name="sync_state_process">Syncing: <xliff:g id="param">%1$d</xliff:g>%%</string>-->
+    <!--    <string name="sync_state_process">Syncing: <xliff:g id="param">%1$d</xliff:g>%%</string>-->
     <string name="sync_data_success">Sync success</string>
     <string name="sync_data_failed">Sync fail</string>
     <string name="sync_data_ongoing">Syncing data</string>
@@ -356,15 +356,15 @@
     <string name="device_state_verified">Verified</string>
     <string name="device_state_other">other</string>
 
-<!--app view-->
+    <!--app view-->
     <string name="app_view_gridding">gridding</string>
     <string name="app_view_list">list</string>
     <string name="app_view">app_view</string>
 
-<!--sleep config-->
+    <!--sleep config-->
     <string name="ds_sleep_config">sleep config</string>
 
-<!--Camera-->
+    <!--Camera-->
     <string name="sure">Sure</string>
     <string name="cancel">Cancel</string>
     <string name="camera_permission_reject">Camera permission denied, temporarily unusable.</string>
@@ -383,4 +383,61 @@
     <string name="confirm">Confirm</string>
     <string name="gentlly_remind">Warm Reminder</string>
 
+    <string name="low_battery">Device battery less than 50%, please retry after full charge</string>
+    <string name="low_battery_tips">Battery too low, cannot install face</string>
+    <string name="low_battery_tips_ota">Battery low, can\'t upgrade</string>
+    <string name="low_battery_tips_file">Battery low, please retry after full charge</string>
+    <string name="music_trans_fail">File transfer failed</string>
+    <string name="not_allow_recently">Upgrade not supported temporarily, please try again later</string>
+
+    <string name="gps_tips">To scan Bluetooth LE devices more accurately</string>
+    <string name="no_space_tips">Disk space is low, you can delete some files such as music, recordings and try again!</string>
+    <string name="dial_install_fail">Dial installation failed, please try again later!</string>
+    <string name="no_space_for_dial">Dial space is low, try removing some and try again!</string>
+    <string name="send_file_not_allow">Device is working, no transfer conditions for now, please try again later!</string>
+    <string name="send_file_not_allow_dial">Device is working, try again later!</string>
+    <string name="unknow_error">Unknown error!</string>
+
+    <string name="unkonow_reason">Failed for unknown reasons</string>
+    <string name="low_space">Device space insufficient</string>
+    <string name="device_err">Device Failure</string>
+    <string name="file_size">File size:%s</string>
+    <string name="in_send">Sending...</string>
+    <string name="sending_count">You have %d files sending...</string>
+
+    <string name="sending">Sending...</string>
+    <string name="music_send_count">%d out of %d</string>
+    <string name="sending_not_close">Do not exit APP or turn off Bluetooth during sending</string>
+
+    <string name="all_send_success">发送成功</string>
+    <string name="transfer_fail">Trans. Failed</string>
+    <string name="send_fail">Send fail</string>
+    <string name="send_fail_all">%d files not sent</string>
+    <string name="send_all">%d files sent</string>
+
+    <string name="send_finish">Sent</string>
+    <string name="sended">Sent</string>
+    <string name="send_again">Resend</string>
+    <string name="send_fail_count_tip">%d files have been sent, %d files have not been sent</string>
+
+    <string name="file_transfer">File Transfer</string>
+    <string name="no_music_found">File not found</string>
+
+    <string name="file_memory_size_tips">(Files bigger than 20MB filtered)</string>
+    <string name="assigned_video">(Only supports avi files converted by specified software)</string>
+    <string name="file_count">Tot. %d items found</string>
+    <string name="send_no_count">Send</string>
+    <string name="send_with_count">Send(%d)</string>
+    <string name="choose_one_file">Select at least one file</string>
+    <string name="too_big_file">File exceeds maximum limit</string>
+
+    <string name="max_transfer_tips">For a transfer experience, file size should be less than 20MB. Please adjust and retry.</string>
+
+    <string name="music">Music</string>
+    <string name="ebook">Ebook</string>
+    <string name="video">Video</string>
+    <string name="close_confirm">Are you sure to close?</string>
+    <string name="think_again">I\'ll think again</string>
+
+    <string name="finish">Completed</string>
 </resources>

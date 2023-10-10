@@ -272,7 +272,7 @@ internal class DeviceManagerImpl(
                 runCatchingWithLog {
                     Timber.tag(TAG).i("getDeviceInfo")
                     UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.toObservable()?.asFlow()?.collect{
-
+                        Timber.tag(TAG).i("getDeviceInfo=\n$it")
                     }
                 }
                 runCatchingWithLog {
@@ -305,7 +305,7 @@ internal class DeviceManagerImpl(
                             if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
                             birthDate
                         )
-                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
+//                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }
 
@@ -395,13 +395,14 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun reset() {
+        Timber.tag(TAG).i("reset")
         UNIWatchMate.reset().doOnSubscribe {
 
         }.doOnError {
             it.printStackTrace()
         }.doOnComplete {
 
-        }
+        }.subscribe()
         clearDevice()
     }
 
