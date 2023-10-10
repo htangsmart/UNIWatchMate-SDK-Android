@@ -135,6 +135,15 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //                    }
 //                }
             }
+
+            launch {
+                UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
+                    if (aBoolean) {
+                        CacheDataHelper.cameraLaunchedByDevice = true
+                        CameraActivity.launchActivity(activity)
+                    }
+                }
+            }
         }
     }
 
@@ -172,11 +181,14 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            }
             viewBind.itemTestSendNotification -> {
                 applicationScope.launchWithLog {
-                    UNIWatchMate?.wmApps?.appNotification?.sendNotification(WmNotification(
-                        WmNotificationType.WECHAT,
-                        "title_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
-                        "content_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
-                        "sub_content_notification"))?.subscribe { result ->
+                    UNIWatchMate?.wmApps?.appNotification?.sendNotification(
+                        WmNotification(
+                            WmNotificationType.WECHAT,
+                            "title_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
+                            "content_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
+                            "sub_content_notification"
+                        )
+                    )?.subscribe { result ->
                         Timber.tag("appNotification").i("appNotification result=$result")
                     }
                 }
@@ -190,13 +202,14 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            viewBind.itemDial -> {
 //                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
 //            }
-                viewBind.itemCamera -> {
-                    PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
-                        if (it) {
-                            CameraActivity.launchActivity(activity)
-                        }
+            viewBind.itemCamera -> {
+                PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
+                    if (it) {
+                        CacheDataHelper.cameraLaunchedBySelf = true
+                        CameraActivity.launchActivity(activity)
                     }
                 }
+            }
 //            viewBind.itemModifyLogo -> {
 //                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
 //            }
@@ -214,8 +227,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 ////If you jump directly , you can select a local file for OTA. This may be more convenient for testing
 ////                findNavController().navigate(DeviceFragmentDirections.toHardwareUpgrade(null))
 //            }
-            }
         }
+    }
 
 //    override fun navToConnectHelp() {
 //        findNavController().navigate(DeviceFragmentDirections.toConnectHelp())
@@ -229,5 +242,5 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //        val asyncCheckUpgrade: Async<HardwareUpgradeInfo?> = Uninitialized
 //    )
 
-    }
+}
 

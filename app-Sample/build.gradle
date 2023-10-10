@@ -119,7 +119,6 @@ dependencies {
     implementation project(path: ':lib-chuanyin:lib-api')
     implementation project(path: ':zbarlibrary')
 
-
     //Required
     implementation "com.jakewharton.timber:timber:$timber_version"
     implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
