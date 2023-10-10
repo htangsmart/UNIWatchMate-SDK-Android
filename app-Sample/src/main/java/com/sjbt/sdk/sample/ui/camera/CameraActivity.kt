@@ -174,7 +174,7 @@ class CameraActivity : BaseActivity() {
 
             if (startAnalsis) {
                 if (CacheDataHelper.cameraLaunchedByDevice || CacheDataHelper.cameraLaunchedBySelf) {
-                    UNIWatchMate.wmApps.appCamera.isCameraPreviewReady()
+                    UNIWatchMate.wmApps.appCamera.startCameraPreview()
                         .subscribe { result: Boolean ->
                             UNIWatchMate.wmLog.logD(TAG,
                                 "isCameraPreviewReady:$result"

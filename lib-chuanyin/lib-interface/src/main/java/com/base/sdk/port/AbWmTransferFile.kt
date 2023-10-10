@@ -20,7 +20,7 @@ enum class FileType(val type: Int) {
     MUSIC(1),//MP3类型
     OTA(2),//设备ota
     DIAL(3),//表盘
-    JPEG(4),//表盘封面
+    DIAL_COVER(4),//表盘封面
     OTA_UPEX(5),//设备ota_upex
     TXT(6),//设备ota_upex
     AVI(7),//设备ota_upex

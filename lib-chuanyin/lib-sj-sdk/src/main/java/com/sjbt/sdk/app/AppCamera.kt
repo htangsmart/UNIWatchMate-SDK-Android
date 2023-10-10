@@ -143,7 +143,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         return continueUpdateFrame
     }
 
-    override fun isCameraPreviewReady(): Single<Boolean> {
+    override fun startCameraPreview(): Single<Boolean> {
         return Single.create(object : SingleOnSubscribe<Boolean> {
             override fun subscribe(emitter: SingleEmitter<Boolean>) {
                 cameraPreviewReadyEmitter = emitter

@@ -55,7 +55,7 @@ abstract class AbAppCamera :IWmSupport {
     /**
      * 相机预览是否准备好
      */
-    abstract fun isCameraPreviewReady(): Single<Boolean>
+    abstract fun startCameraPreview(): Single<Boolean>
 
     /**
      * 更新相机预览
