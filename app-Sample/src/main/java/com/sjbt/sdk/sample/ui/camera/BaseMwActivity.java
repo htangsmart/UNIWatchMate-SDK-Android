@@ -21,11 +21,11 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.base.api.UNIWatchMate;
 import com.sjbt.sdk.sample.base.BaseActivity;
 import com.sjbt.sdk.sample.dialog.CallBack;
 import com.sjbt.sdk.sample.dialog.ConfirmDialog;
 import com.sjbt.sdk.sample.ui.dialog.LoadingDialog;
-import com.sjbt.sdk.utils.LogUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -101,7 +101,7 @@ public abstract class BaseMwActivity extends AppCompatActivity {
     //打开设置界面
     public void checkNotificationPermission(Context context) {
         if (!isNotificationListenerEnabled(context)) {
-            LogUtils.logCommon("通知权限检查 未开启");
+            UNIWatchMate.INSTANCE.getWmLog().logD("BaseMwActivity", "通知权限检查 未开启");
             context.startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
         }
     }

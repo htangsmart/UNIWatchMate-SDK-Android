@@ -15,11 +15,11 @@ import android.text.TextUtils;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 
+import com.base.api.UNIWatchMate;
 import com.blankj.utilcode.util.AppUtils;
 import com.sjbt.sdk.sample.MyApplication;
 import com.sjbt.sdk.sample.base.Config;
 import com.sjbt.sdk.sample.ui.fileTrans.LocalFileBean;
-import com.sjbt.sdk.utils.LogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import java.util.List;
 public class AudioUtils {
 
     private static final long MAX_LEN = 20 * 1024 * 1024;
+    private static final String TAG  = "AudioUtils";
 
     /**
      * 获取sd卡所有的音乐文件
@@ -215,7 +216,7 @@ public class AudioUtils {
 
                 int dataIndex = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA);
                 String filePath = cursor.getString(dataIndex);
-                LogUtils.logBlueTooth("scan filePath:" + filePath);
+                UNIWatchMate.INSTANCE.getWmLog().logD(TAG, "scan filePath:" + filePath);
             }
 
             cursor.close();
@@ -249,7 +250,7 @@ public class AudioUtils {
             do {
                 String name = c.getString(titleIndex); // 获取文件名，不包含扩展名
                 String path = c.getString(dataIndex);  // 获取文件实际路径
-                LogUtils.logBlueTooth("读取文件名称：" + name + " > " + path);
+                UNIWatchMate.INSTANCE.getWmLog().logD(TAG,"读取文件名称：" + name + " > " + path);
 
                 LocalFileBean localFileBean = new LocalFileBean();
 

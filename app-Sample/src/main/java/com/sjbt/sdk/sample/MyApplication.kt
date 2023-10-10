@@ -8,7 +8,6 @@ import android.os.Looper
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.port.log.WmLog
 import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.FormatterUtil

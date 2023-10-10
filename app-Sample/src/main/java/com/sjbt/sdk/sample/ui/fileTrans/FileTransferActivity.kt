@@ -11,6 +11,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.base.api.UNIWatchMate
 import com.base.api.UNIWatchMate.wmTransferFile
 import com.base.sdk.port.FileType
 import com.base.sdk.port.State
@@ -28,7 +29,6 @@ import com.sjbt.sdk.sample.ui.camera.BaseMwActivity
 import com.sjbt.sdk.sample.ui.dialog.SendMusicDialog
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
-import com.sjbt.sdk.utils.LogUtils
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Observer
@@ -587,7 +587,8 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
 
 
     private fun sendEndTransferFile() {
-        LogUtils.logBle("发送结束命令")
+        UNIWatchMate.wmLog.logD(TAG, "发送结束命令")
+
         hideLoadingDlg()
         setTransferring(false)
     }
@@ -607,7 +608,7 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
     override fun onDestroy() {
         super.onDestroy()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        LogUtils.logBle("$localClassName onDestroy")
+        UNIWatchMate.wmLog.logD(TAG, "$localClassName onDestroy")
         sendEndTransferFile()
         hideDialog(mSendMusicDialog)
     }
