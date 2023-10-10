@@ -612,11 +612,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 CONNECTED -> {
                     btStateChange(WmConnectState.CONNECTED)
+                    sendNormalMsg(CmdHelper.biuShakeHandsCmd)
                     mBtStateReceiver?.let {
                         it.setmSocket(mBtEngine.getmSocket())
                         it.setmCurrDevice(mCurrAddress)
                     }
-                    sendNormalMsg(CmdHelper.biuShakeHandsCmd)
 
                 }
             }
@@ -872,7 +872,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             return
         }
 
-//        if (wmTransferFile.mTransferring) {
+        if (wmTransferFile.mTransferring) {
             val byteBuffer = ByteBuffer.wrap(msg)
             val head = byteBuffer.get()
             val cmdId: Short = byteBuffer[2].toShort()
@@ -881,7 +881,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 SJLog.logBt(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
                 return
             }
-//        }
+        }
 
         mBtEngine.sendMsgOnWorkThread(msg)
     }
