@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import androidx.core.app.ActivityCompat
@@ -112,9 +114,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private val gson = Gson()
     private var sharedPreferencesUtils: SharedPreferencesUtils
-
     var sdkLogEnable = false
-
+    private val mHandler = Handler(Looper.getMainLooper())
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
         Log.e(">>>>>>>>>", "logEnable:" + logEnable)
@@ -125,8 +126,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mMsgTimeOut = timeout
 
         plant(Timber.DebugTree())
-        mBtEngine.listener = this
 
+        mBtEngine.listener = this
         sharedPreferencesUtils = SharedPreferencesUtils.getInstance(mContext)
 
         mBtStateReceiver = BtStateReceiver(mContext!!, wmLog, object : OnBtStateListener {
@@ -1284,6 +1285,27 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
 
                 mBtAdapter?.startDiscovery()
+
+                val stopAfter: Long = when (wmTimeUnit) {
+                    WmTimeUnit.SECONDS -> {
+                        scanTime * 1000L
+                    }
+                    WmTimeUnit.MILLISECONDS -> {
+                        scanTime.toLong()
+                    }
+                    WmTimeUnit.MINUTES -> {
+                        scanTime * 1000 * 60L
+                    }
+                    else -> {
+                        scanTime.toLong()
+                    }
+                }
+
+                mHandler.postDelayed(object : Runnable {
+                    override fun run() {
+                        mBtAdapter?.cancelDiscovery()
+                    }
+                }, stopAfter)
             }
         })
     }

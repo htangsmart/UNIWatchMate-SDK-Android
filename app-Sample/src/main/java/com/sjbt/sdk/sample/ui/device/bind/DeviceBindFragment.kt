@@ -273,7 +273,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private fun startDiscover() {
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(120, WmTimeUnit.SECONDS)?.asFlow()?.collect {
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }
