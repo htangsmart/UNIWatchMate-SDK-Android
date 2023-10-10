@@ -305,7 +305,7 @@ internal class DeviceManagerImpl(
                             if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
                             birthDate
                         )
-                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
+//                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }
 
