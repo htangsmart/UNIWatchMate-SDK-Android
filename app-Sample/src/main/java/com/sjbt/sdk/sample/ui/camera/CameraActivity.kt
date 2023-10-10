@@ -25,10 +25,12 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.shenju.cameracapturer.FrameData
 import com.shenju.cameracapturer.OSIJni
 import com.sjbt.sdk.sample.R
+import com.sjbt.sdk.sample.base.BaseActivity
 import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.dialog.CameraBusDialog
+import com.sjbt.sdk.sample.dialog.CameraBusDialog.TIP_TYPE_OPEN_CAMERA
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.SingleMediaScanner
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
@@ -40,7 +42,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CameraActivity : BaseMwActivity() {
+class CameraActivity : BaseActivity() {
     private var previewView: PreviewView? = null
     private var img_switch: ImageView? = null
     private var image_flash: ImageView? = null
@@ -56,7 +58,6 @@ class CameraActivity : BaseMwActivity() {
     private var mCameraBusDialog: CameraBusDialog? = null
     private var flashOn = false
     private var vibrator: Vibrator? = null
-    private val mHandler = Handler(Looper.getMainLooper())
     private var mediaActionSound: MediaActionSound? = null
     private val osiJni = OSIJni()
     private var startAnalsis = false
@@ -67,13 +68,16 @@ class CameraActivity : BaseMwActivity() {
     private var myOrientationListener: MyOrientationListener? = null
     private val isSupportCameraPreview = true
     private val deviceManager = Injector.getDeviceManager()
+    private val mHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //        EventBus.getDefault().register(this);
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_camera)
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
@@ -83,41 +87,26 @@ class CameraActivity : BaseMwActivity() {
         UNIWatchMate.wmApps.appCamera.cameraBackSwitch(WMCameraPosition.WMCameraPositionFront)
         UNIWatchMate.wmApps.appCamera.cameraFlashSwitch(WMCameraFlashMode.WMCameraFlashModeOn)
         val width = 320
-        val height = 249
+        val height = 240
 
 //        if (basicInfo != null) {
 //            width = basicInfo.cw;
 //            height = basicInfo.ch;
 //        }
+
         osiJni.initEncoder(width, height)
         initView()
         intCamera()
 
-
-//@Subscribe(threadMode = ThreadMode.MAIN)
-//fun onMessageEvent(event: Any) {
-//    if (event is BtConnectStateEvent) {
-//        val bleConnectStateEvent: BtConnectStateEvent = event as BtConnectStateEvent
-//        when (bleConnectStateEvent.getState()) {
-//            CONNECT_STATE_CONNECTED -> hideConfirmDialog()
-//            CONNECT_STATE_DISCONNECTED, CONNECT_STATE_CONNECT_FAIL -> {
-//                val device: BluetoothDevice = bleConnectStateEvent.getDevice()
-//                if (device != null && device.address == CacheDataHelper.INSTANCE.getCurrentDeviceAddress()) {
-//                    showDisableView()
-//                }
-//            }
-//        }
-//    } else if (event is BtEnableStateEvent) {
-//        if (!(event as BtEnableStateEvent).isEnable()) {
-//            showDisableView()
-//        }
-//    }
-//}
         lifecycle.launchRepeatOnStarted {
             launch {
                 deviceManager.flowStateConnected().collect {
                     if (it) {
-                        hideConfirmDialog()
+                        Toast.makeText(
+                            this@CameraActivity,
+                            getString(R.string.device_connected),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     } else {
                         showDisableView()
                     }
@@ -128,12 +117,14 @@ class CameraActivity : BaseMwActivity() {
                 UNIWatchMate.wmApps.appCamera.observeCameraTakePhoto.asFlow()
                     .collect { takePhoto() }
             }
+
             launch {
                 UNIWatchMate.wmApps.appCamera.observeCameraFrontBack.asFlow().collect {
                     front = it === WMCameraPosition.WMCameraPositionFront
                     bindCameraUseCases()
                 }
             }
+
             launch {
                 UNIWatchMate.wmApps.appCamera.observeCameraFlash.asFlow().collect {
                     flashOn = it === WMCameraFlashMode.WMCameraFlashModeOn
@@ -145,8 +136,17 @@ class CameraActivity : BaseMwActivity() {
                     }
                 }
             }
-        }
 
+            UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
+                isCameraOpened = aBoolean
+                LogUtils.logBlueTooth("设备相机状态：$isCameraOpened")
+                if (isCameraOpened) {
+                    checkCameraPreview()
+                } else {
+                    showCameraBusDialog(CameraBusDialog.TIP_TYPE_OPEN_CAMERA)
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -169,30 +169,25 @@ class CameraActivity : BaseMwActivity() {
         if (!isSupportCameraPreview) {
             return
         }
+
         mHandler.postDelayed({
-            //                LogUtils.logBlueTooth("Camera是否启动 checkCameraPreview camera launched by device：" + CacheDataHelper.INSTANCE.getCameraLaunchedByDevice());
+
+//                LogUtils.logBlueTooth("Camera是否启动 checkCameraPreview camera launched by device：" + CacheDataHelper.INSTANCE.getCameraLaunchedByDevice());
 //                LogUtils.logBlueTooth("Camera是否启动 checkCameraPreview camera launched by user：" + CacheDataHelper.INSTANCE.getCameraLaunchedBySelf());
+
             if (startAnalsis) {
                 if (CacheDataHelper.cameraLaunchedByDevice || CacheDataHelper.cameraLaunchedBySelf) {
-                    UNIWatchMate.wmApps.appCamera.isCameraPreviewReady().subscribe { result: Boolean ->
-                        LogUtils.logBlueTooth(
-                            "isCameraPreviewReady:$result")
-                    }
-                    //                        btSppWrapper.startCameraPreviewListener(new CameraPreviewListener() {
-//                            @Override
-//                            public void transferAllowState(int state, int reason) {
-//                                LogUtils.logBlueTooth("容许preview:" + state + " reason:" + reason);
-//                            }
-//
-//                            @Override
-//                            public void transferFrameFinish(int result) {
-//                                LogUtils.logBlueTooth("本帧发送结果:" + result);
-//                            }
-//                        });
+                    UNIWatchMate.wmApps.appCamera.isCameraPreviewReady()
+                        .subscribe { result: Boolean ->
+                            LogUtils.logBlueTooth(
+                                "isCameraPreviewReady:$result"
+                            )
+                        }
                 }
             } else {
                 checkCameraPreview()
             }
+
         }, 300)
     }
 
@@ -202,7 +197,8 @@ class CameraActivity : BaseMwActivity() {
             mCameraBusDialog = null
         }
         mCameraBusDialog = CameraBusDialog(this, type, object : CallBack<Int?> {
-            override fun callBack(o: Int?) {}
+            override fun callBack(o: Int?) {
+            }
 
         })
         mCameraBusDialog!!.show()
@@ -240,6 +236,7 @@ class CameraActivity : BaseMwActivity() {
             }
             UNIWatchMate.wmApps.appCamera.cameraFlashSwitch(if (flashOn) WMCameraFlashMode.WMCameraFlashModeOn else WMCameraFlashMode.WMCameraFlashModeOff)
         })
+
         ivTook?.setOnClickListener(View.OnClickListener {
             if (ivTookPic?.visibility == View.GONE) {
                 ivTookPic?.setVisibility(View.VISIBLE)
@@ -257,11 +254,7 @@ class CameraActivity : BaseMwActivity() {
     }
 
     private fun switchCamera() {
-        front = if (front) {
-            false
-        } else {
-            true
-        }
+        front = !front
         UNIWatchMate.wmApps.appCamera.cameraBackSwitch(if (front) WMCameraPosition.WMCameraPositionFront else WMCameraPosition.WMCameraPositionRear)
     }
 
@@ -275,6 +268,7 @@ class CameraActivity : BaseMwActivity() {
                 Log.d("wld________", e.toString())
             }
         }, ContextCompat.getMainExecutor(this))
+
         encoderThread.start()
         encoderHandler = Handler(encoderThread.looper)
     }
@@ -285,10 +279,12 @@ class CameraActivity : BaseMwActivity() {
             val preview = Preview.Builder()
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 .build()
+
             imageCapture = ImageCapture.Builder() //优化捕获速度，可能降低图片质量
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 .build()
+
             imageAnalysis = ImageAnalysis.Builder()
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888).build()
             if (imageAnalysis != null) {
@@ -297,13 +293,18 @@ class CameraActivity : BaseMwActivity() {
 
             // 在重新绑定之前取消绑定用例
             cameraProvider!!.unbindAll()
+
             val cameraSelector =
                 if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-            val camera = cameraProvider!!.bindToLifecycle(this@CameraActivity,
+
+            val camera = cameraProvider!!.bindToLifecycle(
+                this@CameraActivity,
                 cameraSelector,
                 preview,
                 imageCapture,
-                imageAnalysis)
+                imageAnalysis
+            )
+
             preview.setSurfaceProvider(previewView!!.surfaceProvider)
             mCameraControl = camera.cameraControl
             mCameraControl!!.enableTorch(flashOn)
@@ -312,12 +313,9 @@ class CameraActivity : BaseMwActivity() {
             } else {
                 image_flash!!.setImageResource(R.mipmap.biu_icon_flash_off)
             }
+
             if (isSupportCameraPreview) {
                 imageAnalysis!!.setAnalyzer(ContextCompat.getMainExecutor(this@CameraActivity)) { imageProxy -> //                        ImageProxy.PlaneProxy planeProxy = imageProxy.getPlanes()[0];
-//                        ByteBuffer buffer = planeProxy.getBuffer();
-//                        int bytesCount = buffer.remaining();
-//                        byte[] data = new byte[bytesCount];
-//                        buffer.get(data);
                     encoderHandler!!.post {
                         val cameraOrientation = imageProxy.imageInfo.rotationDegrees
                         runEncoder(imageProxy, cameraOrientation)
@@ -325,6 +323,7 @@ class CameraActivity : BaseMwActivity() {
                 }
             }
         }, ContextCompat.getMainExecutor(this))
+
         autoFocus(ScreenUtils.getScreenWidth() / 2, ScreenUtils.getScreenHeight() / 2, true)
     }
 
@@ -377,12 +376,15 @@ class CameraActivity : BaseMwActivity() {
 
         // Prevent concurrent operations on h264Writer
         synchronized(osiJni) {
-            LogUtils.logBlueTooth("ret:" + (ret == 0) + " !isPausedCamera:" + !isPausedCamera)
+//            LogUtils.logBlueTooth("ret:" + (ret == 0) + " !isPausedCamera:" + !isPausedCamera)
             if (ret == 0 && !isPausedCamera) {
                 startAnalsis = true
-                val cameraFrameInfo = WmCameraFrameInfo(h264Data.frameData,
-                    h264Data.frameType,
-                    System.currentTimeMillis())
+
+                val cameraFrameInfo = WmCameraFrameInfo()
+                cameraFrameInfo.frameData = h264Data.frameData
+                cameraFrameInfo.frameType = h264Data.frameType
+                cameraFrameInfo.frameId = System.currentTimeMillis()
+
                 UNIWatchMate.wmApps.appCamera.updateCameraPreview(cameraFrameInfo)
             } else {
                 startAnalsis = false
@@ -423,80 +425,12 @@ class CameraActivity : BaseMwActivity() {
 
 //                LogUtils.logBlueTooth("y*stride+x+1 ->:" + (y * stride + x + 1));
 //                LogUtils.logBlueTooth("offset:" + offset);
-                LogUtils.logBlueTooth("buffer remaining:" + buffer.remaining())
+//                LogUtils.logBlueTooth("buffer remaining:" + buffer.remaining())
                 offset += pixelStride
                 x += pixelStride
             }
         }
         return data
-    }
-
-    private fun runEncoder_old(imageProxy: ImageProxy, orientation: Int?) {
-        val h264Data = FrameData()
-        var ret = 0
-        val image = imageProxy.image
-        val planes = image!!.planes
-        LogUtils.logBlueTooth("FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height)
-        if (planes[1].pixelStride == 2) {
-            // U and V are interleaved
-//            Log.d(TAG, "U and V are interleaved");
-            val yBytes = ByteArray(planes[0].buffer.remaining())
-            val uvBytes = ByteArray(planes[1].buffer.remaining())
-            planes[0].buffer[yBytes]
-            planes[1].buffer[uvBytes]
-
-//            LogUtils.logBlueTooth("1.保存YUV文件 YUV1 Width:" + image.getWidth() + "HEIGHT:" + image.getHeight());
-//            ByteBuffer byteBuffer = ByteBuffer.allocate(yBytes.length + uvBytes.length);
-//            byteBuffer.put(yBytes);
-//            byteBuffer.put(uvBytes);
-//            File cameraDataFile = new File(Config.APP_DEBUG_EXPORT_FILE + "camera_" + System.currentTimeMillis() + ".yuv");
-//            FileUtil.writeBytes(byteBuffer.array(), cameraDataFile);
-//            byteBuffer.clear();
-            synchronized(osiJni) {
-                ret = osiJni.runEncoder(
-                    yBytes, uvBytes, null, image.width, image.height,
-                    orientation ?: 90, h264Data
-                )
-            }
-        } else {
-            // U and V are not interleaved
-            val yBytes = ByteArray(planes[0].buffer.remaining())
-            val uBytes = ByteArray(planes[1].buffer.remaining())
-            val vBytes = ByteArray(planes[2].buffer.remaining())
-            planes[0].buffer[yBytes]
-            planes[1].buffer[uBytes]
-            planes[2].buffer[vBytes]
-
-//            LogUtils.logBlueTooth("2.保存YUV文件 YUV2 Width:" + image.getWidth() + "HEIGHT:" + image.getHeight());
-//            ByteBuffer byteBuffer = ByteBuffer.allocate(yBytes.length + uBytes.length + vBytes.length);
-//            byteBuffer.put(yBytes);
-//            byteBuffer.put(uBytes);
-//            byteBuffer.put(vBytes);
-//            File cameraDataFile = new File(Config.APP_DEBUG_EXPORT_FILE + "camera_" + System.currentTimeMillis() + ".yuv");
-//            FileUtil.writeBytes(byteBuffer.array(), cameraDataFile);
-//            byteBuffer.clear();
-            synchronized(osiJni) {
-                ret = osiJni.runEncoder(
-                    yBytes, uBytes, vBytes, image.width, image.height,
-                    orientation ?: 90, h264Data
-                )
-            }
-        }
-
-        // Prevent concurrent operations on h264Writer
-        synchronized(osiJni) {
-            LogUtils.logBlueTooth("ret:" + (ret == 0) + " !isPausedCamera:" + !isPausedCamera)
-            if (ret == 0 && !isPausedCamera) {
-                startAnalsis = true
-                val cameraFrameInfo = WmCameraFrameInfo(h264Data.frameData,
-                    h264Data.frameType,
-                    System.currentTimeMillis())
-                UNIWatchMate.wmApps.appCamera.updateCameraPreview(cameraFrameInfo)
-            } else {
-                startAnalsis = false
-            }
-        }
-        imageProxy.close()
     }
 
     private fun takePhoto() {
@@ -515,13 +449,17 @@ class CameraActivity : BaseMwActivity() {
                 contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                 contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                    contentValues.put(MediaStore.Images.Media.RELATIVE_PATH,
-                        "Pictures/CameraX-Image")
+                    contentValues.put(
+                        MediaStore.Images.Media.RELATIVE_PATH,
+                        "Pictures/CameraX-Image"
+                    )
                 }
                 val contentResolver = contentResolver
-                ImageCapture.OutputFileOptions.Builder(contentResolver,
+                ImageCapture.OutputFileOptions.Builder(
+                    contentResolver,
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    contentValues)
+                    contentValues
+                )
                     .build()
             }
 
@@ -534,19 +472,26 @@ class CameraActivity : BaseMwActivity() {
                     val localUri = outputFileResults.savedUri
                     val localIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri)
                     sendBroadcast(localIntent)
-                    mHandler.post {
-                        Toast.makeText(this@CameraActivity,
+
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@CameraActivity,
                             getString(R.string.pic_save_to_gallery),
-                            Toast.LENGTH_SHORT).show()
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                    SingleMediaScanner(this@CameraActivity,
+
+                    SingleMediaScanner(
+                        this@CameraActivity,
                         localUri!!.path,
-                        "image/jpeg") { path, uri ->
+                        "image/jpeg"
+                    ) { path, uri ->
                         LogUtils.logBlueTooth("路径path1：$path")
                         if (uri != null) {
                             LogUtils.logBlueTooth("路径path：" + path + " -- Uri:" + uri.path)
                         }
                     }
+
                     val transformation = RoundedCorners(16)
                     Glide.with(this@CameraActivity)
                         .load(localUri) //不是本地资源就改为url即可
@@ -592,6 +537,9 @@ class CameraActivity : BaseMwActivity() {
             imageAnalysis!!.clearAnalyzer()
         }
         isPausedCamera = true
+
+        CacheDataHelper.cameraLaunchedByDevice = false
+        CacheDataHelper.cameraLaunchedBySelf = false
     }
 
     private fun unregisterSensor() {
@@ -603,65 +551,33 @@ class CameraActivity : BaseMwActivity() {
         LogUtils.logBlueTooth("$localClassName -> onPause")
         isPausedCamera = true
         isCameraOpened = false
-        //        btSppWrapper.requestDeviceCameraListener((byte) 0, null);
+        UNIWatchMate.wmApps.appCamera.openCloseCamera(false).subscribe().dispose()
     }
 
     override fun onResume() {
         super.onResume()
-        if (CacheDataHelper.cameraLaunchedByDevice&& !isPausedCamera) {
+        if (CacheDataHelper.cameraLaunchedByDevice && !isPausedCamera) {
             checkCameraPreview()
         } else if (isPausedCamera || CacheDataHelper.cameraLaunchedBySelf) {
-            setCameraListener()
+            UNIWatchMate.wmApps.appCamera.openCloseCamera(true).subscribe { open: Boolean ->
+                isCameraOpened = open
+                if (open) {
+                    checkCameraPreview();
+                } else {
+                    showCameraBusDialog(TIP_TYPE_OPEN_CAMERA);
+                }
+            }
         }
+
         isPausedCamera = false
     }
 
-    private fun setCameraListener() {
-        UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
-            isCameraOpened = aBoolean
-            LogUtils.logBlueTooth("是否成功打开设备相机：$isCameraOpened")
-            if (isCameraOpened) {
-                checkCameraPreview()
-            } else {
-                showCameraBusDialog(CameraBusDialog.TIP_TYPE_OPEN_CAMERA)
-            }
-        }
-        //        btSppWrapper.requestDeviceCameraListener((byte) 1, new CameraAppCallDeviceListener() {
-//            @Override
-//            public void onToCameraPage(byte result) {
-//                LogUtils.logBlueTooth("是否成功打开设备相机：" + result);
-//                if (result != 0x01) {
-//                    isCameraOpened = false;
-//                    showCameraBusDialog(TIP_TYPE_OPEN_CAMERA);
-//                } else {
-//                    isCameraOpened = true;
-//                    checkCameraPreview();
-//                }
-//            }
-//
-//            @Override
-//            public void onTimeOut(MsgBean msgBean) {
-//                showConfirmDialogWithCallback(getString(R.string.time_out_tips), getString(R.string.confirm), new CallBack() {
-//                    @Override
-//                    public void callBack(Object o) {
-//                    }
-//                });
-//            }
-//        });
-    }
-
-
     private fun showDisableView() {
-//        hideLoadingDlg();
         CacheDataHelper.setTransferring(false)
-//        CacheDataHelper.getCurrentDeiceBean().isBtConnect = false
-        showConfirmDialogWithCallback(getString(R.string.disconnect_tips),
-            getString(R.string.submit)
-        ) {
-            CacheDataHelper.setTransferring(false)
-            finish()
-        }
+        Toast.makeText(this, getString(R.string.disconnect_tips), Toast.LENGTH_SHORT).show()
+        finish()
     }
+
 
     companion object {
         private const val CHANGE_CAMERA: Int = 0
@@ -673,7 +589,10 @@ class CameraActivity : BaseMwActivity() {
                 val intent = Intent(it, CameraActivity::class.java)
                 it.startActivity(intent)
             }
+        }
 
+        fun finishCamera(activity: CameraActivity) {
+            activity.finish()
         }
     }
 }

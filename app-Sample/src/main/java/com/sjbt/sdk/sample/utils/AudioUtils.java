@@ -271,7 +271,7 @@ public class AudioUtils {
 
     public static List<LocalFileBean> getLocalTxtFiles() {
         List<LocalFileBean> localFileBeans = new ArrayList<>();
-        File root = Environment.getExternalStorageDirectory();
+        File root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         List<File> txtFiles = findTxtFiles(root);
         for (File file : txtFiles) {
             if (!file.canRead()) continue;

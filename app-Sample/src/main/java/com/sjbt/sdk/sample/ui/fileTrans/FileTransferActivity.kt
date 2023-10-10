@@ -252,7 +252,7 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
                     mMusicAdapter!!.data.clear()
                     Observable.create<Boolean> { emitter ->
                         Log.e("Send-电子书", System.currentTimeMillis().toString() + "==========1")
-                        mLocalTxtFileBeans.addAll(AudioUtils.getLocalTxtFiles())
+                        mLocalTxtFileBeans.addAll(AudioUtils.getLocalDwonloadTxtFiles())
                         Log.e("Send-电子书", System.currentTimeMillis().toString() + "==========2")
                         emitter.onNext(true)
                         emitter.onComplete()
@@ -620,7 +620,7 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
                 tvMemoryLimit!!.text = getString(R.string.file_memory_size_tips)
             }
             2 -> {
-                mLocalTxtFileBeans.addAll(AudioUtils.getLocalTxtFiles())
+                mLocalTxtFileBeans.addAll(AudioUtils.getLocalDwonloadTxtFiles())
                 transferType = FileType.TXT
                 tvMemoryLimit!!.text = getString(R.string.file_memory_size_tips)
             }
@@ -635,7 +635,7 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
         Observable.create<Boolean> { emitter ->
             when (status) {
                 1 -> mLocalMusicFileBeans.addAll(AudioUtils.initLocalSongs(MyApplication.instance))
-                2 -> mLocalTxtFileBeans.addAll(AudioUtils.getLocalTxtFiles())
+                2 -> mLocalTxtFileBeans.addAll(AudioUtils.getLocalDwonloadTxtFiles())
                 3 -> mLocalVideoBeans =
                     GetVideoListUtils.instance.loadPageMediaData(this@FileTransferActivity)
             }

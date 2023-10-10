@@ -272,7 +272,7 @@ internal class DeviceManagerImpl(
                 runCatchingWithLog {
                     Timber.tag(TAG).i("getDeviceInfo")
                     UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.toObservable()?.asFlow()?.collect{
-
+                        Timber.tag(TAG).i("getDeviceInfo=\n$it")
                     }
                 }
                 runCatchingWithLog {

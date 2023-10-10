@@ -153,6 +153,7 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
                 sjUniWatch.sendNormalMsg(
                     CmdHelper.getCameraPreviewCmd01()
                 )
+
             }
         })
     }
@@ -193,44 +194,47 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
      * @param cameraFrameInfo
      */
     private fun sendFrameData(cameraFrameInfo: WmCameraFrameInfo) {
-        val dataArray: ByteArray = cameraFrameInfo.frameData
-        mFramePackageCount = dataArray.size / mCellLength
-        mFrameLastLen = dataArray.size % mCellLength
-        if (mFrameLastLen != 0) {
-            mFramePackageCount = mFramePackageCount + 1
-        }
-        if (mFramePackageCount > 0) {
-            for (i in 0 until mFramePackageCount) {
-                this.mOtaProcess = i
-                if (dataArray == null || !continueUpdateFrame) {
-                    break
-                }
-
-                try {
-                    val info: OtaCmdInfo = getCameraPreviewCmdInfo(
-                        mFramePackageCount,
-                        mFrameLastLen,
-                        cameraFrameInfo,
-                        i
-                    )
-                    //                    LogUtils.logBlueTooth("执行发送：" + info + " 分包类型：" + mDivide);
-                    sjUniWatch.sendNormalMsg(
-                        CmdHelper.getCameraPreviewDataCmd02(
-                            info.payload,
-                            mDivide
-                        )
-                    )
-                    if (i != mFramePackageCount - 1) {
-                        Thread.sleep(MSG_INTERVAL_FRAME)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+        val dataArray: ByteArray? = cameraFrameInfo.frameData
+        dataArray?.let {
+            mFramePackageCount = it.size / mCellLength
+            mFrameLastLen = it.size % mCellLength
+            if (mFrameLastLen != 0) {
+                mFramePackageCount = mFramePackageCount + 1
             }
-        } else {
-            mDivide = DIVIDE_N_2
-            sjUniWatch.sendNormalMsg(CmdHelper.getCameraPreviewDataCmd02(dataArray, mDivide))
+            if (mFramePackageCount > 0) {
+                for (i in 0 until mFramePackageCount) {
+                    this.mOtaProcess = i
+                    if (it == null || !continueUpdateFrame) {
+                        break
+                    }
+
+                    try {
+                        val info: OtaCmdInfo = getCameraPreviewCmdInfo(
+                            mFramePackageCount,
+                            mFrameLastLen,
+                            cameraFrameInfo,
+                            i
+                        )
+                        //                    LogUtils.logBlueTooth("执行发送：" + info + " 分包类型：" + mDivide);
+                        sjUniWatch.sendNormalMsg(
+                            CmdHelper.getCameraPreviewDataCmd02(
+                                info.payload,
+                                mDivide
+                            )
+                        )
+                        if (i != mFramePackageCount - 1) {
+                            Thread.sleep(MSG_INTERVAL_FRAME)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            } else {
+                mDivide = DIVIDE_N_2
+                sjUniWatch.sendNormalMsg(CmdHelper.getCameraPreviewDataCmd02(it, mDivide))
+            }
         }
+
     }
 
     fun cameraPreviewBuz(msg: ByteArray) {
@@ -339,54 +343,58 @@ class AppCamera(sjUniWatch: SJUniWatch) : AbAppCamera() {
         i: Int
     ): OtaCmdInfo {
         val info = OtaCmdInfo()
-        val dataArray: ByteArray = frameInfo.frameData
-        if (i == 0 && mFramePackageCount > 1) {
-            mDivide = DIVIDE_Y_F_2
-        } else {
-            if (mFramePackageCount == 1) {
-                mDivide = DIVIDE_N_2
-            } else if (i == mFramePackageCount - 1) {
-                mDivide = DIVIDE_Y_E_2
+        val dataArray: ByteArray? = frameInfo.frameData
+
+        dataArray?.let {
+            if (i == 0 && mFramePackageCount > 1) {
+                mDivide = DIVIDE_Y_F_2
             } else {
-                mDivide = DIVIDE_Y_M_2
+                if (mFramePackageCount == 1) {
+                    mDivide = DIVIDE_N_2
+                } else if (i == mFramePackageCount - 1) {
+                    mDivide = DIVIDE_Y_E_2
+                } else {
+                    mDivide = DIVIDE_Y_M_2
+                }
+            }
+
+//        LogUtils.logBlueTooth("分包类型：" + mDivide);
+            if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
+//            LogUtils.logBlueTooth("最后一包长度：" + mFrameLastLen);
+                if (mFrameLastLen == 0) {
+                    info.offSet = i * mCellLength
+                    info.payload = ByteArray(mCellLength)
+                    System.arraycopy(it, i * mCellLength, info.payload, 0, info.payload.size)
+                } else {
+                    info.offSet = i * mCellLength
+                    info.payload = ByteArray(mFrameLastLen)
+                    System.arraycopy(it, i * mCellLength, info.payload, 0, info.payload.size)
+                }
+            } else {
+                info.offSet = i * mCellLength
+                if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
+                    LogUtils.logBlueTooth("本帧大小:" + it.size)
+                    LogUtils.logBlueTooth("帧数据长度：" + BtUtils.intToHex(it.size))
+                    if (it.size < mCellLength) {
+                        LogUtils.logBlueTooth("不分包：$mDivide")
+                        mCellLength = it.size
+                    }
+                    val byteBuffer = ByteBuffer.allocate(mCellLength + 5).order(ByteOrder.LITTLE_ENDIAN)
+                    byteBuffer.put(frameInfo.frameType.toByte())
+                    byteBuffer.putInt(it.size)
+                    val payload = ByteArray(mCellLength)
+                    System.arraycopy(it, 0, payload, 0, payload.size)
+                    LogUtils.logBlueTooth("数据payload：" + payload.size)
+                    byteBuffer.put(payload)
+                    info.payload = byteBuffer.array()
+                    LogUtils.logBlueTooth("首包payload总长度：" + info.payload.size)
+                } else {
+                    info.payload = ByteArray(mCellLength)
+                    System.arraycopy(it, i * mCellLength, info.payload, 0, info.payload.size)
+                }
             }
         }
 
-//        LogUtils.logBlueTooth("分包类型：" + mDivide);
-        if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
-//            LogUtils.logBlueTooth("最后一包长度：" + mFrameLastLen);
-            if (mFrameLastLen == 0) {
-                info.offSet = i * mCellLength
-                info.payload = ByteArray(mCellLength)
-                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
-            } else {
-                info.offSet = i * mCellLength
-                info.payload = ByteArray(mFrameLastLen)
-                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
-            }
-        } else {
-            info.offSet = i * mCellLength
-            if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
-                LogUtils.logBlueTooth("本帧大小:" + dataArray.size)
-                LogUtils.logBlueTooth("帧数据长度：" + BtUtils.intToHex(dataArray.size))
-                if (dataArray.size < mCellLength) {
-                    LogUtils.logBlueTooth("不分包：$mDivide")
-                    mCellLength = dataArray.size
-                }
-                val byteBuffer = ByteBuffer.allocate(mCellLength + 5).order(ByteOrder.LITTLE_ENDIAN)
-                byteBuffer.put(frameInfo.frameType.toByte())
-                byteBuffer.putInt(dataArray.size)
-                val payload = ByteArray(mCellLength)
-                System.arraycopy(dataArray, 0, payload, 0, payload.size)
-                LogUtils.logBlueTooth("数据payload：" + payload.size)
-                byteBuffer.put(payload)
-                info.payload = byteBuffer.array()
-                LogUtils.logBlueTooth("首包payload总长度：" + info.payload.size)
-            } else {
-                info.payload = ByteArray(mCellLength)
-                System.arraycopy(dataArray, i * mCellLength, info.payload, 0, info.payload.size)
-            }
-        }
         return info
     }
 }
