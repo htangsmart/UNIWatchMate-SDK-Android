@@ -20,7 +20,9 @@ abstract class AbAppDial : IWmSupport {
     abstract fun deleteDial(dialItem: WmDial): Single<WmDial>
 
     /**
-     * 获取封面图片
+     * 获取表盘封面图片
      */
     abstract fun parseDialThumpJpg(dialPath: String): ByteArray?
+
+
 }

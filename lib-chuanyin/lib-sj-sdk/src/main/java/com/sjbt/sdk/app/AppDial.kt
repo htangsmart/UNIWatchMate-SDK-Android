@@ -3,7 +3,6 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.port.app.AbAppDial
 import com.shenju.uparser.model.JpgInfo
-import com.shenju.utils.FileUtils
 import com.shenju.utils.UParseUtil
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
@@ -12,7 +11,6 @@ import com.sjbt.sdk.spp.cmd.DIAL_MSG_LEN
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.core.Observable
-import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
 
@@ -48,7 +46,7 @@ class AppDial(sjUniWatch: SJUniWatch) : AbAppDial() {
         })
     }
 
-    fun deleteDialResult(result: Boolean, reason: Int) {
+    fun deleteDialResult(result: Boolean) {
         deleteEmitter?.let {
             if (result) {
                 it.onSuccess(wmDial)
