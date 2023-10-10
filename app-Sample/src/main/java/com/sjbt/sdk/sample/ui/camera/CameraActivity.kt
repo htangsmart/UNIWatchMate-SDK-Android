@@ -3,7 +3,6 @@ package com.sjbt.sdk.sample.ui.camera
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.media.Image.Plane
 import android.media.MediaActionSound
 import android.os.*
@@ -20,10 +19,8 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.port.app.WMCameraFlashMode
 import com.base.sdk.port.app.WMCameraPosition
-import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.shenju.cameracapturer.FrameData
 import com.shenju.cameracapturer.OSIJni
@@ -43,7 +40,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class CameraActivity : BaseCameraActivity() {
+class CameraActivity : BaseMwActivity() {
     private var previewView: PreviewView? = null
     private var img_switch: ImageView? = null
     private var image_flash: ImageView? = null

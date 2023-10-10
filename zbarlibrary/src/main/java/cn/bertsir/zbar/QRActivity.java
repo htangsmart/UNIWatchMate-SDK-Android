@@ -435,7 +435,7 @@ public class QRActivity extends Activity implements View.OnClickListener, Sensor
     public TextView showProgressDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogStyle);
         builder.setCancelable(false);
-        View view = View.inflate(this, R.layout.dialog_loading, null);
+        View view = View.inflate(this, R.layout.dialog_zbar_loading, null);
         builder.setView(view);
         ProgressBar pb_loading = (ProgressBar) view.findViewById(R.id.pb_loading);
         TextView tv_hint = (TextView) view.findViewById(R.id.tv_hint);

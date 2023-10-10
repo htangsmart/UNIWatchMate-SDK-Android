@@ -195,6 +195,9 @@ dependencies {
     //glide
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.50'
+    //带数字的进度条
+    implementation 'com.akexorcist:round-corner-progress-bar:2.1.2'
 
     //代替shape简单实现圆角背景
     implementation 'com.github.JavaNoober.BackgroundLibrary:library:1.7.2'

@@ -395,13 +395,14 @@ internal class DeviceManagerImpl(
     }
 
     override suspend fun reset() {
+        Timber.tag(TAG).i("reset")
         UNIWatchMate.reset().doOnSubscribe {
 
         }.doOnError {
             it.printStackTrace()
         }.doOnComplete {
 
-        }
+        }.subscribe()
         clearDevice()
     }
 

@@ -8,7 +8,6 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
-import com.base.sdk.port.FileType
 import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -17,11 +16,11 @@ import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
+import com.sjbt.sdk.sample.ui.fileTrans.FileTransferActivity
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.io.File
 
 @StringRes
 fun WmConnectState.toStringRes(): Int {
@@ -164,8 +163,13 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             }
 
             viewBind.itemTransferFile -> {
-                val txtList = mutableListOf<File>()
-                UNIWatchMate.wmTransferFile.startTransfer(FileType.TXT, txtList)
+                activity?.let {
+                    PermissionHelper.requestAppStoreage(this@DeviceFragment) { permission ->
+                        if (permission) {
+                            FileTransferActivity.launchActivity(it)
+                        }
+                    }
+                }
             }
 //            viewBind.itemContacts -> {
 //                findNavController().navigate(DeviceFragmentDirections.toContacts())
@@ -187,9 +191,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 //            viewBind.itemSportPush -> {
 //                findNavController().navigate(DeviceFragmentDirections.toSportPush())
 //            }
-//            viewBind.itemDial -> {
-//                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
-//            }
+            viewBind.itemDial -> {
+                findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
+            }
                 viewBind.itemCamera -> {
                     PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
                         if (it) {

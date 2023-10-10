@@ -21,16 +21,19 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.sjbt.sdk.sample.base.BaseActivity;
 import com.sjbt.sdk.sample.dialog.CallBack;
 import com.sjbt.sdk.sample.dialog.ConfirmDialog;
+import com.sjbt.sdk.sample.ui.dialog.LoadingDialog;
 import com.sjbt.sdk.utils.LogUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public abstract class BaseCameraActivity extends AppCompatActivity {
+public abstract class BaseMwActivity extends AppCompatActivity {
 
     protected ConfirmDialog mConfirmDialog;
+    private LoadingDialog loading_Dialog;
 
     protected Handler mHandler = new Handler(Looper.getMainLooper());
     protected boolean isFront;
@@ -145,7 +148,7 @@ public abstract class BaseCameraActivity extends AppCompatActivity {
                     return;
                 }
 
-                mConfirmDialog = new ConfirmDialog(BaseCameraActivity.this, tip, btnName, callBack);
+                mConfirmDialog = new ConfirmDialog(BaseMwActivity.this, tip, btnName, callBack);
 
                 try {
                     mConfirmDialog.show();
@@ -191,7 +194,75 @@ public abstract class BaseCameraActivity extends AppCompatActivity {
     //    protected void startPageAnim() {
 //        overridePendingTransition(R.anim.in_from_right, R.anim.out_to_left);
 //    }
+    public void showLoadingDlg() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (loading_Dialog != null) {
+                    loading_Dialog.dismiss();
+                    loading_Dialog = null;
+                }
+                loading_Dialog = new LoadingDialog(BaseMwActivity.this);
 
+                if (isFinishing()) {
+                    return;
+                }
+
+                try {
+                    loading_Dialog.show();
+
+//                    mHandler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            hideLoadingDlg();
+//                        }
+//                    }, 50 * 1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    public void showLoadingDlg(String msg) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (loading_Dialog != null) {
+                    loading_Dialog.dismiss();
+                    loading_Dialog = null;
+                }
+
+                if (isFinishing()) {
+                    return;
+                }
+
+                loading_Dialog = new LoadingDialog(BaseMwActivity.this, msg);
+
+                try {
+                    loading_Dialog.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    public void hideLoadingDlg() {
+        hideDialog(loading_Dialog);
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        hideDialog(loading_Dialog);
+
+        hideDialog(mConfirmDialog);
+
+        super.onDestroy();
+    }
     @Override
     protected void onPause() {
         super.onPause();
