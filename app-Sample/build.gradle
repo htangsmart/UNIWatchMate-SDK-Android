@@ -170,7 +170,7 @@ dependencies {
 //    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.14.0"
 
     //permission
-    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+    implementation "com.guolindev.permissionx:permissionx:$permissionx_version"
 
     //retrofit2
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"

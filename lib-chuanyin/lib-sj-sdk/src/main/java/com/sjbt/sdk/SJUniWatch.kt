@@ -7,25 +7,24 @@ import android.bluetooth.BluetoothDevice
 import android.content.pm.PackageManager
 import android.os.Build
 import android.text.TextUtils
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.app.WMCameraFlashMode
 import com.base.sdk.port.app.WMCameraPosition
-import com.base.sdk.port.log.WmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
 import com.sjbt.sdk.entity.MsgBean
-import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.entity.old.AppViewBean
@@ -42,20 +41,20 @@ import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.*
 import io.reactivex.rxjava3.core.*
-import java.io.File
+import timber.log.Timber
+import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
-    private val TAG = TAG_SJ + "SJUniWatch"
+    private val TAG = "SJUniWatch"
 
     abstract var mContext: Application
     abstract var mMsgTimeOut: Int
 
     var mBtStateReceiver: BtStateReceiver? = null
-    var mBtEngine = BtEngine.getInstance(this)
-    var mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+
+    val mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
@@ -70,8 +69,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
     override val wmTransferFile = SJTransferFile(this)
-
-    val mBindStateMap = HashMap<String, Boolean>()
+    override val wmLog: AbWmLog = SJLog(this)
+    val mBtEngine: BtEngine = BtEngine(this)
+    private val mBindStateMap = HashMap<String, Boolean>()
 
     //同步数据
     private val syncActivity = wmSync.syncActivityData as SyncActivityData
@@ -110,21 +110,29 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
     private val settingSleepSet = wmSettings.settingSleepSettings as SettingSleepSet
 
-    val gson = Gson()
-    lateinit var sharedPreferencesUtils: SharedPreferencesUtils
+    private val gson = Gson()
+    private var sharedPreferencesUtils: SharedPreferencesUtils
+
+    var sdkLogEnable = false
+
+    override fun setLogEnable(logEnable: Boolean) {
+        this.sdkLogEnable = logEnable
+        Log.e(">>>>>>>>>", "logEnable:" + logEnable)
+    }
 
     init {
         mContext = context
         mMsgTimeOut = timeout
 
+        plant(Timber.DebugTree())
         mBtEngine.listener = this
 
         sharedPreferencesUtils = SharedPreferencesUtils.getInstance(mContext)
 
-        mBtStateReceiver = BtStateReceiver(mContext!!, object : OnBtStateListener {
+        mBtStateReceiver = BtStateReceiver(mContext!!, wmLog, object : OnBtStateListener {
 
             override fun onClassicBtDisConnect(device: BluetoothDevice) {
-                SJLog.logBt(TAG, "onClassicBtDisConnect：" + device.address)
+                wmLog.logD(TAG, "onClassicBtDisConnect：" + device.address)
 
                 if (device == mCurrDevice) {
                     btStateChange(WmConnectState.DISCONNECTED)
@@ -140,7 +148,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onClassicBtConnect(device: BluetoothDevice) {
-                SJLog.logBt(TAG, "onClassicBtConnect：" + device.address)
+                wmLog.logD(TAG, "onClassicBtConnect：" + device.address)
+
+                if (TextUtils.isEmpty(mCurrAddress)) {
+                    mCurrAddress = sharedPreferencesUtils.getString(BT_ADDRESS, "")
+                }
+
                 if (device.address == mCurrAddress) {
                     mBindInfo?.let {
                         connect(device, it)
@@ -149,7 +162,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onClassicBtDisabled() {
-                SJLog.logBt(TAG, "onClassicBtDisabled")
+                wmLog.logD(TAG, "onClassicBtDisabled")
                 mBtEngine.clearMsgQueue()
                 mBtEngine.clearStateMap()
 
@@ -163,7 +176,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onClassicBtOpen() {
-                SJLog.logBt(TAG, "onClassicBtOpen")
+                wmLog.logD(TAG, "onClassicBtOpen")
                 btStateChange(WmConnectState.BT_ENABLE)
 //                removeCallBackRunner(mConnectTimeoutRunner)
             }
@@ -177,7 +190,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         btStateChange(WmConnectState.DISCONNECTED)
 
 //                        removeCallBackRunner(mConnectTimeoutRunner)
-                        SJLog.logBt(TAG, "取消配对：" + device.address)
+                        wmLog.logD(TAG, "取消配对：" + device.address)
                     }
                 }
             }
@@ -206,7 +219,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     val msg = obj as ByteArray
                     val msgBean: MsgBean = CmdHelper.getPayLoadJson(msg)
 
-                    WmLog.d(TAG, "收到msg:" + msgBean.toString())
+                    wmLog.logD(TAG, "收到msg:" + msgBean.toString())
 
                     when (msgBean.head) {
                         HEAD_VERIFY -> {
@@ -219,7 +232,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                        LogUtils.logBlueTooth("bindinfo:" + it)
+                                        wmLog.logI(TAG, "bindinfo:" + it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -455,7 +468,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_802E -> {//绑定
                                     val result = msg[16]
-                                    LogUtils.logBlueTooth("绑定结果:$result")
+                                    wmLog.logI(TAG, "绑定结果:$result")
 
                                     if (result.toInt() == 1) {
                                         btStateChange(WmConnectState.VERIFIED)
@@ -484,7 +497,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         mBindStateMap.put(it, false)
                                     }
 
-                                    LogUtils.logBlueTooth("解绑成功:" + result)
+                                    wmLog.logD(TAG, "解绑成功:" + result)
 
                                     if (result == 1) {
                                         unbindEmitter?.onComplete()
@@ -559,10 +572,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8003 -> {
                                     val frameSuccess = msg[16]
 
-                                    LogUtils.logBlueTooth("发送成功：$frameSuccess")
-                                    LogUtils.logBlueTooth("发送下一帧：" + appCamera.mH264FrameMap.frameCount)
+                                    wmLog.logI(TAG, "发送成功：$frameSuccess")
+                                    wmLog.logI(TAG, "发送下一帧：" + appCamera.mH264FrameMap.frameCount)
 
-                                    LogUtils.logBlueTooth("continueUpdateFrame 03:${appCamera.continueUpdateFrame}")
+                                    wmLog.logI(
+                                        TAG,
+                                        "continueUpdateFrame 03:${appCamera.continueUpdateFrame}"
+                                    )
 
                                     appCamera.sendFrameData03(frameSuccess)
 
@@ -578,7 +594,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {//请求
 
-                                    LogUtils.logBlueTooth("节点数据：" + msgBean.payload)
+                                    wmLog.logI(TAG, "节点数据：" + msgBean.payload)
 
                                     var payloadPackage: PayloadPackage =
                                         PayloadPackage.fromByteArray(msgBean.payload)
@@ -596,7 +612,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
 
                 TIME_OUT -> {
-                    SJLog.logBt(TAG, "msg time out:")
+                    wmLog.logD(TAG, "msg time out:")
 
                     msgTimeOut(obj as ByteArray)
                 }
@@ -606,11 +622,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
 
                 ON_SOCKET_CLOSE -> {
-                    SJLog.logBt(TAG, "onSocketClose")
+                    wmLog.logD(TAG, "onSocketClose")
                     btStateChange(WmConnectState.DISCONNECTED)
                 }
 
                 CONNECTED -> {
+                    mCurrAddress?.let {
+                        sharedPreferencesUtils.putString(BT_ADDRESS, it)
+                    }
+
                     btStateChange(WmConnectState.CONNECTED)
                     sendNormalMsg(CmdHelper.biuShakeHandsCmd)
                     mBtStateReceiver?.let {
@@ -850,6 +870,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
             }
 
+            HEAD_FILE_SPP_A_2_D -> {
+                wmTransferFile.timeOut(msg)
+            }
+
             HEAD_CAMERA_PREVIEW -> {
                 wmTransferFile.mTransferring = false
                 when (msgBean.cmdIdStr) {
@@ -867,18 +891,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtEngine.clearMsgQueue()
     }
 
-    fun sendNormalMsg(msg: ByteArray?) {
-        if (mBtEngine == null || msg == null) {
-            return
-        }
-
+    fun sendNormalMsg(msg: ByteArray) {
         if (wmTransferFile.mTransferring) {
             val byteBuffer = ByteBuffer.wrap(msg)
             val head = byteBuffer.get()
             val cmdId: Short = byteBuffer[2].toShort()
 
             if (isMsgStopped(head, cmdId)) {
-                SJLog.logBt(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
+                wmLog.logD(TAG, "正在 传输文件中...:" + BtUtils.bytesToHexString(msg))
                 return
             }
         }
@@ -981,7 +1001,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         activityDuration
                                     )
 
-                                    LogUtils.logBlueTooth("体育运动消息：" + wmSportGoal)
+                                    wmLog.logI(TAG, "体育运动消息：" + wmSportGoal)
 
                                     settingSportGoal.setEmitter.onSuccess(
                                         wmSportGoal
@@ -1023,7 +1043,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         activityDuration
                                     )
 
-                                    LogUtils.logBlueTooth("健康消息：" + wmSportGoal)
+                                    wmLog.logI(TAG, "健康消息：" + wmSportGoal)
 
                                 }
                             }
@@ -1049,7 +1069,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         activityDuration
                                     )
 
-                                    LogUtils.logBlueTooth("单位设置：" + wmSportGoal)
+                                    wmLog.logI(TAG, "单位设置：" + wmSportGoal)
 
                                 }
                             }
@@ -1062,21 +1082,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         URN_4 -> {//语言设置
 
                         }
-
                     }
-
                 }
 
                 URN_3 -> {//表盘
-
                 }
 
                 URN_4 -> {//应用
-
                 }
 
                 URN_5 -> {//运动同步
-
                 }
             }
         }
@@ -1099,7 +1114,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     override fun onConnectFailed(device: BluetoothDevice, msg: String?) {
 
-        WmLog.e(TAG, "onConnectFailed:" + msg)
+        wmLog.logE(TAG, "onConnectFailed:" + msg)
 
         if (device == mCurrDevice) {
 
@@ -1123,7 +1138,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
-
     override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
         mBindInfo = bindInfo
         val params = UrlParse.getUrlParams(qrString)
@@ -1157,7 +1171,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         device.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
         if (device.isRecognized) {
-            SJLog.logBt(TAG, " connect:${address}")
+            wmLog.logD(TAG, " connect:${address}")
             connectEmitter?.onNext(WmConnectState.CONNECTING)
 
             try {
@@ -1185,6 +1199,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mCurrDevice = bluetoothDevice
         val wmDevice = WmDevice(bindInfo.model)
         mCurrAddress = bluetoothDevice.address
+
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
@@ -1192,7 +1207,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
         if (wmDevice.isRecognized) {
-            WmLog.e(TAG, " connect:${wmDevice}")
+            wmLog.logE(TAG, " connect:${wmDevice}")
             connectEmitter?.onNext(WmConnectState.CONNECTING)
             mBtEngine.connect(bluetoothDevice)
         } else {
@@ -1276,6 +1291,4 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override fun getDeviceModel(): WmDeviceModel {
         return WmDeviceModel.SJ_WATCH
     }
-
-
 }

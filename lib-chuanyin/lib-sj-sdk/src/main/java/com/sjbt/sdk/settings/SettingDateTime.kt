@@ -9,13 +9,10 @@ import io.reactivex.rxjava3.core.*
 /**
  * 设置时间功能
  */
-class SettingDateTime(sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
-
+class SettingDateTime(val sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
     lateinit var observeEmitter: ObservableEmitter<WmDateTime>
     lateinit var setEmitter: SingleEmitter<WmDateTime>
     lateinit var getEmitter: SingleEmitter<WmDateTime>
-
-    var sjUniWatch = sjUniWatch
 
     override fun isSupport(): Boolean {
         return true

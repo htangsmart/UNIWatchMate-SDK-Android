@@ -7,9 +7,9 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
+import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
-import com.base.sdk.port.log.WmLog
 import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
 import io.reactivex.rxjava3.core.Completable
@@ -47,6 +47,16 @@ abstract class AbUniWatch {
      * 文件传输
      */
     abstract val wmTransferFile: AbWmTransferFile
+
+    /**
+     * 日志
+     */
+    abstract val wmLog: AbWmLog
+
+    /**
+     * 是否支持日志打印
+     */
+    abstract fun setLogEnable(logEnable:Boolean)
 
     /**
      * 连接方法
@@ -113,8 +123,5 @@ abstract class AbUniWatch {
      */
     abstract fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice>
 
-    fun setLogEnable(logEnable: Boolean) {
-        WmLog.logEnable = logEnable
-    }
 
 }

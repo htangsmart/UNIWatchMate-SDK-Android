@@ -34,7 +34,6 @@ import com.sjbt.sdk.sample.dialog.CameraBusDialog.TIP_TYPE_OPEN_CAMERA
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.SingleMediaScanner
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.utils.LogUtils
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import java.io.File
@@ -43,6 +42,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class CameraActivity : BaseActivity() {
+    private val TAG = "CameraActivity"
     private var previewView: PreviewView? = null
     private var img_switch: ImageView? = null
     private var image_flash: ImageView? = null
@@ -139,7 +139,7 @@ class CameraActivity : BaseActivity() {
 
             UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
                 isCameraOpened = aBoolean
-                LogUtils.logBlueTooth("设备相机状态：$isCameraOpened")
+                UNIWatchMate.wmLog.logD(TAG,"设备相机状态：$isCameraOpened")
                 if (isCameraOpened) {
                     checkCameraPreview()
                 } else {
@@ -172,14 +172,11 @@ class CameraActivity : BaseActivity() {
 
         mHandler.postDelayed({
 
-//                LogUtils.logBlueTooth("Camera是否启动 checkCameraPreview camera launched by device：" + CacheDataHelper.INSTANCE.getCameraLaunchedByDevice());
-//                LogUtils.logBlueTooth("Camera是否启动 checkCameraPreview camera launched by user：" + CacheDataHelper.INSTANCE.getCameraLaunchedBySelf());
-
             if (startAnalsis) {
                 if (CacheDataHelper.cameraLaunchedByDevice || CacheDataHelper.cameraLaunchedBySelf) {
                     UNIWatchMate.wmApps.appCamera.isCameraPreviewReady()
                         .subscribe { result: Boolean ->
-                            LogUtils.logBlueTooth(
+                            UNIWatchMate.wmLog.logD(TAG,
                                 "isCameraPreviewReady:$result"
                             )
                         }
@@ -287,9 +284,6 @@ class CameraActivity : BaseActivity() {
 
             imageAnalysis = ImageAnalysis.Builder()
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888).build()
-            if (imageAnalysis != null) {
-                LogUtils.logBlueTooth("OutputImageFormat：" + imageAnalysis!!.outputImageFormat)
-            }
 
             // 在重新绑定之前取消绑定用例
             cameraProvider!!.unbindAll()
@@ -354,7 +348,7 @@ class CameraActivity : BaseActivity() {
         var ret = 0
         val image = imageProxy.image
         val planes = image!!.planes
-        LogUtils.logBlueTooth("FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height)
+        UNIWatchMate.wmLog.logD(TAG,"FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height)
         val yPlane = image.planes[0]
         val uPlane = image.planes[1]
         val vPlane = image.planes[2]
@@ -376,7 +370,6 @@ class CameraActivity : BaseActivity() {
 
         // Prevent concurrent operations on h264Writer
         synchronized(osiJni) {
-//            LogUtils.logBlueTooth("ret:" + (ret == 0) + " !isPausedCamera:" + !isPausedCamera)
             if (ret == 0 && !isPausedCamera) {
                 startAnalsis = true
 
@@ -423,9 +416,6 @@ class CameraActivity : BaseActivity() {
                 data[offset + 1] =
                     buffer[if (v_pos >= buffer.limit()) buffer.limit() - 1 else v_pos]
 
-//                LogUtils.logBlueTooth("y*stride+x+1 ->:" + (y * stride + x + 1));
-//                LogUtils.logBlueTooth("offset:" + offset);
-//                LogUtils.logBlueTooth("buffer remaining:" + buffer.remaining())
                 offset += pixelStride
                 x += pixelStride
             }
@@ -486,9 +476,9 @@ class CameraActivity : BaseActivity() {
                         localUri!!.path,
                         "image/jpeg"
                     ) { path, uri ->
-                        LogUtils.logBlueTooth("路径path1：$path")
+                        UNIWatchMate.wmLog.logD(TAG,"路径path1：$path")
                         if (uri != null) {
-                            LogUtils.logBlueTooth("路径path：" + path + " -- Uri:" + uri.path)
+                            UNIWatchMate.wmLog.logD(TAG,"路径path：" + path + " -- Uri:" + uri.path)
                         }
                     }
 
@@ -498,7 +488,7 @@ class CameraActivity : BaseActivity() {
                         .optionalTransform(transformation)
                         .into(ivTook!!)
                     Glide.with(this@CameraActivity).load(localUri).into(ivTookPic!!)
-                    LogUtils.logBlueTooth("照片存储路径:" + localUri.path)
+                    UNIWatchMate.wmLog.logD(TAG,"照片存储路径:" + localUri.path)
                     try {
                         vibrator!!.vibrate(10L) // 参数是震动时间(long类型)
                         mediaActionSound!!.play(MediaActionSound.SHUTTER_CLICK)
@@ -508,7 +498,7 @@ class CameraActivity : BaseActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    LogUtils.logBlueTooth("拍照出错")
+                    UNIWatchMate.wmLog.logD(TAG,"拍照出错")
                     //                        Tast.makeText(CameraActivity.this, R.string.camera_err, Toast.LENGTH_SHORT).show();
                 }
             })
@@ -527,7 +517,7 @@ class CameraActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        LogUtils.logCommon("$localClassName onDestroy")
+        UNIWatchMate.wmLog.logD(TAG,"$localClassName onDestroy")
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         unregisterSensor()
         cameraProvider!!.unbindAll()
@@ -548,7 +538,7 @@ class CameraActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        LogUtils.logBlueTooth("$localClassName -> onPause")
+        UNIWatchMate.wmLog.logD(TAG,"$localClassName -> onPause")
         isPausedCamera = true
         isCameraOpened = false
         UNIWatchMate.wmApps.appCamera.openCloseCamera(false).subscribe().dispose()

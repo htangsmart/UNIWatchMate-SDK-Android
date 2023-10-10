@@ -4,18 +4,14 @@ import android.app.Application
 import android.content.res.Configuration
 import android.content.res.Resources
 import com.base.api.UNIWatchMate
-import com.base.sdk.port.log.WmLog
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.example.myapplication.uniWatchInit
-import com.sjbt.sdk.sample.data.auth.AuthManager
-import com.sjbt.sdk.sample.data.device.DeviceManager
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.FormatterUtil
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class MyApplication : Application() {
     val TAG: String = "MyApplication"
@@ -37,15 +33,16 @@ class MyApplication : Application() {
         //第二步：通过setDeviceModel选定SDK(发现设备场景)，如果是扫码场景则用scanQr，二选一
         UNIWatchMate.setDeviceModel(WmDeviceModel.SJ_WATCH)
         //UNIWatchMate.scanQr("www.shenju.watch?mac=00:00:56:78:9A:BC?name=SJ 8020N")
-
         //全局监听
         observeState()
 
         //监听sdk变化
         UNIWatchMate.observeUniWatchChange().subscribe {
             it.setLogEnable(true)
-            WmLog.e(TAG, "SDK changed")
         }
+
+        UNIWatchMate.wmLog.logI(TAG, "APP onCreate")
+
         initAllProcess()
     }
     private fun initAllProcess() {
@@ -70,8 +67,6 @@ class MyApplication : Application() {
             }
 
             override fun onNext(connectState: WmConnectState) {
-
-                WmLog.e(TAG, "connect state: $connectState")
 
                 when (connectState) {
                     WmConnectState.BT_DISABLE -> {

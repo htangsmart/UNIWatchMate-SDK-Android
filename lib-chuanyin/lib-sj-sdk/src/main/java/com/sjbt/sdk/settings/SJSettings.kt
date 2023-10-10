@@ -5,7 +5,7 @@ import com.base.sdk.port.setting.AbWmSetting
 import com.base.sdk.port.setting.AbWmSettings
 import com.sjbt.sdk.SJUniWatch
 
-class SJSettings(sjUniWatch: SJUniWatch) : AbWmSettings() {
+class SJSettings(val sjUniWatch: SJUniWatch) : AbWmSettings() {
 
     override val settingSportGoal: AbWmSetting<WmSportGoal> = SettingSportGoal(sjUniWatch)
     override val settingDateTime: AbWmSetting<WmDateTime> = SettingDateTime(sjUniWatch)

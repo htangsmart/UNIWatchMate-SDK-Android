@@ -13,7 +13,6 @@ import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.old.TimeSyncBean
-import com.sjbt.sdk.log.SJLog.logSendMsg
 import com.sjbt.sdk.utils.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -323,7 +322,7 @@ object CmdHelper {
         get() {
             val payload = BtUtils.hexStringToByteArray(getRandomNumber(61))
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-            LogUtils.logBlueTooth("发送握手消息:")
+            //LogUtils.logBlueTooth("发送握手消息:")
             return constructCmd(
                 HEAD_VERIFY,
                 CMD_ID_8001.toShort(),
@@ -339,12 +338,12 @@ object CmdHelper {
      * @return
      */
     fun getBindCmd(bindInfo: WmBindInfo): ByteArray {
-        LogUtils.logBlueTooth("绑定命令")
+        //LogUtils.logBlueTooth("绑定命令")
         val byteBuffer = ByteBuffer.allocate(17)
         byteBuffer.put(bindInfo.bindType.ordinal.toByte())
 
         bindInfo.randomCode?.let {
-            LogUtils.logBlueTooth("随机码:$it")
+            //LogUtils.logBlueTooth("随机码:$it")
             byteBuffer.put(it.toByteArray())
         }
 
@@ -366,7 +365,7 @@ object CmdHelper {
      * @return
      */
     fun getUnBindCmd(): ByteArray {
-        LogUtils.logBlueTooth("解绑命令")
+        //LogUtils.logBlueTooth("解绑命令")
 
         return constructCmd(
             HEAD_COMMON,
@@ -387,7 +386,7 @@ object CmdHelper {
         get() {
             val payload = verifyPayload
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-            LogUtils.logBlueTooth("2.发送校验信息:")
+            //LogUtils.logBlueTooth("2.发送校验信息:")
             return constructCmd(
                 HEAD_VERIFY,
                 CMD_ID_8002.toShort(),
@@ -410,7 +409,7 @@ object CmdHelper {
      */
     val syncTimeCmd: ByteArray
         get() {
-            LogUtils.logBlueTooth("4.5 同步时间信息:")
+            //LogUtils.logBlueTooth("4.5 同步时间信息:")
             val timeSyncBean = TimeSyncBean()
             timeSyncBean.setCurrDate(
                 TimeUtils.getNowString(
@@ -431,7 +430,7 @@ object CmdHelper {
             )
             timeSyncBean.setTimestamp(System.currentTimeMillis() / 1000)
             timeSyncBean.setTimeformat(1)
-            LogUtils.logCommon("时间同步：$timeSyncBean")
+            //LogUtils.logCommon("时间同步：$timeSyncBean")
             val payload = gson.toJson(timeSyncBean).toByteArray(StandardCharsets.UTF_8)
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             return constructCmd(HEAD_COMMON, CMD_ID_8007, DIVIDE_N_JSON, 0, crc, payload)
@@ -444,7 +443,7 @@ object CmdHelper {
      */
     val baseInfoCmd: ByteArray
         get() {
-            logSendMsg("3.发送基本信息:")
+            //logSendMsg("3.发送基本信息:")
             return constructCmd(
                 HEAD_COMMON,
                 CMD_ID_8001.toShort(),
@@ -536,7 +535,7 @@ object CmdHelper {
      */
     val batteryInfo: ByteArray
         get() {
-            logSendMsg("发送电量信息:")
+            //logSendMsg("发送电量信息:")
             return constructCmd(
                 HEAD_COMMON,
                 CMD_ID_8003.toShort(),
@@ -554,7 +553,7 @@ object CmdHelper {
      */
     val statusCmd: ByteArray
         get() {
-            logSendMsg("2.发送状态信息:")
+            //logSendMsg("2.发送状态信息:")
             return constructCmd(
                 HEAD_COMMON,
                 CMD_ID_8002.toShort(),
@@ -573,7 +572,7 @@ object CmdHelper {
      */
     fun getNotificationCmd(notifyMsgBean: WmNotification?): ByteArray {
         val payload = gson.toJson(notifyMsgBean).toByteArray(StandardCharsets.UTF_8)
-        logSendMsg("发送通知消息:" + gson.toJson(notifyMsgBean))
+        //logSendMsg("发送通知消息:" + gson.toJson(notifyMsgBean))
         return constructCmd(
             HEAD_COMMON,
             CMD_ID_8004,
@@ -597,7 +596,7 @@ object CmdHelper {
 //        payload[2] = (byte) alarmBean.min;
 //        payload[3] = (byte) alarmBean.repeat;
         val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-        logSendMsg("闹钟：$alarmBean")
+        //logSendMsg("闹钟：$alarmBean")
         return constructCmd(
             HEAD_COMMON,
             CMD_ID_801C.toShort(),
@@ -630,7 +629,7 @@ object CmdHelper {
      */
     val pwdSetCmd: ByteArray
         get() {
-            logSendMsg("发送查询密码设置")
+            //logSendMsg("发送查询密码设置")
             return constructCmd(
                 HEAD_COMMON,
                 CMD_ID_800A.toShort(),
@@ -652,7 +651,7 @@ object CmdHelper {
             jsonObject.put("mode", mode)
             jsonObject.put("open", open)
             val json = jsonObject.toString()
-            logSendMsg("4.5发送查询时间同步设置：$json")
+            //logSendMsg("4.5发送查询时间同步设置：$json")
             val payload =
                 json.toByteArray(StandardCharsets.UTF_8)
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
@@ -676,7 +675,7 @@ object CmdHelper {
      * @return
      */
     fun getSetAllSportInitCmd(initInfo: WmSportGoal): ByteArray {
-        logSendMsg("一次设置多个初始化信息:")
+//        //logSendMsg("一次设置多个初始化信息:")
         val jsonObject = JSONObject()
         return try {
             jsonObject.put("heat_goal", initInfo.calories)
@@ -712,7 +711,7 @@ object CmdHelper {
             jsonObject.put("type", msgSetType)
             jsonObject.put("pwd", password)
             val json = jsonObject.toString()
-            LogUtils.logCommon("设置密码：$json")
+            //LogUtils.logCommon("设置密码：$json")
             val payload =
                 json.toByteArray(StandardCharsets.UTF_8)
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
@@ -803,7 +802,7 @@ object CmdHelper {
      * @return
      */
     fun getDialListCmd(order: Byte): ByteArray {
-        logSendMsg("9.从设备端获取我的表盘数据")
+//        logSendMsg("9.从设备端获取我的表盘数据")
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(order)
@@ -936,7 +935,7 @@ object CmdHelper {
      * @return
      */
     fun getTransferFile01Cmd(type: Byte, fileLen: Int, fileCount: Int): ByteArray {
-        logSendMsg("文件长度:$fileLen")
+//        logSendMsg("文件长度:$fileLen")
         val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
@@ -999,7 +998,7 @@ object CmdHelper {
         otaCmdInfo.payload = byteBuffer.array()
         otaCmdInfo.crc =
             BtUtils.getCrc(HEX_FFFF, otaCmdInfo.payload, otaCmdInfo.payload.size)
-        logSendMsg("发送消息序号：" + process + " 包长:" + otaCmdInfo.payload.size)
+//        logSendMsg("发送消息序号：" + process + " 包长:" + otaCmdInfo.payload.size)
         return constructCmd(
             HEAD_FILE_SPP_A_2_D, CMD_ID_8003.toShort(),
             divideType, otaCmdInfo.offSet, otaCmdInfo.crc, otaCmdInfo.payload
@@ -1086,7 +1085,7 @@ object CmdHelper {
         byteBuffer.putInt(process)
         byteBuffer.flip()
         val payload = byteBuffer.array()
-        logSendMsg("发送消息序号：$process 成功:$state")
+//        logSendMsg("发送消息序号：$process 成功:$state")
         return constructCmd(
             HEAD_FILE_SPP_D_2_A,
             CMD_ID_8003.toShort(),
@@ -1148,7 +1147,7 @@ object CmdHelper {
      * @return
      */
     fun initSportHealthCmd(type: Byte, value: Int): ByteArray {
-        logSendMsg("type:$type value:$value")
+//        logSendMsg("type:$type value:$value")
         val byteBuffer = ByteBuffer.allocate(5)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
@@ -1187,7 +1186,7 @@ object CmdHelper {
      */
     val stepRecordCmd: ByteArray
         get() {
-            logSendMsg("7.获取运动步数：")
+//            logSendMsg("7.获取运动步数：")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_8002.toShort(),
@@ -1205,7 +1204,7 @@ object CmdHelper {
      */
     val rateRecordCmd: ByteArray
         get() {
-            logSendMsg("8.获取心率：")
+//            logSendMsg("8.获取心率：")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_8003.toShort(),
@@ -1222,7 +1221,7 @@ object CmdHelper {
      * @return
      */
     fun getSleepRecordCmd(index: Byte): ByteArray {
-        logSendMsg("12.获取睡眠")
+//        logSendMsg("12.获取睡眠")
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(index)
@@ -1245,7 +1244,7 @@ object CmdHelper {
      */
     val getSleepSetCmd: ByteArray
         get() {
-            logSendMsg("获取睡眠区间设置")
+//            logSendMsg("获取睡眠区间设置")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_800C,
@@ -1288,7 +1287,7 @@ object CmdHelper {
      */
     val bloodOxRecordCmd: ByteArray
         get() {
-            logSendMsg("9.获取血氧")
+//            logSendMsg("9.获取血氧")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_8009.toShort(),
@@ -1306,7 +1305,7 @@ object CmdHelper {
      */
     val bloodSugarRecordCmd: ByteArray
         get() {
-            logSendMsg("10.获取血糖")
+//            logSendMsg("10.获取血糖")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_800A.toShort(),
@@ -1324,7 +1323,7 @@ object CmdHelper {
      */
     val bloodPressRecordCmd: ByteArray
         get() {
-            logSendMsg("11.获取血压")
+//            logSendMsg("11.获取血压")
             return constructCmd(
                 HEAD_SPORT_HEALTH,
                 CMD_ID_800B.toShort(),
@@ -1342,7 +1341,7 @@ object CmdHelper {
      */
     val actionSupportCmd: ByteArray
         get() {
-            logSendMsg("获取支持功能列表")
+//            logSendMsg("获取支持功能列表")
             return constructCmd(
                 HEAD_COMMON,
                 CMD_ID_802D.toShort(),
@@ -1738,7 +1737,7 @@ object CmdHelper {
         val simpleDateFormat = SimpleDateFormat("yyMMdd")
         val date = Date(timeMillions)
         val res = simpleDateFormat.format(date)
-        logSendMsg("转换后的时间：$res")
+//        logSendMsg("转换后的时间：$res")
         return res.toInt()
     }
 

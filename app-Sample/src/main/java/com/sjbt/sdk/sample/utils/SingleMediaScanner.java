@@ -4,7 +4,7 @@ import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 
-import com.sjbt.sdk.utils.LogUtils;
+import com.blankj.utilcode.util.LogUtils;
 
 import java.io.File;
 
@@ -38,20 +38,16 @@ public class SingleMediaScanner implements MediaScannerConnection.MediaScannerCo
                         if (f.isFile()) {// FILE TYPE
                             String name = f.getName();
                             mMs.scanFile(mFile.getAbsolutePath(), mType);
-                            LogUtils.logBlueTooth("scan file1");
                         } else {// FOLDER TYPE
                             onMediaScannerConnected();
                         }
                     }
                 }
             } else {
-                LogUtils.logBlueTooth("scan file2");
 //            if (mFile.getName().contains(".")) {
                 mMs.scanFile(mFile.getAbsolutePath(), mType);
 //            }
             }
-
-            LogUtils.logBlueTooth("file path:" + mFile.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         }
