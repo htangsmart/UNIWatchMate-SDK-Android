@@ -244,6 +244,7 @@
     <!--Power save mode-->
     <string name="ds_power_save_mode">Power Save Mode</string>
     <string name="ds_test_send_notification">Test Send Notification</string>
+    <string name="ds_no_data">No data</string>
 
     <!--Alarms-->
     <string name="ds_alarm">Alarms</string>
@@ -287,6 +288,14 @@
     <!--Dial-->
     <string name="ds_dial">Dial</string>
     <string name="ds_dial_library">Dial Library</string>
+    <string name="ds_dial_installed">Dial Installed</string>
+    <string name="ds_dial_installed_des">View the watch faces installed on the watch and support removal</string>
+    <string name="ds_dial_test_install">Dial Test install</string>
+    <string name="ds_dial_test_install_des">Used to test install dial</string>
+    <string name="tip_inner_dial_del_error">The built-in dial cannot be removed</string>
+    <string name="built_in_dial">Built-in dial</string>
+
+
     <string name="ds_dial_library_des">The dial library feature allows you to access the dial on the FitCloud server and push it to your device.</string>
     <string name="ds_dial_custom">Dial Custom</string>
     <string name="ds_dial_custom_des">The custom dial feature allows you to customize your dial using pictures from photos/albums, as well as optional styles</string>

@@ -47,6 +47,7 @@
             android:id="@+id/item_is_mute"
             style="@style/Widget.Item.Switch"
             app:showSwitch="true"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:name="@string/ds_is_mute"/>
