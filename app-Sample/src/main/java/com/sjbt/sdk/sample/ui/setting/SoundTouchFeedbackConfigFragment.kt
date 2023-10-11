@@ -72,7 +72,7 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
         }
 
         viewBind.itemIsCrownHasTactileFeedback.getSwitchCompat().setOnCheckedChangeListener(this)
-        viewBind.itemIsMute.getSwitchCompat().setOnCheckedChangeListener(this)
+//        viewBind.itemIsMute.getSwitchCompat().setOnCheckedChangeListener(this)
         viewBind.itemIsNotificationTouch.getSwitchCompat().setOnCheckedChangeListener(this)
         viewBind.itemIsSystemHasTactileFeedback.getSwitchCompat().setOnCheckedChangeListener(this)
         viewBind.itemRingWhenCallComeIn.getSwitchCompat().setOnCheckedChangeListener(this)

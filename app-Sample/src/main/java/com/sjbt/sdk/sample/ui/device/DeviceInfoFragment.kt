@@ -42,6 +42,13 @@ class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
                             "model=${it.model}"
                 }
             }
+//            launch {
+//                UNIWatchMate?.wmApps?.appDial?.syncDialList()?.asFlow()?.collect{
+//                    for (bean in it) {
+//                        viewBind.itemDeviceInfo.text="${viewBind.itemDeviceInfo.text}\n${bean}"
+//                    }
+//                }
+//            }
         }
     }
 
