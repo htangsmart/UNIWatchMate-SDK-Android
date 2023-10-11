@@ -392,13 +392,11 @@
                 android:id="@+id/toInstalledList"
                 app:destination="@id/installedDialsFragment"/>
 
-<!--            <action-->
-<!--                android:id="@+id/toCustom"-->
-<!--                app:destination="@id/dialCustomFragment"/>-->
+            <action
+                android:id="@+id/toDialLibrary"
+                app:destination="@id/dialLibraryFragment"/>
 
-<!--            <action-->
-<!--                android:id="@+id/toComponent"-->
-<!--                app:destination="@id/dialComponentFragment"/>-->
+
         </fragment>
 
     <!--    <fragment-->
@@ -410,11 +408,11 @@
     <!--        android:id="@+id/gamePushFragment"-->
     <!--        android:name="com.topstep.fitcloud.sample2.ui.device.game.push.GamePushFragment"-->
     <!--        android:label="@string/ds_game_push"/>-->
-    <!--    <fragment-->
-    <!--        android:id="@+id/dialLibraryFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.dial.library.DialLibraryFragment"-->
-    <!--        android:label="@string/ds_dial_library"-->
-    <!--        tools:layout="@layout/fragment_dial_library"/>-->
+        <fragment
+            android:id="@+id/dialLibraryFragment"
+            android:name="com.sjbt.sdk.sample.ui.device.dial.library.DialLibraryFragment"
+            android:label="@string/ds_dial_library"
+            tools:layout="@layout/fragment_dial_library"/>
 
         <fragment
             android:id="@+id/installedDialsFragment"

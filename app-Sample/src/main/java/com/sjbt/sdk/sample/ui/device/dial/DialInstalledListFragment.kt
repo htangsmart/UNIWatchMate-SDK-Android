@@ -87,6 +87,7 @@ class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_
                             promptToast.showFailed(event.throwable)
                         }
                         is DialEvent.DialRemoved -> {
+                            viewBind.loadingView.visibility = View.GONE
                             adapter.notifyItemRemoved(event.position)
                         }
 

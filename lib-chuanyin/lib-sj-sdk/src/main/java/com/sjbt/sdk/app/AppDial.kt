@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import android.graphics.BitmapFactory
 import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.port.app.AbAppDial
 import com.sjbt.sdk.SJUniWatch
@@ -8,6 +9,7 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.DIAL_MSG_LEN
 import com.sjbt.sdk.uparser.model.JpgInfo
 import com.sjbt.sdk.utils.BtUtils
+import com.sjbt.sdk.utils.FileUtils
 import com.sjbt.sdk.utils.UParseUtil
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.core.Observable
@@ -93,8 +95,7 @@ class AppDial(sjUniWatch: SJUniWatch) : AbAppDial() {
 
             if (result == 0 || jpgInfo.resouceInfo.size == 0 || jpgInfo.jpgdata.size == 0) {
 
-//                File jpgFile = FileUtil.writeBytes(jpgInfo.jpgdata, dialThumpPath);
-//                Bitmap bitmap = BitmapFactory.decodeFile(jpgFile.getPath());
+//                val bitmap = BitmapFactory.decodeByteArray(jpgInfo.jpgdata,0,jpgInfo.jpgdata.size);
                 val byteBuffer =
                     ByteBuffer.allocate(jpgInfo.resouceInfo.size + jpgInfo.jpgdata.size)
                 byteBuffer.put(jpgInfo.resouceInfo)

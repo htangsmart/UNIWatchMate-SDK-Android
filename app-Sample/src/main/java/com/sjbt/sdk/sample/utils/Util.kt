@@ -11,7 +11,6 @@ import android.location.LocationManager
 import android.net.Uri
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.annotation.IdRes
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +30,6 @@ import com.github.kilnn.tool.dialog.prompt.PromptDialogHolder
 import com.github.kilnn.tool.system.SystemUtil
 import com.github.kilnn.tool.widget.item.PreferenceItem
 import com.sjbt.sdk.sample.R
-import com.sjbt.sdk.sample.base.BaseFragment
 import com.squareup.moshi.Moshi
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Action
@@ -279,7 +277,16 @@ fun glideShowImage(imageView: ImageView, uri: Any?, inRecyclerView: Boolean = tr
         builder.into(imageView)
     }
 }
-
+fun glideShowMipmapImage(imageView: ImageView, res: Int, inRecyclerView: Boolean = true, placeholder: Int = R.mipmap.ic_default_image_place_holder) {
+    val builder = Glide.with(imageView.context)
+        .load(res)
+        .apply(RequestOptions.placeholderOf(placeholder))
+    if (inRecyclerView) {
+        builder.into(DrawableImageViewTarget(imageView).waitForLayout())
+    } else {
+        builder.into(imageView)
+    }
+}
 //fun glideLoadDialBackground(context: Context, dialView: DialView, uri: Any) {
 //    Glide.with(context)
 //        .asBitmap()

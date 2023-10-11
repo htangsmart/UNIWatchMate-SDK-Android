@@ -19,12 +19,10 @@ class MyApplication : Application() {
     val TAG: String = "MyApplication"
     private lateinit var applicationScope: CoroutineScope
 
-
     companion object {
         lateinit var instance: MyApplication
             private set
         val mHandler = Handler(Looper.getMainLooper())
-
     }
 
     override fun onCreate() {

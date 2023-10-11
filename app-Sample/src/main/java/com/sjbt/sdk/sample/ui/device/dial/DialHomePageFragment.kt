@@ -23,7 +23,7 @@ class DialHomePageFragment : BaseFragment(R.layout.fragment_dial_home_page) {
         }
 
         viewBind.btnDialTestInstall.clickTrigger {
-
+            findNavController().navigate(DialHomePageFragmentDirections.toDialLibrary())
         }
 
 
