@@ -1,24 +1,32 @@
 package com.sjbt.sdk.sample.ui.device.dial.library
 
 import android.content.Context
-import android.net.Uri
+import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.port.FileType
+import com.base.sdk.port.WmTransferState
+import com.blankj.utilcode.util.FileIOUtils
 import com.github.kilnn.tool.dialog.prompt.PromptDialogHolder
+import com.sjbt.sdk.sample.MyApplication
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
+import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.utils.showFailed
 import com.topstep.fitcloud.sdk.exception.FcDfuException
-import com.topstep.fitcloud.sdk.v2.dfu.FcDfuManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.awaitLast
+import okhttp3.internal.wait
 import timber.log.Timber
+import java.io.File
+
 
 class DfuViewModel : ViewModel() {
 
@@ -34,18 +42,37 @@ class DfuViewModel : ViewModel() {
 
     private var dfuJob: Job? = null
 
-    fun startDfu(dialMock: DialMock) {
+    fun startDfu(dialMock: DialMock, callBack: CallBack<WmTransferState>) {
         dfuJob?.cancel()
         dfuJob = viewModelScope.launch {
             try {
-                val transCoverState =
-                    UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL_COVER, mutableListOf())
-                        .concatMap {
-                        UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL, mutableListOf())
+                val inputStream = MyApplication.instance.assets.open(dialMock.dialAssert!!)
+                val curMillis = System.currentTimeMillis()
+                val dialPath =
+                    MyApplication.instance.filesDir.absolutePath + "/" + curMillis + ".dial"
+                val coverPath =
+                    MyApplication.instance.filesDir.absolutePath + "/" + curMillis + ".jpg"
+                FileIOUtils.writeFileFromIS(dialPath, inputStream)
+                val dialCoverArray = UNIWatchMate.wmApps.appDial.parseDialThumpJpg(dialPath)
+
+                FileIOUtils.writeFileFromBytesByChannel(coverPath, dialCoverArray, true)
+                val coverList = mutableListOf<File>()
+                val dialList = mutableListOf<File>()
+                coverList.add(File(coverPath))
+                dialList.add(File(dialPath))
+                UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL_COVER, coverList)
+                    .asFlow().collect {
+                        callBack.callBack(it)
+                    }
+                UNIWatchMate.wmLog.logI("DfuViewModel","startTransfer DIAL")
+                UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL, dialList)
+                    .asFlow().collect {
+                        callBack.callBack(it)
                     }
                 _flowDfuEvent.send(DfuEvent.OnSuccess)
             } catch (e: Exception) {
                 if (e !is CancellationException) {
+                    e.printStackTrace()
                     _flowDfuEvent.send(DfuEvent.OnFail(e))
                 }
             }

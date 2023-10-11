@@ -44,7 +44,6 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
             }
         }
     }
-
     private lateinit var adapter: DialLibraryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,8 +67,8 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
             override fun onItemClick(packet: DialMock) {
                 if (dialPushViewModel.deviceManager.isConnected()) {
                     dialPushViewModel.state.async()?.let {
-//                        DialLibraryDfuDialogFragment.newInstance(packet)
-//                            .show(childFragmentManager, null)
+                        DialLibraryDfuDialogFragment.newInstance(packet)
+                            .show(childFragmentManager, null)
                     }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
@@ -125,7 +124,7 @@ class DialLibraryViewModel(
         packets.add(
             DialMock(
                 R.mipmap.a4974f889d52c4a519eac9ea409b3295c,
-                "4974f889d52c4a519eac9ea409b3295c.dial.crdownload"
+                "4974f889d52c4a519eac9ea409b3295c.dial"
             )
         )
         packets.add(
@@ -137,7 +136,7 @@ class DialLibraryViewModel(
         packets.add(
             DialMock(
                 R.mipmap.aaab168c15c7b40eab361ca98fdd213ee,
-                "aab168c15c7b40eab361ca98fdd213ee.dial.dial"
+                "aab168c15c7b40eab361ca98fdd213ee.dial"
             )
         )
         return packets

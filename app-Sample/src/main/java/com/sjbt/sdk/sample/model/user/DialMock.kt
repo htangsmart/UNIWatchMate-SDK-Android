@@ -15,11 +15,12 @@ data class DialMock(val dialCoverRes:Int, val dialAssert: String?) : Parcelable 
     }
 
     override fun describeContents(): Int {
-        TODO("Not yet implemented")
+        return 0
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        TODO("Not yet implemented")
+        dest.writeInt(dialCoverRes)
+        dest.writeString(dialAssert)
     }
 
     companion object CREATOR : Parcelable.Creator<DialMock> {
