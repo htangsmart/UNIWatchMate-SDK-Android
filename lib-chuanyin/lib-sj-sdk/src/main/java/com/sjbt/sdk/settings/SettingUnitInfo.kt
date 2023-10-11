@@ -29,7 +29,7 @@ class SettingUnitInfo(sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
         return Single.create(object : SingleOnSubscribe<WmUnitInfo> {
             override fun subscribe(emitter: SingleEmitter<WmUnitInfo>) {
                 setEmitter = emitter
-                mSjUniWatch.sendWriteNodeCmdList(CmdHelper.getUnitSettingCmd(obj))
+                mSjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteUnitSettingCmd(obj))
             }
         })
     }

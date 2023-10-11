@@ -24,6 +24,10 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         utils/JArrayList.cpp
 
+        uparser-lib.cpp
+        dial_parser.cpp
+        up_parser.c
+
         encrypt/LSFR.cpp
         encrypt/LSFR.h
         encrypt/native-lib.cpp

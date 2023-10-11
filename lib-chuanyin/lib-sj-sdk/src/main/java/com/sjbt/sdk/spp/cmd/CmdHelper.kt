@@ -1,11 +1,11 @@
 package com.sjbt.sdk.spp.cmd
 
-import android.text.TextUtils
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.settings.WmPersonalInfo
+import com.base.sdk.entity.settings.WmSedentaryReminder
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.google.gson.Gson
@@ -13,10 +13,10 @@ import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.old.TimeSyncBean
+import com.sjbt.sdk.settings.SettingDrinkWaterReminder
 import com.sjbt.sdk.utils.*
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.charset.Charset
@@ -159,72 +159,7 @@ object CmdHelper {
         return msgBean
     }
 
-    fun packageFileToCmdList(file: File, cell_length: Int): List<ByteArray> {
-        var divide: Byte
-        var otaPckCrc = 0
-        val dataArray = FileUtils.readFileBytes(file)
-        val otaCmdArrayList: MutableList<ByteArray> = ArrayList()
-        if (!file.exists()) {
-            return otaCmdArrayList
-        }
-        var count = dataArray.size / cell_length
-        val lastDataLength = dataArray.size % cell_length
-        if (lastDataLength != 0) {
-            count = count + 1
-        }
-        for (i in 0 until count) {
-            val info = OtaCmdInfo()
-            if (i != count - 1) {
-                info.offSet = i * cell_length
-                info.payload = ByteArray(cell_length)
-                System.arraycopy(dataArray, i * cell_length, info.payload, 0, cell_length)
-            } else {
-                if (lastDataLength == 0) {
-                    info.offSet = i * cell_length
-                    info.payload = ByteArray(cell_length)
-                    System.arraycopy(dataArray, i * cell_length, info.payload, 0, cell_length)
-                } else {
-                    info.offSet = i * cell_length
-                    info.payload = ByteArray(lastDataLength)
-                    System.arraycopy(dataArray, i * cell_length, info.payload, 0, lastDataLength)
-                }
-            }
-            if (i == 0) {
-                otaPckCrc = BtUtils.getCrc(HEX_FFFF, info.payload, info.payload.size)
-                divide = DIVIDE_Y_F_2
-            } else {
-                divide = if (i == count - 1) {
-                    DIVIDE_Y_E_2
-                } else {
-                    DIVIDE_Y_M_2
-                }
-                otaPckCrc = BtUtils.getCrc(otaPckCrc, info.payload, info.payload.size)
-            }
-            info.crc = otaPckCrc
-            otaCmdArrayList.add(getTransfer03Cmd(i, info, divide))
-        }
-        return otaCmdArrayList
-    }
-
-    /**
-     * 计算出key2
-     *
-     * @param data
-     */
-    fun getTheAccumulatedValueAnd(data: String): String {
-        if (TextUtils.isEmpty(data)) {
-            return ""
-        }
-        var total = 0
-        val len = data.length
-        var num = 0
-        while (num < len) {
-            val s = data.substring(num, num + 2)
-            total += s.toInt(16)
-            num = num + 2
-        }
-        return Integer.toHexString(total)
-    }//密钥
+    //密钥
     //异或原参
     //        LogUtils.logBlueTooth("APP加密的Key1:" + mKey1);
     //未加密数据
@@ -273,45 +208,6 @@ object CmdHelper {
             sbVerify.append(verificationArray[3])
             return BtUtils.hexStringToByteArray(sbVerify.toString())
         }
-
-    /**
-     * 解密并验证数据
-     *
-     * @param data 从设备返回的数据
-     * @return
-     */
-    fun verificationCmd(data: String): Boolean {
-
-//        LogUtils.logBlueTooth("verificationCmd 设备返回payload：" + data);
-        val substring = data.substring(32, 96)
-        //        LogUtils.logBlueTooth("verificationCmd: new 10-2F： " + substring);
-        val bytes = BtUtils.hexStringToByteArray(substring)
-        val key = mKey2!!.toInt(16)
-        //解密数据
-        val s2 = BtUtils.bytesToHexString(BtUtils.encryptData(key, bytes, bytes.size))
-        //        LogUtils.logBlueTooth("verificationCmd:解密后的10-2F： " + s2);
-        //异或
-        val substring1 = s2.substring(0, 32)
-        val substring2 = s2.substring(32)
-        val bytes1 = BtUtils.hexStringToByteArray(substring1)
-        val bytes2 = BtUtils.hexStringToByteArray(substring2)
-        val bytes3 = BtUtils.hexStringToByteArray(mKeyData1)
-        val bytes4 = ByteArray(bytes1.size + bytes2.size)
-        for (j in bytes1.indices) {
-            bytes4[j] = (bytes1[j].toInt() xor bytes3[j].toInt()).toByte()
-        }
-        for (j in bytes2.indices) {
-            bytes4[j + bytes2.size] = (bytes2[j].toInt() xor bytes3[j].toInt()).toByte()
-        }
-
-//        LogUtils.logBlueTooth("解密的key1：" + key + " | - key2:" + key);
-
-        //解密
-        val s3 = BtUtils.bytesToHexString(BtUtils.encryptData(key1, bytes4, bytes4.size))
-        //        LogUtils.logBlueTooth("verificationCmd:异或后的数据： " + BtUtils.bytesToHexString(bytes4));
-//        LogUtils.logBlueTooth("verificationCmd:加密后的数据： " + s3);
-        return BtUtils.bytesToHexString(bytes4).equals(mKeyData2, ignoreCase = true)
-    }
 
     /**
      * 新协议 握手命令
@@ -1658,7 +1554,7 @@ object CmdHelper {
         val payload = byteBuffer.array()
         return constructCmd(
             HEAD_COMMON,
-            CMD_ID_801B.toShort(),
+            CMD_ID_801B,
             DIVIDE_N_2,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -1703,7 +1599,7 @@ object CmdHelper {
         val payload = byteBuffer.array()
         return constructCmd(
             HEAD_COMMON,
-            CMD_ID_802C.toShort(),
+            CMD_ID_802C,
             DIVIDE_N_2,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -1725,7 +1621,7 @@ object CmdHelper {
         val payload = byteBuffer.array()
         return constructCmd(
             HEAD_COMMON,
-            CMD_ID_802A.toShort(),
+            CMD_ID_802A,
             DIVIDE_N_2,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -1825,7 +1721,7 @@ object CmdHelper {
         val payload = byteBuffer.array()
         return constructCmd(
             HEAD_CAMERA_PREVIEW,
-            CMD_ID_8001.toShort(),
+            CMD_ID_8001,
             DIVIDE_N_2,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -1841,7 +1737,7 @@ object CmdHelper {
     fun getCameraPreviewDataCmd02(data: ByteArray, divideType: Byte): ByteArray {
         return constructCmd(
             HEAD_CAMERA_PREVIEW,
-            CMD_ID_8002.toShort(),
+            CMD_ID_8002,
             divideType,
             0,
             BtUtils.getCrc(
@@ -1990,9 +1886,9 @@ object CmdHelper {
     }
 
     /**
-     * 获取设置健康信息的命令
+     * 获取设置单位信息的命令
      */
-    fun getUnitSettingCmd(
+    fun getWriteUnitSettingCmd(
         wmUnitInfo: WmUnitInfo
     ): PayloadPackage {
 
@@ -2001,9 +1897,110 @@ object CmdHelper {
         bbSport.put(wmUnitInfo.timeFormat.ordinal.toByte())
         bbSport.put(wmUnitInfo.temperatureUnit.ordinal.toByte())
         bbSport.put(wmUnitInfo.distanceUnit.ordinal.toByte())
-        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+
+        payloadPackage.putData(getUrnId(URN_2, URN_3), bbSport.array())
 
         return payloadPackage
     }
 
+    /**
+     * 获取设置单位信息的命令
+     */
+    fun getReadUnitSettingCmd():PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val bbSport: ByteBuffer = ByteBuffer.allocate(0)
+
+        payloadPackage.putData(getUrnId(URN_2, URN_3), bbSport.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取语言列表的命令
+     */
+    fun getReadLanguageListCmd(): PayloadPackage {
+
+        val payloadPackage = PayloadPackage()
+        val bbSport: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_1), bbSport.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取设置语言命令
+     * TODO BCP 有点问题
+     */
+    fun getExcuteLanguageCmd(bcp: String): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val bbSport: ByteBuffer = ByteBuffer.allocate(6)
+        bbSport.put(bcp.toByteArray(StandardCharsets.UTF_8))
+        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_2), bbSport.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取久坐提醒设置
+     */
+    fun getReadSedentaryReminderCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_2, URN_5), ByteBuffer.allocate(0).array())
+        return payloadPackage
+    }
+
+    /**
+     * 设置久坐提醒
+     */
+    fun getWriteSedentaryReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
+        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
+        byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
+
+        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endMinute.toByte())
+
+        payloadPackage.putData(getUrnId(URN_2, URN_5), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取喝水提醒设置
+     */
+    fun getReadDrinkReminderCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_2, URN_6), ByteBuffer.allocate(0).array())
+        return payloadPackage
+    }
+
+    /**
+     * 设置喝水提醒
+     */
+    fun getWriteReadDrinkReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
+        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
+        byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
+        byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
+
+        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
+        byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endMinute.toByte())
+
+        payloadPackage.putData(getUrnId(URN_2, URN_5), byteBuffer.array())
+        return payloadPackage
+    }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <style name="AppSplashTheme" parent="Theme.SplashScreen">
+    <style name="AppSplashTheme" parent="Theme.AppCompat.Light">
         <item name="windowSplashScreenBackground">@color/colorPrimary</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
         <item name="postSplashScreenTheme">@style/AppTheme</item>
