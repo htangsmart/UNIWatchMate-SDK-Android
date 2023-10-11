@@ -318,7 +318,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     val actResult = msg[17].toInt() //是否操作成功
                                     val reason = msg[18].toInt() //是否操作成功
 
-                                    appDial.deleteDialResult(actResult == 1, reason)
+                                    appDial.deleteDialResult(actResult == 1)
                                 }
 
                                 CMD_ID_800F -> {
