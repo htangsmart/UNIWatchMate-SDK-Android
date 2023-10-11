@@ -663,7 +663,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         mBtEngine.clearStateMap()
                         mBtEngine.clearMsgQueue()
 
-                        disconnect()
+//                        disconnect()
 //                        btStateChange(WmConnectState.DISCONNECTED)
                     }
                 }

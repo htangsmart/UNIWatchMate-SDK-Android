@@ -2,13 +2,13 @@ package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.port.app.AbAppDial
-import com.shenju.uparser.model.JpgInfo
-import com.shenju.utils.UParseUtil
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.DIAL_MSG_LEN
+import com.sjbt.sdk.uparser.model.JpgInfo
 import com.sjbt.sdk.utils.BtUtils
+import com.sjbt.sdk.utils.UParseUtil
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.core.Observable
 import java.nio.ByteBuffer

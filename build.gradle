@@ -29,7 +29,7 @@ buildscript {
         room_version = "2.5.0"
         glide_version = '4.14.2'
         camerax_version = '1.2.1'
-        permissionx_version = '1.7.1'
+        permissionx_version = '1.5.1'
 
         constraint_version = '2.0.1'
         compose_ui_version = '1.2.0'
@@ -41,10 +41,6 @@ buildscript {
         jcenter()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven {
-            allowInsecureProtocol = true
-            url "http://mvnrepo.alibaba-inc.com/mvn/repository"
-        }
     }
 
     dependencies {
@@ -60,10 +56,6 @@ allprojects {
         jcenter()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven {
-            allowInsecureProtocol = true
-            url "http://mvnrepo.alibaba-inc.com/mvn/repository"
-        }
     }
 }
 

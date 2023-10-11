@@ -23,7 +23,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-
     <application
         android:name="com.sjbt.sdk.sample.MyApplication"
         android:allowBackup="true"
@@ -43,18 +42,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-        <activity
-            android:name="com.example.myapplication.ui.MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="stateHidden|adjustPan">
-
-           <!-- <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>-->
         </activity>
         <activity android:name=".ui.auth.AuthActivity"/>
         <activity android:name=".ui.MainActivity"/>

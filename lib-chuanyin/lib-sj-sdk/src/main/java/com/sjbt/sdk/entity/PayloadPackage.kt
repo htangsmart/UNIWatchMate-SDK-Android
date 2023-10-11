@@ -114,8 +114,8 @@ class PayloadPackage {
         val payloadList = mutableListOf<ByteArray>() //payload列表
         val bytes: ByteBuffer = ByteBuffer.allocate(limitation) //payload
         var tempByteArray = ByteArray(0)
-        buildPackageHeader(bytes)
         actionType = requestType.type
+        buildPackageHeader(bytes)
         var total_item_count = 0
         var count = 0
         itemList.mapIndexed() { index, item ->
