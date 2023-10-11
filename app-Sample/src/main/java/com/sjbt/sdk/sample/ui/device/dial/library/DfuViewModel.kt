@@ -35,8 +35,6 @@ class DfuViewModel : ViewModel() {
         class OnFail(val error: Throwable) : DfuEvent()
     }
 
-    private val deviceManager = Injector.getDeviceManager()
-
     private val _flowDfuEvent = Channel<DfuEvent>()
     val flowDfuEvent = _flowDfuEvent.receiveAsFlow()
 

@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
+import kotlinx.coroutines.rx3.awaitSingle
 
 data class DialState(
     val requestDials: Async<MutableList<WmDial>> = Uninitialized,
@@ -44,7 +45,7 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
         viewModelScope.launch {
             state.copy(requestDials = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appDial.syncDialList().awaitFirst()
+                UNIWatchMate.wmApps.appDial.syncDialList().awaitSingle()
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestDials = Success(it)).newState()
@@ -63,12 +64,10 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
      */
     fun deleteAlarm(position: Int) {
         viewModelScope.launch {
-            state.copy(requestDials = Loading()).newState()
             val alarms = state.requestDials()
             if (alarms != null && position < alarms.size) {
                 UNIWatchMate.wmApps.appDial.deleteDial(alarms[position]).await()
                 alarms.removeAt(position)
-
                 DialEvent.DialRemoved(position).newEvent()
             }
         }

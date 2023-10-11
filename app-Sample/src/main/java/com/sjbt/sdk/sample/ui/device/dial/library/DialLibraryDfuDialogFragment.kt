@@ -5,17 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
+import com.base.sdk.port.AbWmTransferFile
+import com.base.sdk.port.State
 import com.base.sdk.port.WmTransferState
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.databinding.DialogDialLibraryDfuBinding
-import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.getParcelableCompat
 import com.sjbt.sdk.sample.utils.glideShowMipmapImage
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
@@ -38,6 +43,7 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
     private val viewBind get() = _viewBind!!
 
     private val dfuViewModel: DfuViewModel by viewModels({ requireParentFragment() })
+    private val promptToast by promptToast()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,56 +63,34 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
         resetStateView()
 
         viewBind.stateView.clickTrigger {
-//            if (!dfuViewModel.isDfuIng()) {
+            if (!dfuViewModel.isDfuIng()) {
                 PermissionHelper.requestBle(this) { granted ->
                     if (granted) {
+                        isCancelable = false
                         dfuViewModel.startDfu(dialPacket) {
                             UNIWatchMate.wmLog.logI("DfuViewModel", it.toString())
+                            onWmTransferStateChange(it)
                         }
                     }
                 }
-//            }
+            }
         }
-
         lifecycle.launchRepeatOnStarted {
             launch {
-//                dfuViewModel.flowDfuStateProgress().collect {
-//                    when (it.state) {
-//                        FcDfuManager.DfuState.NONE, FcDfuManager.DfuState.DFU_FAIL, FcDfuManager.DfuState.DFU_SUCCESS -> {
-//                            resetStateView()
-//                            isCancelable = true
-//                        }
-//                        FcDfuManager.DfuState.DOWNLOAD_FILE -> {
-//                            viewBind.stateView.setText(R.string.ds_dfu_downloading)
-//                            isCancelable = false
-//                        }
-//                        FcDfuManager.DfuState.PREPARE_FILE, FcDfuManager.DfuState.PREPARE_DFU -> {
-//                            viewBind.stateView.setText(R.string.ds_dfu_preparing)
-//                            isCancelable = false
-//                        }
-//                        FcDfuManager.DfuState.DFU_ING -> {
-//                            viewBind.stateView.setText(R.string.ds_dfu_pushing)
-//                            isCancelable = false
-//                        }
-//                    }
-//                    viewBind.stateView.progress = it.progress
-//                }
-            }
-            launch {
-//                dfuViewModel.flowDfuEvent.collect {
-//                    when (it) {
-//                        is DfuViewModel.DfuEvent.OnSuccess -> {
-//                            promptToast.showSuccess(R.string.ds_push_success, intercept = true)
-//                            lifecycleScope.launchWhenStarted {
-//                                delay(2000)
-//                                dismiss()
-//                            }
-//                        }
-//                        is DfuViewModel.DfuEvent.OnFail -> {
-//                            promptToast.showDfuFail(requireContext(), it.error)
-//                        }
-//                    }
-//                }
+                dfuViewModel.flowDfuEvent.collect {
+                    when (it) {
+                        is DfuViewModel.DfuEvent.OnSuccess -> {
+                            promptToast.showSuccess(R.string.ds_push_success, intercept = true)
+                            lifecycleScope.launchWhenStarted {
+                                delay(2000)
+                                dismiss()
+                            }
+                        }
+                        is DfuViewModel.DfuEvent.OnFail -> {
+                            promptToast.showDfuFail(requireContext(), it.error)
+                        }
+                    }
+                }
             }
         }
 
@@ -114,6 +98,19 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
             .setView(viewBind.root)
             .setCancelable(true)
             .create()
+    }
+
+    private fun onWmTransferStateChange(it: WmTransferState?) {
+        it?.let {
+            if (it.state == State.FINISH) {
+                viewBind.stateView.progress=100
+                viewBind.stateView.text=getString(R.string.ds_push_success)
+            }else{
+                viewBind.stateView.progress=it.progress
+                viewBind.stateView.text=if(it.sendingFile!!.name.contains("jpg")) getString(R.string.send_dial_Cover)
+                else getString(R.string.send_dial)
+            }
+        }
     }
 
     private fun resetStateView() {
