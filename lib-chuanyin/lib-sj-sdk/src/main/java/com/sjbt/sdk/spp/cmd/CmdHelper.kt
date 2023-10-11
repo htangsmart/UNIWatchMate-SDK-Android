@@ -1,19 +1,13 @@
 package com.sjbt.sdk.spp.cmd
 
 import com.base.sdk.entity.WmBindInfo
-import com.base.sdk.entity.apps.WmAlarm
-import com.base.sdk.entity.apps.WmNotification
-import com.base.sdk.entity.apps.WmWeather
-import com.base.sdk.entity.settings.WmPersonalInfo
-import com.base.sdk.entity.settings.WmSedentaryReminder
-import com.base.sdk.entity.settings.WmSportGoal
-import com.base.sdk.entity.settings.WmUnitInfo
+import com.base.sdk.entity.apps.*
+import com.base.sdk.entity.settings.*
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.old.TimeSyncBean
-import com.sjbt.sdk.settings.SettingDrinkWaterReminder
 import com.sjbt.sdk.utils.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -1392,7 +1386,7 @@ object CmdHelper {
      * @param index
      * @return
      */
-    fun getContactListCmd(index: Byte): ByteArray {
+    fun getReadContactListCmd(index: Byte): ByteArray {
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(index)
@@ -1906,7 +1900,7 @@ object CmdHelper {
     /**
      * 获取设置单位信息的命令
      */
-    fun getReadUnitSettingCmd():PayloadPackage {
+    fun getReadUnitSettingCmd(): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val bbSport: ByteBuffer = ByteBuffer.allocate(0)
 
@@ -1929,13 +1923,14 @@ object CmdHelper {
 
     /**
      * 获取设置语言命令
-     * TODO BCP 有点问题
      */
-    fun getExcuteLanguageCmd(bcp: String): PayloadPackage {
+    fun getExecuteLanguageCmd(bcp: String): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val bbSport: ByteBuffer = ByteBuffer.allocate(6)
-        bbSport.put(bcp.toByteArray(StandardCharsets.UTF_8))
-        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_2), bbSport.array())
+        if (bcp.length <= 6) {
+            bbSport.put(bcp.toByteArray(StandardCharsets.UTF_8))
+            payloadPackage.putData(getUrnId(URN_2, URN_4, URN_2), bbSport.array())
+        }
 
         return payloadPackage
     }
@@ -1955,14 +1950,26 @@ object CmdHelper {
     fun getWriteSedentaryReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
-        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
         byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
 
-        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
@@ -1987,14 +1994,26 @@ object CmdHelper {
     fun getWriteReadDrinkReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
-        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
         byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
 
-        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
@@ -2003,4 +2022,179 @@ object CmdHelper {
         payloadPackage.putData(getUrnId(URN_2, URN_5), byteBuffer.array())
         return payloadPackage
     }
+
+    /**
+     * 添加闹钟
+     */
+    fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取闹钟列表
+     */
+    fun getReadAlarmListCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 更新闹钟
+     */
+    fun getWriteModifyAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_3), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 删除闹钟
+     */
+    fun getExecuteDeleteAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_4), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取通讯录
+     */
+    fun getReadContactListCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_1), ByteArray(0))
+        return payloadPackage
+    }
+
+    /**
+     * 更新通讯录
+     */
+    fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(contacts.size * 52)
+
+        contacts.forEach {
+            byteBuffer.put(it.name.toByteArray().copyOf(32))
+            byteBuffer.put(it.number.toByteArray().copyOf(20))
+        }
+
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), byteBuffer.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 更新紧急联系人
+     */
+    fun getWriteEmergencyNumberCmd(number: WmEmergencyCall): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1 + 52 * number.emergencyContacts.size)
+        byteBuffer.put(
+            if (number.isEnabled) {
+                1
+            } else {
+                0
+            }.toByte()
+        )
+
+        number.emergencyContacts.forEach {
+            byteBuffer.put(it.name.toByteArray().copyOf(32))
+            byteBuffer.put(it.number.toByteArray().copyOf(20))
+        }
+
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取紧急联系人
+     */
+    fun getReadEmergencyNumberCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_4), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 查找手表
+     */
+    fun getExecuteStartFindDevice(wmFind: WmFind): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
+        byteBuffer.put(wmFind.count.toByte())
+        byteBuffer.putShort(wmFind.timeSeconds.toShort())
+        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 停止查找手表
+     */
+    fun getExecuteStopFindDevice(wmFind: WmFind): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
+        byteBuffer.put(wmFind.count.toByte())
+        byteBuffer.putShort(wmFind.timeSeconds.toShort())
+        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 音乐控制
+     */
+    fun getExecuteMusicControlCmd(wmMusicControl: WmMusicControlType): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+        byteBuffer.put(wmMusicControl.type)
+        payloadPackage.putData(getUrnId(URN_4, URN_B), byteBuffer.array())
+        return payloadPackage
+    }
+
 }

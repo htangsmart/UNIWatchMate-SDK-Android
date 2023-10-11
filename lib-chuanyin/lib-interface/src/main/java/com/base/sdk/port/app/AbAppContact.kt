@@ -12,21 +12,19 @@ import io.reactivex.rxjava3.core.Single
 abstract class AbAppContact : IWmSupport {
 
     /**
-     * syncContactList 同步通讯录列表
+     * 从设备端获取通讯录列表
      */
     abstract var observableContactList: Observable<List<WmContact>>
 
-    abstract fun syncContactList(contactList: List<WmContact>): Single<Boolean>
+    /**
+     * 设置联系人个数
+     */
+    abstract fun setContactCount(count: Int): Single<Boolean>
 
-//    /**
-//     * addContact 添加通讯录
-//     */
-//    abstract fun addContact(contact: WmContact): Observable<WmContact>
-//
-//    /**
-//     * deleteContact 删除通讯录
-//     */
-//    abstract fun deleteContact(contact: WmContact): Observable<WmContact>
+    /**
+     * 从App同步通讯录到设备
+     */
+    abstract fun syncContactList(contactList: List<WmContact>): Single<Boolean>
 
     /**
      * syncEmergencyContacts 获取紧急联系人

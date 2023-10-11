@@ -3,12 +3,13 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.app.AbAppFind
 import com.base.sdk.port.app.StopType
+import com.sjbt.sdk.SJUniWatch
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-class AppFind : AbAppFind() {
+class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
     override fun isSupport(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override var observeFindMobile: Observable<WmFind>

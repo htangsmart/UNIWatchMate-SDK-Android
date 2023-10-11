@@ -146,6 +146,7 @@ class PayloadPackage {
         if (bytes.position() > 0) {
             bytes.putInt(2, 0xFFFFFFFF.toInt())
         }
+
         bytes.put(count.toByte()) //将itemCount写入bytes
         bytes.put(tempByteArray) //将tempByteArray写入bytes
         bytes.flip() // Now the limit is set to position

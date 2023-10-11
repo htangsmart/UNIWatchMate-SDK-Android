@@ -91,6 +91,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     //应用
     private val appCamera = wmApps.appCamera as AppCamera
+    private val appAlarm = wmApps.appAlarm as AppAlarm
     private val appContact = wmApps.appContact as AppContact
     private val appDial = wmApps.appDial as AppDial
     private val appFind = wmApps.appFind as AppFind
@@ -98,6 +99,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val appNotification = wmApps.appNotification as AppNotification
     private val appSport = wmApps.appSport as AppSport
     private val appWeather = wmApps.appWeather as AppWeather
+    private val appMusicControl = wmApps.appMusicControl as AppMusicControl
 
     //设置
     private val settingAppView = wmSettings.settingAppView as SettingAppView
@@ -908,6 +910,50 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     /**
+     * 分包发送写入类型Node节点消息
+     */
+    fun sendWriteSubpackageNodeCmdList(payloadPackage: PayloadPackage) {
+
+        val nodeLen = payloadPackage.itemList[0].dataLen + 4
+        val nodeCount = payloadPackage.itemList.size
+
+        var itemLen = 0
+
+        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
+
+            if (nodeLen < 20) {
+                itemLen = nodeLen * 30
+            } else if (nodeLen < 30) {
+                itemLen = nodeLen * 20
+            } else if (nodeLen < 60) {
+                itemLen = nodeLen * 10
+            } else if (nodeLen < 90) {
+                itemLen = nodeLen * 7
+            }
+        }
+
+        payloadPackage.toByteArray(
+            mtu = itemLen,
+            requestType = RequestType.REQ_TYPE_WRITE
+        ).forEach {
+            var payload: ByteArray = it
+
+            val cmdArray = CmdHelper.constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8001,
+                DIVIDE_N_2,
+                0,
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                payload
+            )
+
+            sendNormalMsg(cmdArray)
+        }
+
+        parseNodePayload(false, payloadPackage)
+    }
+
+    /**
      * 发送写入类型Node节点消息
      */
     fun sendWriteNodeCmdList(payloadPackage: PayloadPackage) {
@@ -976,14 +1022,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private fun parseNodePayload(response: Boolean, payloadPackage: PayloadPackage) {
         payloadPackage.itemList.forEach {
             when (it.urn[0]) {
-                URN_1 -> {//蓝牙连接 暂用旧协议格式
+                URN_CONNECT -> {//蓝牙连接 暂用旧协议格式
 
                 }
 
-                URN_2 -> {//设置同步
+                URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
-                        URN_1 -> {//运动目标
-
+                        URN_SETTING_SPORT -> {//运动目标
                             when (it.urn[2]) {
                                 URN_0 -> {
 
@@ -1024,7 +1069,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             }
                         }
 
-                        URN_2 -> {//健康信息
+                        URN_SETTING_PERSONAL -> {//健康信息
                             when (it.urn[2]) {
                                 URN_0 -> {
 
@@ -1050,7 +1095,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             }
                         }
 
-                        URN_3 -> {//单位同步
+                        URN_SETTING_UNIT -> {//单位同步
 
                             when (it.urn[2]) {
                                 URN_0 -> {
@@ -1076,23 +1121,95 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             }
                         }
 
-                        URN_4 -> {//语言设置
+                        URN_SETTING_LANGUAGE -> {//语言设置
 
                         }
 
-                        URN_4 -> {//语言设置
+                        URN_SETTING_SEDENTARY -> {//久坐提醒
+
+                        }
+
+                        URN_SETTING_DRINK -> {//喝水提醒
+
+                        }
+
+                        URN_SETTING_DATE_TIME -> {//时间同步
+
+                        }
+
+                        URN_SETTING_SOUND -> {//声音和触感
+
+                        }
+
+                        URN_SETTING_ARM -> {//抬腕亮屏
+
+                        }
+
+                        URN_SETTING_APP_VIEW -> {//AppView
+
+                        }
+
+                        URN_SETTING_DEVICE_INFO -> {//DeviceInfo
+
+                        }
+
+                    }
+                }
+
+                URN_APP -> {//应用
+
+                    when (it.urn[1]) {
+                        URN_APP_ALARM -> {
+                            when (it.urn[2]) {
+                                URN_APP_ALARM_ADD -> {
+                                    appAlarm
+                                }
+                            }
+                        }
+
+                        URN_APP_SPORT -> {
+                            when (it.urn[2]) {
+
+                            }
+                        }
+
+                        URN_APP_CONTACT -> {
+                            when (it.urn[2]) {
+
+                                URN_APP_CONTACT_COUNT -> {
+
+                                }
+
+                                URN_APP_CONTACT_LIST -> {
+
+                                }
+                            }
+                        }
+
+                        URN_APP_WEATHER -> {
+
+                        }
+
+                        URN_APP_RATE -> {
+
+                        }
+
+                        URN_APP_FIND_PHONE -> {
+
+                        }
+
+                        URN_APP_FIND_DEVICE -> {
+
+
+                        }
+
+                        URN_APP_MUSIC_CONTROL -> {
 
                         }
                     }
                 }
 
-                URN_3 -> {//表盘
-                }
-
-                URN_4 -> {//应用
-                }
-
-                URN_5 -> {//运动同步
+                URN_SPORT -> {//运动同步
                 }
             }
         }

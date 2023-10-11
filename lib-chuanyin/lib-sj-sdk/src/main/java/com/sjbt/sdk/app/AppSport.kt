@@ -2,10 +2,11 @@ package com.sjbt.sdk.app
 
 import com.base.sdk.entity.common.WmSport
 import com.base.sdk.port.app.AbAppSport
+import com.sjbt.sdk.SJUniWatch
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-class AppSport : AbAppSport() {
+class AppSport(val sjUniWatch: SJUniWatch) : AbAppSport() {
     override fun isSupport(): Boolean {
         TODO("Not yet implemented")
     }
