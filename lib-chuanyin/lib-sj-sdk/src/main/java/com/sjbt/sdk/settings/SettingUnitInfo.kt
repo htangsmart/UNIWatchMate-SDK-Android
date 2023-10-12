@@ -1,10 +1,14 @@
 package com.sjbt.sdk.settings
 
+import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*
+import java.nio.ByteBuffer
 
 class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
     lateinit var observeEmitter: ObservableEmitter<WmUnitInfo>
@@ -39,6 +43,19 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
                 sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadUnitSettingCmd())
             }
         })
+    }
+
+    fun unitInfoBusiness(it: NodeData) {
+        when (it.urn[2]) {
+            URN_0 -> {
+                val byteBuffer =
+                    ByteBuffer.wrap(it.data)
+
+                val wmSportGoal = WmUnitInfo(WmUnitInfo.WeightUnit.KG, WmUnitInfo.TemperatureUnit.CELSIUS, WmUnitInfo.TimeFormat.TWELVE_HOUR, WmUnitInfo.DistanceUnit.KM)
+
+                getEmitter?.onSuccess(wmSportGoal)
+            }
+        }
     }
 
 }

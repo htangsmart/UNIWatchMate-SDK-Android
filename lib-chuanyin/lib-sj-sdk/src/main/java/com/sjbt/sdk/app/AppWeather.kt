@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherForecast
 import com.base.sdk.port.app.AbAppWeather
 import com.sjbt.sdk.SJUniWatch
@@ -11,7 +12,7 @@ class AppWeather(val sjUniWatch: SJUniWatch): AbAppWeather() {
         TODO("Not yet implemented")
     }
 
-    override fun pushWeather(weather: WmWeatherForecast): Single<Boolean> {
+    override fun pushWeather(weather: WmWeather): Single<Boolean> {
         TODO("Not yet implemented")
     }
 

@@ -3,16 +3,18 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.*
+import java.nio.ByteBuffer
 
-class SettingSportGoal(sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
-    lateinit var observeEmitter: ObservableEmitter<WmSportGoal>
-    lateinit var setEmitter: SingleEmitter<WmSportGoal>
-    lateinit var getEmitter: SingleEmitter<WmSportGoal>
+class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
+    private var observeEmitter: ObservableEmitter<WmSportGoal>? = null
+    private var setEmitter: SingleEmitter<WmSportGoal>? = null
+    private var getEmitter: SingleEmitter<WmSportGoal>? = null
 
-    val mSjUniWatch = sjUniWatch
+    private val TAG = "SettingSportGoal"
 
     override fun isSupport(): Boolean {
         return true
@@ -32,7 +34,7 @@ class SettingSportGoal(sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
                 setEmitter = emitter
                 val payloadPackage = CmdHelper.getUpdateSportGoalAllCmd(obj)
 
-                mSjUniWatch.sendWriteNodeCmdList(payloadPackage)
+                sjUniWatch.sendWriteNodeCmdList(payloadPackage)
             }
         })
     }
@@ -42,8 +44,48 @@ class SettingSportGoal(sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
             override fun subscribe(emitter: SingleEmitter<WmSportGoal>) {
                 getEmitter = emitter
 
-                mSjUniWatch.sendReadNodeCmdList(CmdHelper.getDeviceSportGoalCmd())
+                sjUniWatch.sendReadNodeCmdList(CmdHelper.getDeviceSportGoalCmd())
             }
         })
+    }
+
+    fun sportInfoBusiness(it: NodeData) {
+        when (it.urn[2]) {
+            URN_0 -> {
+                val byteBuffer =
+                    ByteBuffer.wrap(it.data)
+                val step = byteBuffer.getInt()
+                val distance = byteBuffer.getInt()
+                val calories = byteBuffer.getInt()
+                val activityDuration =
+                    byteBuffer.getShort()
+
+                val wmSportGoal = WmSportGoal(
+                    step,
+                    distance,
+                    calories,
+                    activityDuration
+                )
+
+                sjUniWatch.wmLog.logI(TAG, "体育运动消息：" + wmSportGoal)
+
+                setEmitter?.onSuccess(
+                    wmSportGoal
+                )
+            }
+
+            URN_1 -> {//步数
+
+            }
+            URN_2 -> {//热量（卡）
+
+            }
+            URN_3 -> {//距离（米）
+
+            }
+            URN_4 -> {//活动时长（分钟）
+
+            }
+        }
     }
 }

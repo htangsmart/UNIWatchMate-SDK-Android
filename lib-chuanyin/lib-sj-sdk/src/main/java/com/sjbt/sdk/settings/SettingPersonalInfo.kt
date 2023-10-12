@@ -1,11 +1,15 @@
 package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmPersonalInfo
+import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*
+import java.nio.ByteBuffer
 
 class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>(){
     lateinit var observeEmitter: ObservableEmitter<WmPersonalInfo>
@@ -42,6 +46,20 @@ class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>()
                 getEmitter = emitter
             }
         })
+    }
+
+     fun personalInfoBusiness(it: NodeData) {
+        when (it.urn[2]) {
+            URN_0 -> {
+
+                val byteBuffer =
+                    ByteBuffer.wrap(it.data)
+
+                val personalInfo=WmPersonalInfo(180,80, WmPersonalInfo.Gender.FEMALE,WmPersonalInfo.BirthDate(20,0,0))
+                getEmitter.onSuccess(personalInfo)
+
+            }
+        }
     }
 
 }

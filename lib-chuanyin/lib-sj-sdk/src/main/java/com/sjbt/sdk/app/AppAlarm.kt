@@ -3,7 +3,8 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.port.app.AbAppAlarm
 import com.sjbt.sdk.SJUniWatch
-import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.entity.NodeData
+import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
@@ -17,7 +18,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
     private lateinit var deleteAlarmEmitter: SingleEmitter<WmAlarm>
     private lateinit var updateAlarmEmitter: SingleEmitter<WmAlarm>
 
-    var mAlarm: WmAlarm? = null
+    private var mAlarm: WmAlarm? = null
 
     override fun isSupport(): Boolean {
         return _isSupport
@@ -28,26 +29,28 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadAlarmListCmd())
     }
 
-    fun addSuccess() {
+    private fun addSuccess(success: Boolean) {
         mAlarm?.let {
-            addAlarmEmitter?.onSuccess(it)
+            addAlarmEmitter?.onSuccess(if(success){it}else{null})
         }
     }
 
-    fun deleteSuccess() {
+    private fun deleteSuccess(success: Boolean) {
         mAlarm?.let {
-            deleteAlarmEmitter?.onSuccess(it)
+            deleteAlarmEmitter?.onSuccess(if(success){it}else{null})
         }
     }
 
-    fun updateSuccess() {
+    private fun updateSuccess(success: Boolean) {
         mAlarm?.let {
-            updateAlarmEmitter?.onSuccess(it)
+            updateAlarmEmitter?.onSuccess(if(success){it}else{null})
         }
     }
 
-    fun syncAlarmListSuccess(alarmList: List<WmAlarm>) {
-
+    private fun syncAlarmListSuccess(alarmList: List<WmAlarm>) {
+        alarmList?.let {
+            alarmListEmitter?.onNext(it)
+        }
     }
 
     override fun addAlarm(alarm: WmAlarm): Single<WmAlarm> {
@@ -71,6 +74,28 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         return Single.create {
             updateAlarmEmitter = it
             sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteAddAlarmCmd(alarm))
+        }
+    }
+
+    fun alarmBusiness(it: NodeData) {
+        when (it.urn[2]) {
+
+            URN_APP_ALARM_ADD -> {
+                addSuccess(it.data[0].toInt() == 1)
+            }
+
+            URN_APP_ALARM_DELETE -> {
+                deleteSuccess(it.data[0].toInt() == 1)
+            }
+
+            URN_APP_ALARM_LIST -> {
+                val alarmList = mutableListOf<WmAlarm>()
+                syncAlarmListSuccess(alarmList)
+            }
+
+            URN_APP_ALARM_UPDATE -> {
+                updateSuccess(it.data[0].toInt() == 1)
+            }
         }
     }
 }

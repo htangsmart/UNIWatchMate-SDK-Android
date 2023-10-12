@@ -238,6 +238,9 @@ const val URN_SETTING_SPORT_STEP: Byte = URN_1
 const val URN_SETTING_PERSONAL: Byte = URN_2
 const val URN_SETTING_UNIT: Byte = URN_3
 const val URN_SETTING_LANGUAGE: Byte = URN_4
+const val URN_SETTING_LANGUAGE_LIST: Byte = URN_1
+const val URN_SETTING_LANGUAGE_SET: Byte = URN_2
+
 const val URN_SETTING_SEDENTARY: Byte = URN_5
 const val URN_SETTING_DRINK: Byte = URN_6
 const val URN_SETTING_DATE_TIME: Byte = URN_7
