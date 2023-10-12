@@ -31,4 +31,6 @@ internal class AbWmAppDelegate(
         get() = watchObservable.value!!.wmApps.appDial
     override val appLanguage: AbAppLanguage
         get() = watchObservable.value!!.wmApps.appLanguage
+    override val appMusicControl: AbAppMusicControl
+        get() = watchObservable.value!!.wmApps.appMusicControl
 }
