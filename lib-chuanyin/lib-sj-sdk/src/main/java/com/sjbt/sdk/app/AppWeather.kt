@@ -2,10 +2,11 @@ package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmWeatherForecast
 import com.base.sdk.port.app.AbAppWeather
+import com.sjbt.sdk.SJUniWatch
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
-class AppWeather: AbAppWeather() {
+class AppWeather(val sjUniWatch: SJUniWatch): AbAppWeather() {
     override fun isSupport(): Boolean {
         TODO("Not yet implemented")
     }

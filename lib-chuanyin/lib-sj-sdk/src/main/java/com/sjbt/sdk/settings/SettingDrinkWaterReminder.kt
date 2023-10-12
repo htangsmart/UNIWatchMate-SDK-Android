@@ -2,14 +2,15 @@ package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmSedentaryReminder
 import com.base.sdk.port.setting.AbWmSetting
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
-class SettingDrinkWaterReminder:AbWmSetting<WmSedentaryReminder>() {
+class SettingDrinkWaterReminder(val sjUniWatch: SJUniWatch):AbWmSetting<WmSedentaryReminder>() {
 
     lateinit var observeEmitter: ObservableEmitter<WmSedentaryReminder>
     lateinit var setEmitter: SingleEmitter<WmSedentaryReminder>
     lateinit var getEmitter: SingleEmitter<WmSedentaryReminder>
-
     override fun isSupport(): Boolean {
         return true
     }
@@ -26,6 +27,7 @@ class SettingDrinkWaterReminder:AbWmSetting<WmSedentaryReminder>() {
         return Single.create(object : SingleOnSubscribe<WmSedentaryReminder> {
             override fun subscribe(emitter: SingleEmitter<WmSedentaryReminder>) {
                 setEmitter = emitter
+                sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteReadDrinkReminderCmd(obj))
             }
         })
     }
@@ -34,6 +36,7 @@ class SettingDrinkWaterReminder:AbWmSetting<WmSedentaryReminder>() {
         return Single.create(object : SingleOnSubscribe<WmSedentaryReminder> {
             override fun subscribe(emitter: SingleEmitter<WmSedentaryReminder>) {
                 getEmitter = emitter
+                sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadDrinkReminderCmd())
             }
         })
     }

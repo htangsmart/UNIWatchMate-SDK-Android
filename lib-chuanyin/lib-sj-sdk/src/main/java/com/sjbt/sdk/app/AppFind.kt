@@ -2,28 +2,48 @@ package com.sjbt.sdk.app
 
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.app.AbAppFind
-import com.base.sdk.port.app.StopType
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
+import io.reactivex.rxjava3.core.SingleEmitter
 
-class AppFind : AbAppFind() {
+class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
+
+    var startFindPhoneEmitter: ObservableEmitter<WmFind>? = null
+    var stopFindPhoneEmitter: ObservableEmitter<Boolean>? = null
+    var startFindWatchEmitter: SingleEmitter<Boolean>? = null
+    var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
+
     override fun isSupport(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
-    override var observeFindMobile: Observable<WmFind>
-        get() = TODO("Not yet implemented")
-        set(value) {}
-
-    override fun stopFindMobile(): Observable<StopType> {
-        TODO("Not yet implemented")
+    override var observeFindMobile: Observable<WmFind> = Observable.create{
+        startFindPhoneEmitter = it
     }
 
-    override fun findWatch(ring_count: WmFind): Single<Boolean> {
-        TODO("Not yet implemented")
+
+    override fun stopFindMobile(): Observable<Boolean> {
+        return Observable.create {
+            stopFindPhoneEmitter = it
+        }
+
     }
 
-    override fun stopFindWatch(flag: StopType): Single<Boolean> {
-        TODO("Not yet implemented")
+    override fun findWatch(wmFind: WmFind): Single<Boolean> {
+        return Single.create {
+            startFindWatchEmitter = it
+            sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStartFindDevice(wmFind))
+
+        }
+    }
+
+    override fun stopFindWatch(): Single<Boolean> {
+        return Single.create {
+            stopFindWatchEmitter = it
+            sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStopFindDevice())
+        }
     }
 }

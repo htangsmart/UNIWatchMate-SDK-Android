@@ -8,38 +8,13 @@ class WmAlarm(
     var alarmName: String,//限制最长20
     var hour: Int,
     var minute: Int,
-    var repeatOptions: Set<AlarmRepeatOption>,//重复模式
+    var repeatOptions: AlarmRepeatOption//重复模式
 ) {
     var isOn: Boolean = false
-
-    fun setAlarm(
-        alarmId: Int,
-        name: String,
-        hour: Int,
-        minute: Int,
-        options: Set<AlarmRepeatOption>,
-    ) {
-        this.alarmId = alarmId
-        this.alarmName = name
-        this.hour = hour
-        this.minute = minute
-        this.repeatOptions = options
-    }
-
-    fun turnOn() {
-        this.isOn = true
-        // 在这里添加真正的闹钟逻辑
-    }
-
-    fun turnOff() {
-        this.isOn = false
-        // 在这里添加停止闹钟的逻辑
-    }
 
     override fun toString(): String {
         return "WmAlarm(alarmId=$alarmId, alarmName='$alarmName', hour=$hour, minute=$minute, repeatOptions=$repeatOptions, isOn=$isOn)"
     }
-
 }
 
 /**

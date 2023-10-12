@@ -49,4 +49,9 @@ abstract class AbWmApps {
      */
     abstract val appLanguage: AbAppLanguage
 
+    /**
+     * 音乐控制
+     */
+    abstract val appMusicControl: AbAppMusicControl
+
 }

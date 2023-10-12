@@ -1,20 +1,16 @@
 package com.sjbt.sdk.spp.cmd
 
 import com.base.sdk.entity.WmBindInfo
-import com.base.sdk.entity.apps.WmAlarm
-import com.base.sdk.entity.apps.WmNotification
-import com.base.sdk.entity.apps.WmWeather
-import com.base.sdk.entity.settings.WmPersonalInfo
-import com.base.sdk.entity.settings.WmSedentaryReminder
-import com.base.sdk.entity.settings.WmSportGoal
-import com.base.sdk.entity.settings.WmUnitInfo
+import com.base.sdk.entity.apps.*
+import com.base.sdk.entity.settings.*
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.old.TimeSyncBean
-import com.sjbt.sdk.settings.SettingDrinkWaterReminder
-import com.sjbt.sdk.utils.*
+import com.sjbt.sdk.utils.BtUtils
+import com.sjbt.sdk.utils.ByteUtil
+import com.sjbt.sdk.utils.TimeUtils
 import org.json.JSONException
 import org.json.JSONObject
 import java.nio.ByteBuffer
@@ -23,6 +19,8 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.experimental.and
+import kotlin.experimental.or
 
 object CmdHelper {
     //对CMD_ORDER.length 取余后作为 CMD_ORDER 的索引下标
@@ -33,10 +31,52 @@ object CmdHelper {
     private var mKeyData1: String? = null
     private var mKeyData2: String? = null
     private val gson = Gson()
+
+    /**
+     * 写入分包类型和总长度
+     */
+    private fun writeShortToBytes(divideType: Byte, totalLen: Short): ByteArray {
+        val result = ByteArray(2)
+
+        // 用第一个字节存储value的低8位
+        result[0] = totalLen.toByte()
+        // 用第二个字节的高5位存储value的高5位 248 = 0b11111000
+        result[1] = (totalLen.toInt() shr 8 and 248).toByte()
+
+        // 写入低三位分包类型和数据类型 7 = 0b00000111
+        result[1] = (divideType and 7) or result[1]
+
+        return result
+    }
+
+    /**
+     *
+     */
+    fun readShortFromBytes(data: ByteArray): DivideInfo {
+        require(data.size == 2) { "Invalid byte array length" }
+
+        // 使用第一个字节的低8位和第二个字节的高5位构造short值 248 = 0b11111000
+        val value = (data[0].toInt() and 0xFF or (data[1].toInt() and 248 shl 8)).toShort()
+        // 低三位分包类型和数据类型  7 = 0b00000111
+        val divideType = (data[1].toInt() and 7).toByte()
+
+        return DivideInfo(divideType, value)
+    }
+
+    data class DivideInfo(val divideType: Byte, val value: Short) {
+        override fun toString(): String {
+            return "DivideInfo(divideType=$divideType, value=$value)"
+        }
+    }
+
+    /**
+     * 组包公用方法
+     */
     fun constructCmd(
         head: Byte,
         cmd_id: Short,
         divideType: Byte,
+        dividePayloadTotalLen: Short = 0,
         offset: Int,
         crc: Int,
         payload: ByteArray?
@@ -51,8 +91,7 @@ object CmdHelper {
         byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
-        byteBuffer.put(divideType)
-        byteBuffer.put(0x00.toByte()) //Resolved
+        byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen))
         byteBuffer.putShort(payLoadLength.toShort())
 
         //Offset
@@ -224,6 +263,7 @@ object CmdHelper {
                 CMD_ID_8001.toShort(),
                 DIVIDE_N_2,
                 0,
+                0,
                 crc,
                 payload
             )
@@ -251,6 +291,7 @@ object CmdHelper {
             CMD_ID_802E,
             DIVIDE_N_2,
             0,
+            0,
             crc,
             payload
         )
@@ -269,6 +310,7 @@ object CmdHelper {
             DIVIDE_N_2,
             0,
             0,
+            0,
             null
         )
     }
@@ -285,8 +327,9 @@ object CmdHelper {
             //LogUtils.logBlueTooth("2.发送校验信息:")
             return constructCmd(
                 HEAD_VERIFY,
-                CMD_ID_8002.toShort(),
+                CMD_ID_8002,
                 DIVIDE_N_2,
+                0,
                 0,
                 crc,
                 payload
@@ -329,7 +372,7 @@ object CmdHelper {
             //LogUtils.logCommon("时间同步：$timeSyncBean")
             val payload = gson.toJson(timeSyncBean).toByteArray(StandardCharsets.UTF_8)
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-            return constructCmd(HEAD_COMMON, CMD_ID_8007, DIVIDE_N_JSON, 0, crc, payload)
+            return constructCmd(HEAD_COMMON, CMD_ID_8007, DIVIDE_N_JSON, 0, 0, crc, payload)
         }
 
     /**
@@ -344,7 +387,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_8001.toShort(),
                 DIVIDE_N_JSON,
-                0,
+                0, 0,
                 0,
                 null
             )
@@ -360,7 +403,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8008.toShort(),
             DIVIDE_N_2,
-            0,
+            0, 0,
             0,
             null
         )//1抬腕数据
@@ -379,7 +422,7 @@ object CmdHelper {
                 HEAD_COLLECT_DEBUG_DATA,
                 CMD_ID_8001.toShort(),
                 DIVIDE_N_2,
-                0,
+                0, 0,
                 crc,
                 payload
             )
@@ -398,6 +441,7 @@ object CmdHelper {
             HEAD_COLLECT_DEBUG_DATA,
             CMD_ID_8002.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             crc,
             payload
@@ -419,6 +463,7 @@ object CmdHelper {
             CMD_ID_8009.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             crc,
             payload
         )
@@ -436,6 +481,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_8003.toShort(),
                 DIVIDE_N_JSON,
+                0,
                 0,
                 0,
                 null
@@ -456,6 +502,7 @@ object CmdHelper {
                 DIVIDE_N_2,
                 0,
                 0,
+                0,
                 null
             )
         }
@@ -473,6 +520,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8004,
             DIVIDE_N_JSON,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -498,6 +546,7 @@ object CmdHelper {
             CMD_ID_801C.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             crc,
             payload
         )
@@ -515,6 +564,7 @@ object CmdHelper {
             DIVIDE_N_2,
             0,
             0,
+            0,
             null
         )
 
@@ -530,6 +580,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_800A.toShort(),
                 DIVIDE_N_2,
+                0,
                 0,
                 0,
                 null
@@ -555,6 +606,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_800C.toShort(),
                 DIVIDE_N_JSON,
+                0,
                 0,
                 crc,
                 payload
@@ -586,6 +638,7 @@ object CmdHelper {
                 CMD_ID_8005.toShort(),
                 DIVIDE_N_JSON,
                 0,
+                0,
                 crc,
                 payload
             )
@@ -616,6 +669,7 @@ object CmdHelper {
                 CMD_ID_800B.toShort(),
                 DIVIDE_N_JSON,
                 0,
+                0,
                 crc,
                 payload
             )
@@ -640,6 +694,7 @@ object CmdHelper {
             CMD_ID_800D.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -656,6 +711,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_8012.toShort(),
                 DIVIDE_N_2,
+                0,
                 0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
@@ -674,6 +730,7 @@ object CmdHelper {
             DIVIDE_N_2,
             0,
             0,
+            0,
             null
         )
 
@@ -687,6 +744,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_800E.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -708,6 +766,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_800F.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -731,6 +790,7 @@ object CmdHelper {
             CMD_ID_8014.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -753,6 +813,7 @@ object CmdHelper {
             CMD_ID_8001.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -774,6 +835,7 @@ object CmdHelper {
             CMD_ID_8003.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -794,6 +856,7 @@ object CmdHelper {
             HEAD_FILE_OPP,
             CMD_ID_8002.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -818,6 +881,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8010.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -844,6 +908,7 @@ object CmdHelper {
             CMD_ID_8001.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -866,8 +931,9 @@ object CmdHelper {
         val payload = byteBuffer.array()
         return constructCmd(
             HEAD_FILE_SPP_A_2_D,
-            CMD_ID_8002.toShort(),
+            CMD_ID_8002,
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -896,8 +962,8 @@ object CmdHelper {
             BtUtils.getCrc(HEX_FFFF, otaCmdInfo.payload, otaCmdInfo.payload.size)
 //        logSendMsg("发送消息序号：" + process + " 包长:" + otaCmdInfo.payload.size)
         return constructCmd(
-            HEAD_FILE_SPP_A_2_D, CMD_ID_8003.toShort(),
-            divideType, otaCmdInfo.offSet, otaCmdInfo.crc, otaCmdInfo.payload
+            HEAD_FILE_SPP_A_2_D, CMD_ID_8003,
+            divideType, 0, otaCmdInfo.offSet, otaCmdInfo.crc, otaCmdInfo.payload
         )
     }
 
@@ -909,7 +975,7 @@ object CmdHelper {
     val transfer04Cmd: ByteArray
         get() = constructCmd(
             HEAD_FILE_SPP_A_2_D, CMD_ID_8004.toShort(),
-            DIVIDE_N_2, 0, 0, null
+            DIVIDE_N_2, 0, 0, 0, null
         )
 
     /**
@@ -920,7 +986,7 @@ object CmdHelper {
     val transferCancelCmd: ByteArray
         get() = constructCmd(
             HEAD_FILE_SPP_A_2_D, CMD_ID_8005.toShort(),
-            DIVIDE_N_2, 0, 0, null
+            DIVIDE_N_2, 0, 0, 0, null
         )
 
     /**
@@ -939,6 +1005,7 @@ object CmdHelper {
             HEAD_FILE_SPP_D_2_A,
             CMD_ID_8001.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -961,6 +1028,7 @@ object CmdHelper {
             HEAD_FILE_SPP_D_2_A,
             CMD_ID_8002.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -987,6 +1055,7 @@ object CmdHelper {
             CMD_ID_8003.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1008,6 +1077,7 @@ object CmdHelper {
             CMD_ID_8004.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1023,6 +1093,7 @@ object CmdHelper {
             HEAD_FILE_SPP_D_2_A,
             CMD_ID_8005.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -1055,6 +1126,7 @@ object CmdHelper {
             CMD_ID_8004.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1070,6 +1142,7 @@ object CmdHelper {
             HEAD_SPORT_HEALTH,
             CMD_ID_8001.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -1089,6 +1162,7 @@ object CmdHelper {
                 DIVIDE_N_2,
                 0,
                 0,
+                0,
                 null
             )
         }
@@ -1105,6 +1179,7 @@ object CmdHelper {
                 HEAD_SPORT_HEALTH,
                 CMD_ID_8003.toShort(),
                 DIVIDE_N_2,
+                0,
                 0,
                 0,
                 null
@@ -1128,6 +1203,7 @@ object CmdHelper {
             CMD_ID_800F.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1145,6 +1221,7 @@ object CmdHelper {
                 HEAD_SPORT_HEALTH,
                 CMD_ID_800C,
                 DIVIDE_N_2,
+                0,
                 0,
                 0,
                 null
@@ -1171,6 +1248,7 @@ object CmdHelper {
             CMD_ID_800E.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1188,6 +1266,7 @@ object CmdHelper {
                 HEAD_SPORT_HEALTH,
                 CMD_ID_8009.toShort(),
                 DIVIDE_N_2,
+                0,
                 0,
                 0,
                 null
@@ -1208,6 +1287,7 @@ object CmdHelper {
                 DIVIDE_N_2,
                 0,
                 0,
+                0,
                 null
             )
         }
@@ -1226,6 +1306,7 @@ object CmdHelper {
                 DIVIDE_N_2,
                 0,
                 0,
+                0,
                 null
             )
         }
@@ -1242,6 +1323,7 @@ object CmdHelper {
                 HEAD_COMMON,
                 CMD_ID_802D.toShort(),
                 DIVIDE_N_2,
+                0,
                 0,
                 0,
                 null
@@ -1263,6 +1345,7 @@ object CmdHelper {
             HEAD_SPORT_HEALTH,
             CMD_ID_8006.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -1292,6 +1375,7 @@ object CmdHelper {
             CMD_ID_8018.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1307,6 +1391,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8017.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -1329,6 +1414,7 @@ object CmdHelper {
                 CMD_ID_8019.toShort(),
                 DIVIDE_N_2,
                 0,
+                0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
@@ -1344,6 +1430,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8021.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -1366,6 +1453,7 @@ object CmdHelper {
             cmdId,
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1383,6 +1471,7 @@ object CmdHelper {
             DIVIDE_N_2,
             0,
             0,
+            0,
             null
         )
 
@@ -1392,7 +1481,7 @@ object CmdHelper {
      * @param index
      * @return
      */
-    fun getContactListCmd(index: Byte): ByteArray {
+    fun getReadContactListCmd(index: Byte): ByteArray {
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(index)
@@ -1402,6 +1491,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_8022.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -1449,6 +1539,7 @@ object CmdHelper {
             CMD_ID_8023.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1489,6 +1580,7 @@ object CmdHelper {
             CMD_ID_8025.toShort(),
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1504,6 +1596,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_801A.toShort(),
             DIVIDE_N_2,
+            0,
             0,
             0,
             null
@@ -1557,6 +1650,7 @@ object CmdHelper {
             CMD_ID_801B,
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1578,6 +1672,7 @@ object CmdHelper {
             HEAD_COMMON,
             cmdId,
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -1602,6 +1697,7 @@ object CmdHelper {
             CMD_ID_802C,
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1623,6 +1719,7 @@ object CmdHelper {
             HEAD_COMMON,
             CMD_ID_802A,
             DIVIDE_N_2,
+            0,
             0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
@@ -1724,6 +1821,7 @@ object CmdHelper {
             CMD_ID_8001,
             DIVIDE_N_2,
             0,
+            0,
             BtUtils.getCrc(HEX_FFFF, payload, payload.size),
             payload
         )
@@ -1739,6 +1837,7 @@ object CmdHelper {
             HEAD_CAMERA_PREVIEW,
             CMD_ID_8002,
             divideType,
+            0,
             0,
             BtUtils.getCrc(
                 HEX_FFFF,
@@ -1906,7 +2005,7 @@ object CmdHelper {
     /**
      * 获取设置单位信息的命令
      */
-    fun getReadUnitSettingCmd():PayloadPackage {
+    fun getReadUnitSettingCmd(): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val bbSport: ByteBuffer = ByteBuffer.allocate(0)
 
@@ -1929,13 +2028,14 @@ object CmdHelper {
 
     /**
      * 获取设置语言命令
-     * TODO BCP 有点问题
      */
-    fun getExcuteLanguageCmd(bcp: String): PayloadPackage {
+    fun getExecuteLanguageCmd(bcp: String): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val bbSport: ByteBuffer = ByteBuffer.allocate(6)
-        bbSport.put(bcp.toByteArray(StandardCharsets.UTF_8))
-        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_2), bbSport.array())
+        if (bcp.length <= 6) {
+            bbSport.put(bcp.toByteArray(StandardCharsets.UTF_8))
+            payloadPackage.putData(getUrnId(URN_2, URN_4, URN_2), bbSport.array())
+        }
 
         return payloadPackage
     }
@@ -1955,14 +2055,26 @@ object CmdHelper {
     fun getWriteSedentaryReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
-        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
         byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
 
-        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
@@ -1987,14 +2099,26 @@ object CmdHelper {
     fun getWriteReadDrinkReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
-        byteBuffer.put(if(sedentaryReminder.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
         byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
 
-        byteBuffer.put(if(sedentaryReminder.noDisturbLunchBreak.isEnabled) {1.toByte()} else {0.toByte()} )
+        byteBuffer.put(
+            if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startHour.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
@@ -2003,4 +2127,188 @@ object CmdHelper {
         payloadPackage.putData(getUrnId(URN_2, URN_5), byteBuffer.array())
         return payloadPackage
     }
+
+    /**
+     * 添加闹钟
+     */
+    fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取闹钟列表
+     */
+    fun getReadAlarmListCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 更新闹钟
+     */
+    fun getWriteModifyAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_3), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 删除闹钟
+     */
+    fun getExecuteDeleteAlarmCmd(alarm: WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        byteBuffer.put(alarm.alarmId.toByte())
+        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(alarm.hour.toByte())
+        byteBuffer.put(alarm.minute.toByte())
+        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(
+            if (alarm.isOn) {
+                1.toByte()
+            } else {
+                0.toByte()
+            }
+        )
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_4), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取通讯录总包个数
+     */
+    fun getReadContactCountCmd(contactCount:Byte): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer = ByteBuffer.allocate(1)
+        byteBuffer.put(contactCount)
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取通讯录
+     */
+    fun getReadContactListCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), ByteArray(0))
+        return payloadPackage
+    }
+
+    /**
+     * 更新通讯录
+     */
+    fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(contacts.size * 52)
+
+        contacts.forEach {
+            byteBuffer.put(it.name.toByteArray().copyOf(32))
+            byteBuffer.put(it.number.toByteArray().copyOf(20))
+        }
+
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 更新紧急联系人
+     */
+    fun getWriteEmergencyNumberCmd(number: WmEmergencyCall): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1 + 52 * number.emergencyContacts.size)
+        byteBuffer.put(
+            if (number.isEnabled) {
+                1
+            } else {
+                0
+            }.toByte()
+        )
+
+        number.emergencyContacts.forEach {
+            byteBuffer.put(it.name.toByteArray().copyOf(32))
+            byteBuffer.put(it.number.toByteArray().copyOf(20))
+        }
+
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_4), byteBuffer.array())
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取紧急联系人
+     */
+    fun getReadEmergencyNumberCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_5), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 查找手表
+     */
+    fun getExecuteStartFindDevice(wmFind: WmFind): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
+        byteBuffer.put(wmFind.count.toByte())
+        byteBuffer.putShort(wmFind.timeSeconds.toShort())
+        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 停止查找手表
+     */
+    fun getExecuteStopFindDevice(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 音乐控制
+     */
+    fun getExecuteMusicControlCmd(wmMusicControl: WmMusicControlType): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+        byteBuffer.put(wmMusicControl.type)
+        payloadPackage.putData(getUrnId(URN_4, URN_B), byteBuffer.array())
+        return payloadPackage
+    }
+
 }
