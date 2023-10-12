@@ -5,10 +5,15 @@ import android.view.View
 import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.TodayWeather
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.apps.WmLocation
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
+import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherForecast
+import com.base.sdk.entity.common.WmWeek
+import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -172,7 +177,38 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
             viewBind.itemTestWeather -> {
                 applicationScope.launchWithLog {
-//                    UNIWatchMate?.wmApps?.appWeather?.pushWeather(null)?.await()
+                    val weatherForecastList = mutableListOf<WmWeatherForecast>()
+                    val todayWeatherList = mutableListOf<TodayWeather>()
+                    val wmWeatherForecast = WmWeatherForecast(
+                        10,
+                        30,
+                        20,
+                        WmUnitInfo.TemperatureUnit.CELSIUS,
+                        90,
+                        80,
+                        1,
+                        2,
+                        "白天天气描述",
+                        "夜晚天气描述",
+                        System.currentTimeMillis(),
+                        WmWeek.THURSDAY
+                    )
+                    val toDayWeather = TodayWeather(
+                        10, WmUnitInfo.TemperatureUnit.CELSIUS, 90, 80,
+                        1, "weatherDesc", System.currentTimeMillis(), 2
+                    )
+                    val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
+                    weatherForecastList.add(wmWeatherForecast)
+                    todayWeatherList.add(toDayWeather)
+
+                    val wmWeather = WmWeather(
+                        System.currentTimeMillis(),
+                        wmLocation,
+                        weatherForecastList,
+                        todayWeatherList
+                    )
+                    val result =  UNIWatchMate?.wmApps?.appWeather?.pushWeather(wmWeather)?.await()
+                    UNIWatchMate.wmLog.logE(TAG,"set itemTestWeather $result")
                 }
             }
 

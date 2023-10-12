@@ -30,8 +30,6 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
         super.onViewCreated(view, savedInstanceState)
 
 
-        (requireActivity() as AppCompatActivity?)?.supportActionBar?.setTitle(R.string.ds_dial_installed)
-
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewBind.recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         adapter = LanguageListAdapter()

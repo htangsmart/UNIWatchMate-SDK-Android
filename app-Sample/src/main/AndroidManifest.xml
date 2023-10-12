@@ -47,8 +47,8 @@
         <activity android:name=".ui.MainActivity"/>
         <activity
             android:name=".ui.camera.CameraActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat" />
+            android:theme="@style/MwAppTheme"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.fileTrans.FileTransferActivity"

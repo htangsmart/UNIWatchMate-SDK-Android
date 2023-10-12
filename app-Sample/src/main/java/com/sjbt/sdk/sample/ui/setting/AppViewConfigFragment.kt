@@ -101,7 +101,7 @@ class AppViewConfigFragment : BaseFragment(R.layout.fragment_app_view) {
 
     private fun WmAppView.saveConfig() {
         applicationScope.launchWithLog {
-            config?.let { UNIWatchMate.wmSettings.settingAppView.set(it).await() }
+            UNIWatchMate.wmSettings.settingAppView.set(this@saveConfig).await()
         }
         updateUI()
     }

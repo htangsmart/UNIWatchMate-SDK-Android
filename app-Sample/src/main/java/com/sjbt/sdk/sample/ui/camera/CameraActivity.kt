@@ -19,6 +19,7 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.port.app.WMCameraFlashMode
 import com.base.sdk.port.app.WMCameraPosition
+import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -73,7 +74,6 @@ class CameraActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //        EventBus.getDefault().register(this);
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
@@ -139,7 +139,7 @@ class CameraActivity : BaseActivity() {
 
             UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
                 isCameraOpened = aBoolean
-                UNIWatchMate.wmLog.logD(TAG,"设备相机状态：$isCameraOpened")
+                UNIWatchMate.wmLog.logD(TAG, "设备相机状态：$isCameraOpened")
                 if (isCameraOpened) {
                     checkCameraPreview()
                 } else {
@@ -176,7 +176,8 @@ class CameraActivity : BaseActivity() {
                 if (CacheDataHelper.cameraLaunchedByDevice || CacheDataHelper.cameraLaunchedBySelf) {
                     UNIWatchMate.wmApps.appCamera.startCameraPreview()
                         .subscribe { result: Boolean ->
-                            UNIWatchMate.wmLog.logD(TAG,
+                            UNIWatchMate.wmLog.logD(
+                                TAG,
                                 "isCameraPreviewReady:$result"
                             )
                         }
@@ -260,7 +261,9 @@ class CameraActivity : BaseActivity() {
         cameraProviderFuture.addListener({
             try {
                 cameraProvider = cameraProviderFuture.get()
-                bindCameraUseCases()
+                if (ActivityUtils.isActivityAlive(this)) {
+                    bindCameraUseCases()
+                }
             } catch (e: Exception) {
                 Log.d("wld________", e.toString())
             }
@@ -348,7 +351,10 @@ class CameraActivity : BaseActivity() {
         var ret = 0
         val image = imageProxy.image
         val planes = image!!.planes
-        UNIWatchMate.wmLog.logD(TAG,"FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height)
+        UNIWatchMate.wmLog.logD(
+            TAG,
+            "FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height
+        )
         val yPlane = image.planes[0]
         val uPlane = image.planes[1]
         val vPlane = image.planes[2]
@@ -476,9 +482,9 @@ class CameraActivity : BaseActivity() {
                         localUri!!.path,
                         "image/jpeg"
                     ) { path, uri ->
-                        UNIWatchMate.wmLog.logD(TAG,"路径path1：$path")
+                        UNIWatchMate.wmLog.logD(TAG, "路径path1：$path")
                         if (uri != null) {
-                            UNIWatchMate.wmLog.logD(TAG,"路径path：" + path + " -- Uri:" + uri.path)
+                            UNIWatchMate.wmLog.logD(TAG, "路径path：" + path + " -- Uri:" + uri.path)
                         }
                     }
 
@@ -488,7 +494,7 @@ class CameraActivity : BaseActivity() {
                         .optionalTransform(transformation)
                         .into(ivTook!!)
                     Glide.with(this@CameraActivity).load(localUri).into(ivTookPic!!)
-                    UNIWatchMate.wmLog.logD(TAG,"照片存储路径:" + localUri.path)
+                    UNIWatchMate.wmLog.logD(TAG, "照片存储路径:" + localUri.path)
                     try {
                         vibrator!!.vibrate(10L) // 参数是震动时间(long类型)
                         mediaActionSound!!.play(MediaActionSound.SHUTTER_CLICK)
@@ -498,7 +504,7 @@ class CameraActivity : BaseActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    UNIWatchMate.wmLog.logD(TAG,"拍照出错")
+                    UNIWatchMate.wmLog.logD(TAG, "拍照出错")
                     //                        Tast.makeText(CameraActivity.this, R.string.camera_err, Toast.LENGTH_SHORT).show();
                 }
             })
@@ -517,15 +523,13 @@ class CameraActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        UNIWatchMate.wmLog.logD(TAG,"$localClassName onDestroy")
+        UNIWatchMate.wmLog.logD(TAG, "$localClassName onDestroy")
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         unregisterSensor()
-        cameraProvider!!.unbindAll()
-        mediaActionSound!!.release()
+        cameraProvider?.unbindAll()
+        mediaActionSound?.release()
         encoderThread.quitSafely()
-        if (imageAnalysis != null) {
-            imageAnalysis!!.clearAnalyzer()
-        }
+        imageAnalysis?.clearAnalyzer()
         isPausedCamera = true
 
         CacheDataHelper.cameraLaunchedByDevice = false
@@ -538,7 +542,7 @@ class CameraActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        UNIWatchMate.wmLog.logD(TAG,"$localClassName -> onPause")
+        UNIWatchMate.wmLog.logD(TAG, "$localClassName -> onPause")
         isPausedCamera = true
         isCameraOpened = false
         UNIWatchMate.wmApps.appCamera.openCloseCamera(false).subscribe().dispose()

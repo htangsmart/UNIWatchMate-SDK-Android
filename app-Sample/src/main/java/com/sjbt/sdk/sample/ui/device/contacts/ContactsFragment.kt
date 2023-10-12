@@ -175,10 +175,8 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             }
                             adapter.sources = contacts
                             adapter.notifyDataSetChanged()
-
                             viewBind.fabAdd.show()
                         }
-
                         else -> {}
                     }
                 }

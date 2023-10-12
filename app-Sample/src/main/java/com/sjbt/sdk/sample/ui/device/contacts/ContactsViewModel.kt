@@ -100,7 +100,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
     ) {
         override suspend fun action() {
             state.requestContacts()
-                ?.let { UNIWatchMate.wmApps.appContact.syncContactList(it).await() }
+                ?.let { UNIWatchMate.wmApps.appContact.updateContactList(it).await() }
         }
     }
 }

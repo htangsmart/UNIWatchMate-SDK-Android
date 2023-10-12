@@ -19,6 +19,7 @@ import com.sjbt.sdk.sample.databinding.FragmentHeartRateConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
 import com.sjbt.sdk.sample.utils.FormatterUtil
+import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
@@ -42,7 +43,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
     SelectIntDialogFragment.Listener {
 
     private val viewBind: FragmentHeartRateConfigBinding by viewBinding()
-
+    private val applicationScope = Injector.getApplicationScope()
 
     private val deviceManager = Injector.getDeviceManager()
     private var isLengthMetric: Boolean = true
@@ -52,7 +53,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         super.onCreate(savedInstanceState)
 //        isLengthMetric = !deviceManager.configFeature.getFunctionConfig().isFlagEnabled(FcFunctionConfig.Flag.LENGTH_UNIT)
 //        exerciseGoal=WmSportGoal(1,2.0,3.0,4)
-        wmHeartRateAlerts=WmHeartRateAlerts(21)
+        wmHeartRateAlerts = WmHeartRateAlerts(21)
 
         lifecycleScope.launchWhenStarted {
             launch {
@@ -74,6 +75,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                 }
             }
         }
+
     }
 
     private fun updateUi() {
@@ -81,21 +83,23 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
             viewBind.itemAutoHeartRateMeasurementSwitch.getSwitchView().isChecked =
                 it.isEnableHrAutoMeasure
 
-            viewBind.itemMaxHeartRate.getTextView().text = it.maxHeartRate.toString()+getString(R.string.unit_bmp)
-            viewBind.itemHeartRateInterval.text=getString(R.string.ds_heart_rate_interva)+":\n0-${WmHeartRateAlerts.HEART_RATE_INTERVALS[0]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[1]}" +
-                    "-${WmHeartRateAlerts.HEART_RATE_INTERVALS[2]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[3]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[4]}"
+            viewBind.itemMaxHeartRate.getTextView().text =
+                it.maxHeartRate.toString() + getString(R.string.unit_bmp)
+            viewBind.itemHeartRateInterval.text =
+                getString(R.string.ds_heart_rate_interva) + ":\n0-${WmHeartRateAlerts.HEART_RATE_INTERVALS[0]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[1]}" +
+                        "-${WmHeartRateAlerts.HEART_RATE_INTERVALS[2]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[3]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[4]}"
 
             viewBind.itemExerciseHeartRateHighAlertSwitch.getSwitchView().isChecked =
                 it.exerciseHeartRateAlert.threshold > 0
             viewBind.itemExerciseHeartRateHighAlert.getTextView().text =
-                it.exerciseHeartRateAlert.threshold.toString()+getString(R.string.unit_bmp)
+                it.exerciseHeartRateAlert.threshold.toString() + getString(R.string.unit_bmp)
             viewBind.itemExerciseHeartRateHighAlert.isEnabled =
                 it.exerciseHeartRateAlert.threshold > 0
 
             viewBind.itemQuietHeartRateHighAlertSwitch.getSwitchView().isChecked =
                 it.restingHeartRateAlert.threshold > 0
             viewBind.itemQuietHeartRateHighAlert.getTextView().text =
-                it.restingHeartRateAlert.threshold.toString()+getString(R.string.unit_bmp)
+                it.restingHeartRateAlert.threshold.toString() + getString(R.string.unit_bmp)
             viewBind.itemQuietHeartRateHighAlert.isEnabled = it.restingHeartRateAlert.threshold > 0
         }
     }
@@ -105,17 +109,27 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         updateUi()
         viewBind.itemMaxHeartRate.setOnClickListener {
             wmHeartRateAlerts?.let {
-                showHeartRateDialog(it.maxHeartRate,10,22, DIALOG_MAX_HEART_RATE)
+                showHeartRateDialog(it.maxHeartRate, 10, 22, DIALOG_MAX_HEART_RATE)
             }
         }
         viewBind.itemExerciseHeartRateHighAlert.setOnClickListener {
             wmHeartRateAlerts?.let {
-                showHeartRateDialog(it.exerciseHeartRateAlert.threshold,10,15, DIALOG_EXERCISE_HEART_RATE_HIGH_ALERT)
+                showHeartRateDialog(
+                    it.exerciseHeartRateAlert.threshold,
+                    10,
+                    15,
+                    DIALOG_EXERCISE_HEART_RATE_HIGH_ALERT
+                )
             }
         }
         viewBind.itemQuietHeartRateHighAlert.setOnClickListener {
             wmHeartRateAlerts?.let {
-                showHeartRateDialog(it.restingHeartRateAlert.threshold,10,15, DIALOG_QUIET_HEART_RATE_HIGH_ALERT)
+                showHeartRateDialog(
+                    it.restingHeartRateAlert.threshold,
+                    10,
+                    15,
+                    DIALOG_QUIET_HEART_RATE_HIGH_ALERT
+                )
             }
         }
         viewBind.itemAutoHeartRateMeasurementSwitch.getSwitchView()
@@ -135,6 +149,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.exerciseHeartRateAlert.threshold = 0
                     }
+                    it.save()
                     updateUi()
                 }
             }
@@ -147,25 +162,36 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.restingHeartRateAlert.threshold = 0
                     }
+                    it.save()
                     updateUi()
+
                 }
             }
+    }
+
+    private fun WmHeartRateAlerts.save() {
+        applicationScope.launchWithLog {
+            UNIWatchMate.wmSettings.settingHeartRate.set(this@save).await()
+        }
     }
 
     override fun onDialogSelectInt(tag: String?, selectValue: Int) {
         if (DIALOG_MAX_HEART_RATE == tag) {
             wmHeartRateAlerts?.let {
                 it.maxHeartRate = selectValue
+                it.save()
             }
             updateUi()
-        }else if (DIALOG_EXERCISE_HEART_RATE_HIGH_ALERT == tag) {
+        } else if (DIALOG_EXERCISE_HEART_RATE_HIGH_ALERT == tag) {
             wmHeartRateAlerts?.let {
                 it.exerciseHeartRateAlert.threshold = selectValue
+                it.save()
             }
             updateUi()
-        }else if (DIALOG_QUIET_HEART_RATE_HIGH_ALERT == tag) {
+        } else if (DIALOG_QUIET_HEART_RATE_HIGH_ALERT == tag) {
             wmHeartRateAlerts?.let {
                 it.restingHeartRateAlert.threshold = selectValue
+                it.save()
             }
             updateUi()
         }
