@@ -4,18 +4,24 @@ import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
 import com.base.sdk.port.app.AbAppContact
 import com.sjbt.sdk.SJUniWatch
-import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
+import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
-    var contactListEmitter: ObservableEmitter<List<WmContact>>? = null
-    var contactSetEmitter: SingleEmitter<Boolean>? = null
-    var contactCountSetEmitter: SingleEmitter<Boolean>? = null
-    var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>? = null
-    var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>? = null
+    private var contactListEmitter: ObservableEmitter<List<WmContact>>? = null
+    private var updateContactEmitter: SingleEmitter<Boolean>? = null
+    private var contactCountSetEmitter: SingleEmitter<Boolean>? = null
+    private var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>? = null
+    private var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>? = null
+    private var mEmergencyCall: WmEmergencyCall? = null
+    private val mContacts = mutableListOf<WmContact>()
 
     override fun isSupport(): Boolean {
         return true
@@ -33,10 +39,14 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadContactListCmd())
     }
 
-    override fun syncContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {
-        contactSetEmitter = it
+    override fun updateContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {
+        updateContactEmitter = it
         val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
         sjUniWatch.sendWriteSubpackageNodeCmdList((contactList.size * 52).toShort(), payloadPackage)
+    }
+
+    private fun updateContactListBack(success: Boolean) {
+        updateContactEmitter?.onSuccess(success)
     }
 
     override fun observableEmergencyContacts(): Observable<WmEmergencyCall> = Observable.create {
@@ -46,7 +56,96 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
     override fun updateEmergencyContact(emergencyCall: WmEmergencyCall): Single<WmEmergencyCall> =
         Single.create {
+            mEmergencyCall = emergencyCall
             updateEmergencyEmitter = it
             sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteEmergencyNumberCmd(emergencyCall))
         }
+
+    private fun getEmergencyContactBack(emergencyCall: WmEmergencyCall) {
+        emergencyNumberEmitter?.onNext(emergencyCall)
+    }
+
+    private fun updateEmergencyContactBack(success: Boolean) {
+        updateEmergencyEmitter?.onSuccess(
+            if (success) {
+                mEmergencyCall
+            } else {
+                null
+            }
+        )
+    }
+
+    fun contactBusiness(
+        it: NodeData,
+        msgBean: MsgBean?
+    ) {
+        when (it.urn[2]) {
+
+            URN_APP_CONTACT_COUNT -> {
+                contactCountSetEmitter?.onSuccess(it.data[0].toInt() == 1)
+            }
+
+            URN_APP_CONTACT_LIST -> {
+                msgBean?.let {
+                    if (it.divideType == DIVIDE_Y_F_2) {
+                        mContacts.clear()
+                    }
+                }
+
+                val byteArray =
+                    ByteBuffer.wrap(it.data).array()
+
+                val chunkSize = 52
+                var i = 0
+                while (i < byteArray.size) {
+                    val nameBytes = byteArray.copyOfRange(i, i + 32)
+                    val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
+                    val name = String(nameBytes).trim()
+                    val num = String(numBytes).trim()
+                    val contact = WmContact.create(name, num)
+                    contact?.let {
+                        mContacts.add(it)
+                    }
+                    i += chunkSize
+                }
+
+                msgBean?.let {
+                    if (it.divideType == DIVIDE_Y_E_2) {
+                        contactListEmitter?.onNext(mContacts)
+                    }
+                }
+            }
+
+            URN_APP_CONTACT_UPDATE -> {
+                updateContactListBack(it.data[0].toInt() == 1)
+            }
+
+            URN_APP_CONTACT_SET_EMERGENCY -> {
+                updateEmergencyContactBack(it.data[0].toInt() == 1)
+            }
+
+            URN_APP_CONTACT_GET_EMERGENCY -> {
+
+                val emergencyByteArray = it.data
+                val enable = it.data[0].toInt() == 1
+                val name = String(
+                    emergencyByteArray.copyOf(32),
+                    StandardCharsets.UTF_8
+                )
+
+                val num = String(
+                    emergencyByteArray.copyOf(20),
+                    StandardCharsets.UTF_8
+                )
+
+                val emergencyContacts = mutableListOf<WmContact>()
+                WmContact.create(name, num)?.let {
+                    emergencyContacts.add(it)
+                }
+
+                val emergencyCall = WmEmergencyCall(enable, emergencyContacts)
+                getEmergencyContactBack(emergencyCall)
+            }
+        }
+    }
 }

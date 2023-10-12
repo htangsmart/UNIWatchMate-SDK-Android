@@ -15,9 +15,7 @@ import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
-import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.apps.WmContact
-import com.base.sdk.entity.apps.WmMusicControlType
+import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
@@ -28,10 +26,7 @@ import com.base.sdk.port.app.WMCameraPosition
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
-import com.sjbt.sdk.entity.MsgBean
-import com.sjbt.sdk.entity.PayloadPackage
-import com.sjbt.sdk.entity.RequestType
-import com.sjbt.sdk.entity.ResponseResultType
+import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.entity.old.AppViewBean
 import com.sjbt.sdk.entity.old.BasicInfo
 import com.sjbt.sdk.entity.old.BiuBatteryBean
@@ -49,7 +44,6 @@ import io.reactivex.rxjava3.core.*
 import timber.log.Timber
 import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -608,14 +602,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     if (msgBean.payload.size > 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payload.size)
+
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
-                                        parseNodePayload(true, payloadPackage)
+
+                                        parseNodePayload(true, msgBean, payloadPackage)
                                     } else {//设备传输层回复
                                         wmLog.logI(TAG, "传输层消息：" + msgBean.payload.size)
                                         mPayloadPackage?.let {
                                             it.itemList[0].data = msgBean.payload
-                                            parseNodePayload(false, it)
+                                            parseNodePayload(false, msgBean, it)
                                         }
                                     }
                                 }
@@ -965,7 +961,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             sendNormalMsg(cmdArray)
         }
 
-        parseNodePayload(false, payloadPackage)
+        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -991,7 +987,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, payloadPackage)
+        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1016,7 +1012,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, payloadPackage)
+        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1041,10 +1037,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, payloadPackage)
+        parseNodePayload(false, null, payloadPackage)
     }
 
-    private fun parseNodePayload(response: Boolean, payloadPackage: PayloadPackage) {
+    private fun parseNodePayload(
+        response: Boolean,
+        msgBean: MsgBean? = null,
+        payloadPackage: PayloadPackage
+    ) {
         payloadPackage.itemList.forEach {
             when (it.urn[0]) {
                 URN_CONNECT -> {//蓝牙连接 暂用旧协议格式
@@ -1054,100 +1054,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
                         URN_SETTING_SPORT -> {//运动目标
-                            when (it.urn[2]) {
-                                URN_0 -> {
-
-                                    val byteBuffer =
-                                        ByteBuffer.wrap(it.data)
-                                    val step = byteBuffer.getInt()
-                                    val distance = byteBuffer.getInt()
-                                    val calories = byteBuffer.getInt()
-                                    val activityDuration =
-                                        byteBuffer.getShort()
-
-                                    val wmSportGoal = WmSportGoal(
-                                        step,
-                                        distance,
-                                        calories,
-                                        activityDuration
-                                    )
-
-                                    wmLog.logI(TAG, "体育运动消息：" + wmSportGoal)
-
-                                    settingSportGoal.setEmitter.onSuccess(
-                                        wmSportGoal
-                                    )
-                                }
-
-                                URN_1 -> {//步数
-
-                                }
-                                URN_2 -> {//热量（卡）
-
-                                }
-                                URN_3 -> {//距离（米）
-
-                                }
-                                URN_4 -> {//活动时长（分钟）
-
-                                }
-                            }
+                           settingSportGoal.sportInfoBusiness(it)
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息
-                            when (it.urn[2]) {
-                                URN_0 -> {
-
-                                    val byteBuffer =
-                                        ByteBuffer.wrap(it.data)
-
-                                    val step = byteBuffer.getInt()
-                                    val distance = byteBuffer.getInt()
-                                    val calories = byteBuffer.getInt()
-                                    val activityDuration =
-                                        byteBuffer.getShort()
-
-                                    val wmSportGoal = WmSportGoal(
-                                        step,
-                                        distance,
-                                        calories,
-                                        activityDuration
-                                    )
-
-                                    wmLog.logI(TAG, "健康消息：" + wmSportGoal)
-
-                                }
-                            }
+                            settingPersonalInfo.personalInfoBusiness(it)
                         }
 
                         URN_SETTING_UNIT -> {//单位同步
-
-                            when (it.urn[2]) {
-                                URN_0 -> {
-
-                                    val byteBuffer =
-                                        ByteBuffer.wrap(it.data)
-                                    val step = byteBuffer.getInt()
-                                    val distance = byteBuffer.getInt()
-                                    val calories = byteBuffer.getInt()
-                                    val activityDuration =
-                                        byteBuffer.getShort()
-
-                                    val wmSportGoal = WmSportGoal(
-                                        step,
-                                        distance,
-                                        calories,
-                                        activityDuration
-                                    )
-
-                                    wmLog.logI(TAG, "单位设置：" + wmSportGoal)
-
-                                }
-                            }
+                            settingUnitInfo.unitInfoBusiness(it)
                         }
 
                         URN_SETTING_LANGUAGE -> {//语言设置
-
+                            appLanguage.languageBusiness(it, msgBean)
                         }
 
                         URN_SETTING_SEDENTARY -> {//久坐提醒
@@ -1185,11 +1104,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                     when (it.urn[1]) {
                         URN_APP_ALARM -> {
-                            when (it.urn[2]) {
-                                URN_APP_ALARM_ADD -> {
-                                    appAlarm
-                                }
-                            }
+                            appAlarm.alarmBusiness(it)
                         }
 
                         URN_APP_SPORT -> {
@@ -1199,46 +1114,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_CONTACT -> {
-                            when (it.urn[2]) {
-
-                                URN_APP_CONTACT_COUNT -> {
-                                    appContact.contactCountSetEmitter?.onSuccess(it.data[0].toInt() == 1)
-                                }
-
-                                URN_APP_CONTACT_LIST -> {
-                                    val byteArray =
-                                        ByteBuffer.wrap(it.data).array()
-
-                                    val contacts = mutableListOf<WmContact>()
-                                    val chunkSize = 52
-                                    var i = 0
-                                    while (i < byteArray.size) {
-                                        val nameBytes = byteArray.copyOfRange(i, i + 32)
-                                        val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
-                                        val name = String(nameBytes).trim()
-                                        val num = String(numBytes).trim()
-                                        val contact = WmContact.create(name, num)
-                                        contact?.let {
-                                            contacts.add(it)
-                                        }
-                                        i += chunkSize
-                                    }
-
-                                    appContact.contactListEmitter?.onNext(contacts)
-                                }
-
-                                URN_APP_CONTACT_UPDATE -> {
-
-                                }
-
-                                URN_APP_CONTACT_SET_EMERGENCY -> {
-
-                                }
-
-                                URN_APP_CONTACT_GET_EMERGENCY -> {
-
-                                }
-                            }
+                            appContact.contactBusiness(it, msgBean)
                         }
 
                         URN_APP_WEATHER -> {
@@ -1254,68 +1130,22 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 URN_APP_FIND_PHONE_START -> {
 
+//                                    appFind.startFindPhoneEmitter?.onSuccess(true)
+
                                 }
+
                                 URN_APP_FIND_PHONE_STOP -> {
 
                                 }
                             }
-
                         }
 
                         URN_APP_FIND_DEVICE -> {
-
-                            when (it.urn[2]) {
-
-                                URN_APP_FIND_DEVICE_START -> {
-                                    when (it.data[0].toInt()) {
-                                        ResponseResultType.RESPONSE_EACH.type -> {
-                                            appFind.startFindWatchEmitter?.onSuccess(true)
-                                        }
-
-                                        ResponseResultType.RESPONSE_ALL_OK.type -> {
-                                            appFind.startFindWatchEmitter?.onSuccess(true)
-                                        }
-
-                                        ResponseResultType.RESPONSE_ALL_FAIL.type -> {
-                                            appFind.startFindWatchEmitter?.onSuccess(false)
-                                        }
-                                    }
-
-                                }
-
-                                URN_APP_FIND_DEVICE_STOP -> {
-
-                                }
-                            }
+                            appFind.appFindBusiness(it)
                         }
 
                         URN_APP_MUSIC_CONTROL -> {
-
-                            when (it.data[0]) {
-                                WmMusicControlType.PREV_SONG.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.PREV_SONG)
-                                }
-
-                                WmMusicControlType.NEXT_SONG.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.NEXT_SONG)
-                                }
-
-                                WmMusicControlType.PLAY.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.PLAY)
-                                }
-
-                                WmMusicControlType.PAUSE.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.PAUSE)
-                                }
-
-                                WmMusicControlType.VOLUME_UP.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.VOLUME_UP)
-                                }
-
-                                WmMusicControlType.VOLUME_DOWN.type -> {
-                                    appMusicControl.observeMusicControl(WmMusicControlType.VOLUME_DOWN)
-                                }
-                            }
+                           appMusicControl.musicControlBusiness(it)
                         }
                     }
                 }
@@ -1325,6 +1155,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
         }
     }
+
+
 
     private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {
         return head != HEAD_FILE_SPP_A_2_D && head != HEAD_CAMERA_PREVIEW && !isCameraCmd(

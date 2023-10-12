@@ -22,9 +22,9 @@ abstract class AbAppContact : IWmSupport {
     abstract fun setContactCount(count: Int): Single<Boolean>
 
     /**
-     * 从App同步通讯录到设备
+     * App同步通讯录到设备
      */
-    abstract fun syncContactList(contactList: List<WmContact>): Single<Boolean>
+    abstract fun updateContactList(contactList: List<WmContact>): Single<Boolean>
 
     /**
      * syncEmergencyContacts 获取紧急联系人
