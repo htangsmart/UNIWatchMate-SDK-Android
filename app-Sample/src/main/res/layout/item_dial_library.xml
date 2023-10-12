@@ -10,6 +10,20 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_margin="4dp"
-        android:scaleType="fitCenter"/>
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="center_vertical|right"
+        android:layout_marginRight="@dimen/dp_5"
+        android:layout_marginTop="@dimen/dp_5"
+        android:maxLines="1"
+        android:text="@string/ds_installed"
+        android:textColor="@color/black"
+        android:textSize="@dimen/sp_16" />
 
 </com.sjbt.sdk.sample.ui.device.dial.DialCardView>

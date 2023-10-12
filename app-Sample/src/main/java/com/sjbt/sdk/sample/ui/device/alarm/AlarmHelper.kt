@@ -1,11 +1,14 @@
-package com.topstep.fitcloud.sample2.ui.device.alarm
+package com.sjbt.sdk.sample.ui.device.alarm
 
 import android.content.Context
+import android.text.TextUtils
 import android.text.format.DateFormat
+import com.base.sdk.entity.apps.AlarmRepeatOption
+import com.base.sdk.entity.apps.WmAlarm
 import com.sjbt.sdk.sample.R
 import java.util.*
 
-class AlarmHelper {
+object AlarmHelper {
 
     private var is24HourFormat: Boolean? = null
 
@@ -23,60 +26,166 @@ class AlarmHelper {
         R.string.ds_alarm_repeat_06_simple
     )
 
+    fun findNewAlarmId(alarms: ArrayList<WmAlarm>?): Int {
+        var maxAlarmId = -1
+        alarms?.let {
+            for (alarm in it) {
+                if (alarm.alarmId > maxAlarmId) {
+                    maxAlarmId = alarm.alarmId
+                }
+            }
+        }
+        return maxAlarmId + 1
+    }
+
+    fun getDefaultRepeatOption(): Set<AlarmRepeatOption> {
+        val repeatOptions = setOf<AlarmRepeatOption>()
+        repeatOptions.plus(AlarmRepeatOption.SUNDAY)
+        repeatOptions.plus(AlarmRepeatOption.MONDAY)
+        repeatOptions.plus(AlarmRepeatOption.TUESDAY)
+        repeatOptions.plus(AlarmRepeatOption.WEDNESDAY)
+        repeatOptions.plus(AlarmRepeatOption.THURSDAY)
+        repeatOptions.plus(AlarmRepeatOption.FRIDAY)
+        repeatOptions.plus(AlarmRepeatOption.SATURDAY)
+        return repeatOptions
+    }
+
+    fun newAlarm(wmAlarm: WmAlarm): WmAlarm {
+        val alarm = WmAlarm(
+            wmAlarm.alarmId,
+            wmAlarm.alarmName,
+            wmAlarm.hour,
+            wmAlarm.minute,
+            wmAlarm.repeatOptions
+        )
+        alarm.isOn = wmAlarm.isOn
+        return alarm
+    }
+
     /**
      * Display [FcAlarm.repeat] as a readable String
      */
-    fun repeatToSimpleStr(context: Context, repeat: Int): String {
-        var text: String = ""
-//        var sumDays = 0
-//        var resultString = ""
-//        for (i in 0..6) {
-//            if (FcRepeatFlag.isRepeatEnabledIndex(repeat, i)) {
-//                sumDays++
-//                resultString += context.getString(dayValuesSimple[i])
-//            }
-//        }
-//        if (sumDays == 7) {
-//            text = context.getString(R.string.ds_alarm_repeat_every_day)
-//        } else if (sumDays == 0) {
-//            text = context.getString(R.string.ds_alarm_repeat_never)
-//        } else if (sumDays == 5) {
-//            val sat: Boolean = !FcRepeatFlag.isRepeatEnabledIndex(repeat, 5)
-//            val sun: Boolean = !FcRepeatFlag.isRepeatEnabledIndex(repeat, 6)
-//            if (sat && sun) {
-//                text = context.getString(R.string.ds_alarm_repeat_workdays)
-//            }
-//        } else if (sumDays == 2) {
-//            val sat: Boolean = FcRepeatFlag.isRepeatEnabledIndex(repeat, 5)
-//            val sun: Boolean = FcRepeatFlag.isRepeatEnabledIndex(repeat, 6)
-//            if (sat && sun) {
-//                text = context.getString(R.string.ds_alarm_repeat_weekends)
-//            }
-//        }
-//        if (text == null) {
-//            text = resultString
-//        }
-        return text
+    fun repeatToSimpleStr(repeats: Set<AlarmRepeatOption>): String {
+        var text = StringBuilder()
+        if (repeats.contains(AlarmRepeatOption.SUNDAY)) {
+            text.append("${dayValuesSimple[6]},")
+        } else if (repeats.contains(AlarmRepeatOption.MONDAY)) {
+            text.append("${dayValuesSimple[0]},")
+        } else if (repeats.contains(AlarmRepeatOption.TUESDAY)) {
+            text.append("${dayValuesSimple[1]},")
+        } else if (repeats.contains(AlarmRepeatOption.WEDNESDAY)) {
+            text.append("${dayValuesSimple[2]},")
+        } else if (repeats.contains(AlarmRepeatOption.THURSDAY)) {
+            text.append("${dayValuesSimple[3]},")
+        } else if (repeats.contains(AlarmRepeatOption.FRIDAY)) {
+            text.append("${dayValuesSimple[4]},")
+        } else if (repeats.contains(AlarmRepeatOption.SATURDAY)) {
+            text.append("${dayValuesSimple[5]},")
+        }
+        val repeatString = text.toString()
+        if (!TextUtils.isEmpty(repeatString)) {
+            return repeatString.substring(0, repeatString.length - 1)
+        }
+
+        return repeatString
     }
 
-//    fun sort(list: List<FcAlarm>): List<FcAlarm> {
-//        Collections.sort(list, comparator)
-//        return list
-//    }
-//
-//    val comparator: Comparator<FcAlarm> by lazy {
-//        Comparator { o1, o2 ->
-//            //first sort by time ,and then by id
-//            val v1: Int = o1.hour * 60 + o1.minute
-//            val v2: Int = o2.hour * 60 + o2.minute
-//            if (v1 > v2) {
-//                1
-//            } else if (v1 < v2) {
-//                -1
-//            } else {
-//                o1.id - o2.id
-//            }
-//        }
-//    }
+    fun sort(list: List<WmAlarm>): List<WmAlarm> {
+        Collections.sort(list, comparator)
+        return list
+    }
+
+    fun repeatToBoolean(index: Int, repeats: Set<AlarmRepeatOption>): Boolean {
+        var state = false
+        when (index) {
+            0 -> {
+                state = repeats.contains(AlarmRepeatOption.SUNDAY)
+            }
+
+            1 -> {
+                state = repeats.contains(AlarmRepeatOption.MONDAY)
+            }
+
+            2 -> {
+                state = repeats.contains(AlarmRepeatOption.TUESDAY)
+            }
+
+            3 -> {
+                state = repeats.contains(AlarmRepeatOption.WEDNESDAY)
+            }
+
+            4 -> {
+                state = repeats.contains(AlarmRepeatOption.THURSDAY)
+            }
+
+            5 -> {
+                state = repeats.contains(AlarmRepeatOption.FRIDAY)
+            }
+
+            6 -> {
+                state = repeats.contains(AlarmRepeatOption.SATURDAY)
+            }
+        }
+        return state
+    }
+
+    fun booleanItems2Options(checkedItems: BooleanArray): Set<AlarmRepeatOption> {
+        val setOptions = setOf<AlarmRepeatOption>()
+        for ((index, bean) in checkedItems.withIndex()) {
+            if (bean) {
+                setOptions.plus(getAlarmRepeatOptionByIndex(index))
+            }
+        }
+        return setOptions
+    }
+
+    private fun getAlarmRepeatOptionByIndex(index: Int): Any {
+        var state = AlarmRepeatOption.SUNDAY
+        when (index) {
+            0 -> {
+                state = AlarmRepeatOption.SUNDAY
+            }
+
+            1 -> {
+                state = AlarmRepeatOption.MONDAY
+            }
+
+            2 -> {
+                state = AlarmRepeatOption.TUESDAY
+            }
+
+            3 -> {
+                state = AlarmRepeatOption.WEDNESDAY
+            }
+
+            4 -> {
+                state = AlarmRepeatOption.THURSDAY
+            }
+
+            5 -> {
+                state = AlarmRepeatOption.FRIDAY
+            }
+
+            6 -> {
+                state = AlarmRepeatOption.SATURDAY
+            }
+        }
+        return state
+    }
+
+    val comparator: Comparator<WmAlarm> by lazy {
+        Comparator { o1, o2 ->
+            //first sort by time ,and then by id
+            val v1: Int = o1.hour * 60 + o1.minute
+            val v2: Int = o2.hour * 60 + o2.minute
+            if (v1 > v2) {
+                1
+            } else if (v1 < v2) {
+                -1
+            } else {
+                o1.alarmId - o2.alarmId
+            }
+        }
+    }
 
 }

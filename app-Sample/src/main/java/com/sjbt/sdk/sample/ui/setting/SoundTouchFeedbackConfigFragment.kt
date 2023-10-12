@@ -9,7 +9,6 @@ import com.base.sdk.entity.settings.WmSoundAndHaptic
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
-import com.sjbt.sdk.sample.databinding.FragmentFunctionConfigBinding
 import com.sjbt.sdk.sample.databinding.FragmentSoundTouchConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
@@ -71,17 +70,17 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
             }
         }
 
-        viewBind.itemIsCrownHasTactileFeedback.getSwitchCompat().setOnCheckedChangeListener(this)
+        viewBind.itemIsCrownHasTactileFeedback.getSwitchView().setOnCheckedChangeListener(this)
 //        viewBind.itemIsMute.getSwitchCompat().setOnCheckedChangeListener(this)
-        viewBind.itemIsNotificationTouch.getSwitchCompat().setOnCheckedChangeListener(this)
-        viewBind.itemIsSystemHasTactileFeedback.getSwitchCompat().setOnCheckedChangeListener(this)
-        viewBind.itemRingWhenCallComeIn.getSwitchCompat().setOnCheckedChangeListener(this)
+        viewBind.itemIsNotificationTouch.getSwitchView().setOnCheckedChangeListener(this)
+        viewBind.itemIsSystemHasTactileFeedback.getSwitchView().setOnCheckedChangeListener(this)
+        viewBind.itemRingWhenCallComeIn.getSwitchView().setOnCheckedChangeListener(this)
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
         if (buttonView.isPressed) {
             when (buttonView) {
-                viewBind.itemIsCrownHasTactileFeedback.getSwitchCompat() -> {
+                viewBind.itemIsCrownHasTactileFeedback.getSwitchView() -> {
                     config?.let {
                         it.isCrownHapticFeedback =isChecked
                     }
@@ -91,17 +90,17 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
 //                        it.isMuted=isChecked
 //                    }
 //                }
-                viewBind.itemIsNotificationTouch.getSwitchCompat() -> {
+                viewBind.itemIsNotificationTouch.getSwitchView() -> {
                     config?.let {
                         it.isNotificationHaptic=isChecked
                     }
                 }
-                viewBind.itemIsSystemHasTactileFeedback.getSwitchCompat() -> {
+                viewBind.itemIsSystemHasTactileFeedback.getSwitchView() -> {
                     config?.let {
                         it.isSystemHapticFeedback=isChecked
                     }
                 }
-                viewBind.itemRingWhenCallComeIn.getSwitchCompat() -> {
+                viewBind.itemRingWhenCallComeIn.getSwitchView() -> {
                     config?.let {
                         it.isRingtoneEnabled=isChecked
                     }
@@ -125,15 +124,15 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
 
     private fun updateUI() {
         config?.let {
-            viewBind.itemRingWhenCallComeIn.getSwitchCompat().isChecked =
+            viewBind.itemRingWhenCallComeIn.getSwitchView().isChecked =
                 it.isRingtoneEnabled
-            viewBind.itemIsSystemHasTactileFeedback.getSwitchCompat().isChecked =
+            viewBind.itemIsSystemHasTactileFeedback.getSwitchView().isChecked =
                 it.isSystemHapticFeedback
-            viewBind.itemIsCrownHasTactileFeedback.getSwitchCompat().isChecked =
+            viewBind.itemIsCrownHasTactileFeedback.getSwitchView().isChecked =
                 it.isCrownHapticFeedback
 //            viewBind.itemIsMute.getSwitchCompat().isChecked =
 //                it.isMuted
-            viewBind.itemIsNotificationTouch.getSwitchCompat().isChecked =
+            viewBind.itemIsNotificationTouch.getSwitchView().isChecked =
                 it.isNotificationHaptic
         }
 

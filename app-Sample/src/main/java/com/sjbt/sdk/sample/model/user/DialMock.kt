@@ -7,10 +7,11 @@ import android.os.Parcelable
  * Created by qiyachao
  * on 2023_10_11
  */
-data class DialMock(val dialCoverRes:Int, val dialAssert: String?) : Parcelable {
+data class DialMock(val dialCoverRes:Int, val dialAssert: String?,val installed:Int) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
-        parcel.readString()
+        parcel.readString(),
+        parcel.readInt()
     ) {
     }
 
@@ -21,6 +22,7 @@ data class DialMock(val dialCoverRes:Int, val dialAssert: String?) : Parcelable 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeInt(dialCoverRes)
         dest.writeString(dialAssert)
+        dest.writeInt(installed)
     }
 
     companion object CREATOR : Parcelable.Creator<DialMock> {

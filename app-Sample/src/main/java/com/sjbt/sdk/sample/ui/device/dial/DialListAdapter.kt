@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.base.sdk.entity.apps.WmDial
 import com.sjbt.sdk.sample.databinding.ItemDialInstalledListBinding
-import com.topstep.fitcloud.sample2.ui.device.alarm.AlarmHelper
 
 class DialListAdapter() :
     RecyclerView.Adapter<DialListAdapter.ItemViewHolder>() {

@@ -8,6 +8,7 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
+import com.base.sdk.entity.apps.WmWeatherForecast
 import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -20,6 +21,8 @@ import com.sjbt.sdk.sample.ui.fileTrans.FileTransferActivity
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
 import timber.log.Timber
 
 @StringRes
@@ -57,10 +60,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemBasicDeviceInfo.setOnClickListener(blockClick)
         viewBind.itemCamera.setOnClickListener(blockClick)
         viewBind.itemTransferFile.setOnClickListener(blockClick)
+        viewBind.itemTestWeather.setOnClickListener(blockClick)
 //        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
 //        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
 //        viewBind.itemCricket.clickTrigger(block = blockClick)
-//        viewBind.itemOtherFeatures.clickTrigger(block = blockClick)
+        viewBind.itemOtherFeatures.setOnClickListener(blockClick)
 //        viewBind.itemVersionInfo.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
@@ -85,7 +89,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                         Timber.tag(it1).i("flowConnectorState=$it")
                     }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
+//                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
 
@@ -146,20 +150,30 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             viewBind.itemDeviceInfo -> {
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
             }
+
             viewBind.itemDeviceConfig -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceConfig())
             }
+
             viewBind.itemBasicDeviceInfo -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceInfo())
             }
 
             viewBind.itemDeviceConfig -> {
             }
-//            viewBind.itemQrCodes -> {
-//                findNavController().navigate(DeviceFragmentDirections.toQrCodes())
-//            }
+
+            viewBind.itemOtherFeatures -> {
+                findNavController().navigate(DeviceFragmentDirections.toOtherFeatures())
+            }
+
             viewBind.itemAlarm -> {
                 findNavController().navigate(DeviceFragmentDirections.toAlarm())
+            }
+
+            viewBind.itemTestWeather -> {
+                applicationScope.launchWithLog {
+//                    UNIWatchMate?.wmApps?.appWeather?.pushWeather(null)?.await()
+                }
             }
 
             viewBind.itemTransferFile -> {
@@ -171,9 +185,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     }
                 }
             }
-//            viewBind.itemContacts -> {
-//                findNavController().navigate(DeviceFragmentDirections.toContacts())
-//            }
+
+            viewBind.itemContacts -> {
+                findNavController().navigate(DeviceFragmentDirections.toContacts())
+            }
+
             viewBind.itemTestSendNotification -> {
                 applicationScope.launchWithLog {
                     UNIWatchMate?.wmApps?.appNotification?.sendNotification(
@@ -183,8 +199,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                             "content_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
                             "sub_content_notification"
                         )
-                    )?.subscribe { result ->
-                        Timber.tag("appNotification").i("appNotification result=$result")
+                    )?.toObservable()?.asFlow()?.collect {
+                        Timber.tag("appNotification").i("appNotification result=$it")
                     }
                 }
             }
@@ -203,16 +219,18 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     }
                 }
             }
+
             viewBind.itemDial -> {
                 findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
             }
-                viewBind.itemCamera -> {
-                    PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
-                        if (it) {
-                            CameraActivity.launchActivity(activity)
-                        }
+
+            viewBind.itemCamera -> {
+                PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
+                    if (it) {
+                        CameraActivity.launchActivity(activity)
                     }
                 }
+            }
 //            viewBind.itemModifyLogo -> {
 //                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
 //            }

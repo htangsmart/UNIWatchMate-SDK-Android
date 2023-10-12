@@ -11,25 +11,26 @@
         android:orientation="vertical"
         android:showDividers="middle">
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_step"
-            style="@style/Widget.Item.Text"
-            app:name="@string/exercise_goal_step"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/exercise_goal_step" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_distance"
-            style="@style/Widget.Item.Text"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
             android:visibility="gone"
-            app:name="@string/exercise_goal_distance"/>
+            app:preferenceTitle="@string/exercise_goal_distance" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_calories"
-            style="@style/Widget.Item.Text"
-            app:name="@string/exercise_goal_calories"/>
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/exercise_goal_calories" />
+
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_activity_duration"
-            style="@style/Widget.Item.Text"
-            app:name="@string/exercise_goal_activity"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/exercise_goal_activity" />
     </LinearLayout>
 
 </ScrollView>

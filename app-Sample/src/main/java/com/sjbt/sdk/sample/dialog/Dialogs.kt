@@ -222,6 +222,8 @@ const val DIALOG_VIBRATE = "vibrate"
 //    )?.show(childFragmentManager, DIALOG_SCREEN_LONG_TIME_BRIGHT_DURATION)
 //}
 
+
+
 const val DIALOG_EXERCISE_STEP = "exercise_step"
 fun Fragment.showExerciseStepDialog(value: Int) {
     SelectIntDialogFragment.newInstance(
@@ -255,4 +257,19 @@ fun Fragment.showExerciseDurationDialog(value: Short) {
         title = getString(R.string.exercise_goal_activity),
         des = getString(R.string.unit_minute)
     ).show(childFragmentManager, DIALOG_EXERCISE_ACTIVITY_DURATION)
+}
+
+const val DIALOG_MAX_HEART_RATE = "max_heart_rate"
+const val DIALOG_EXERCISE_HEART_RATE_HIGH_ALERT = "exercise_heart_rate_high_alert"
+const val DIALOG_QUIET_HEART_RATE_HIGH_ALERT = "quiet_heart_rate_high_alert"
+
+fun Fragment.showHeartRateDialog(value: Int,min:Int,max:Int,tag:String) {
+    SelectIntDialogFragment.newInstance(
+        min = min,
+        max = max,
+        multiples = 10,
+        value = value,
+        title = getString(R.string.ds_max_heart_rate),
+        des = getString(R.string.unit_bmp)
+    ).show(childFragmentManager, tag)
 }

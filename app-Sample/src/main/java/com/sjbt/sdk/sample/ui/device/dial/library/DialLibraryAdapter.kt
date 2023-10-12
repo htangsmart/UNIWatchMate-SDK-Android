@@ -1,6 +1,7 @@
 package com.sjbt.sdk.sample.ui.device.dial.library
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kilnn.tool.widget.ktx.clickTrigger
@@ -31,6 +32,7 @@ class DialLibraryAdapter : RecyclerView.Adapter<DialLibraryAdapter.DialLibraryVi
         val items = this.items ?: return
         val item = items[position]
         holder.viewBind.cardView.setShape(shape)
+        holder.viewBind.tvStatus.visibility=if(item.installed==1) View.VISIBLE else View.GONE
         holder.itemView.clickTrigger {
             listener?.onItemClick(item)
         }

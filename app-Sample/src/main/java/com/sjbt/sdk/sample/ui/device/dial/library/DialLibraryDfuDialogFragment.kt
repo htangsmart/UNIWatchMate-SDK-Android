@@ -105,6 +105,7 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
             if (it.state == State.FINISH) {
                 viewBind.stateView.progress=100
                 viewBind.stateView.text=getString(R.string.ds_push_success)
+                isCancelable = true
             }else{
                 viewBind.stateView.progress=it.progress
                 viewBind.stateView.text=if(it.sendingFile!!.name.contains("jpg")) getString(R.string.send_dial_Cover)

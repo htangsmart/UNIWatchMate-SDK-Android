@@ -1,45 +1,103 @@
-package com.sjbt.sdk.sample.ui.device.alarm
+package com.sjbt.sdk.sample.ui.device.contacts
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.base.sdk.entity.apps.WmAlarm
+import com.base.sdk.entity.apps.WmContact
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.Success
-import com.sjbt.sdk.sample.databinding.FragmentAlarmListBinding
+import com.sjbt.sdk.sample.databinding.FragmentContactsBinding
+import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.viewLifecycle
+import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.widget.LoadingView
-
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
-class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
+/**
+ * **Document**
+ * https://github.com/htangsmart/FitCloudPro-SDK-Android/wiki/10.Other-Features#setting-contacts
+ *
+ * ***Description**
+ * Display and modify contacts
+ *
+ * **Usage**
+ * 1. [ContactsFragment]
+ * Display and add contacts
+ * [ContactsAdapter]
+ *
+ * And wait contacts changes saving.
+ * [SetContactsDialogFragment]
+ *
+ * 2. [ContactsViewModel]
+ * Show how to request contacts and set contacts
+ * [FcSettingsFeature.requestContacts] [FcSettingsFeature.setContacts]
+ *
+ */
+class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
-    private val viewBind: FragmentAlarmListBinding by viewBinding()
-    private val viewModel: AlarmViewModel by viewModels({ requireParentFragment() })
-    private lateinit var adapter: AlarmListAdapter
+    private val viewBind: FragmentContactsBinding by viewBinding()
+    private val viewModel: ContactsViewModel by viewModels()
+    private lateinit var adapter: ContactsAdapter
+
+    private val pickContact =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val uri = result.data?.data
+            if (result.resultCode == Activity.RESULT_OK && uri != null) {
+                val projection = arrayOf(
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+                )
+                val cursor =
+                    requireContext().contentResolver.query(uri, projection, null, null, null)
+                if (cursor != null && cursor.moveToFirst()) {
+                    val numberIndex =
+                        cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    val nameIndex =
+                        cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                    var number = cursor.getString(numberIndex)
+                    val name = cursor.getString(nameIndex)
+                    Timber.i("select contacts result: [$name , $number]")
+                    cursor.close()
+                    if (!name.isNullOrEmpty() && !number.isNullOrEmpty()) {
+                        number = number.replace(" ".toRegex(), "")
+                        val newContact = WmContact.create(name, number,false)
+                        newContact?.let { viewModel.addContacts(it) }
+                    }
+                }
+            }
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        adapter = ContactsAdapter()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -50,7 +108,6 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
                 return false
             }
         }, viewLifecycleOwner)
-
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -59,8 +116,6 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
                 }
             })
 
-        (requireActivity() as AppCompatActivity?)?.supportActionBar?.setTitle(R.string.ds_alarm)
-
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewBind.recyclerView.addItemDecoration(
             DividerItemDecoration(
@@ -68,35 +123,31 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
                 DividerItemDecoration.VERTICAL
             )
         )
-        adapter = AlarmListAdapter()
-        adapter.listener = object : AlarmListAdapter.Listener {
-
-            override fun onItemModified(position: Int, alarmModified: WmAlarm) {
-                viewModel.modifyAlarm(position, alarmModified)
-            }
-
-            override fun onItemClick(position: Int, alarm: WmAlarm) {
-                findNavController().navigate(AlarmListFragmentDirections.toAlarmDetail(position))
-            }
-
+        adapter.listener = object : ContactsAdapter.Listener {
             override fun onItemDelete(position: Int) {
-                viewModel.deleteAlarm(position)
+                viewModel.deleteContacts(position)
             }
         }
         adapter.registerAdapterDataObserver(adapterDataObserver)
         viewBind.recyclerView.adapter = adapter
 
         viewBind.loadingView.listener = LoadingView.Listener {
-            viewModel.requestAlarms()
+            viewModel.requestContacts()
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
 
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
                 if ((adapter.sources?.size ?: 0) >= 10) {
-                    promptToast.showInfo(R.string.ds_alarm_limit_count)
+                    promptToast.showInfo(R.string.ds_contacts_tips1)
                 } else {
-                    findNavController().navigate(AlarmListFragmentDirections.toAlarmDetail(-1))
+                    PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
+                        if (granted) {
+                            pickContact.launch(Intent(Intent.ACTION_PICK).apply {
+                                type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+                            })
+                        }
+                    }
                 }
             }
         }
@@ -104,7 +155,7 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 viewModel.flowState.collect { state ->
-                    when (state.requestAlarms) {
+                    when (state.requestContacts) {
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                             viewBind.fabAdd.hide()
@@ -116,13 +167,13 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
                         }
 
                         is Success -> {
-                            val alarms = state.requestAlarms()
-                            if (alarms == null || alarms.isEmpty()) {
-                                viewBind.loadingView.showError(R.string.ds_alarm_no_data)
+                            val contacts = state.requestContacts()
+                            if (contacts.isNullOrEmpty()) {
+                                viewBind.loadingView.showError(R.string.tip_current_no_data)
                             } else {
                                 viewBind.loadingView.visibility = View.GONE
                             }
-                            adapter.sources = alarms
+                            adapter.sources = contacts
                             adapter.notifyDataSetChanged()
 
                             viewBind.fabAdd.show()
@@ -135,24 +186,24 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
             launch {
                 viewModel.flowEvent.collect { event ->
                     when (event) {
-                        is AlarmEvent.RequestFail -> {
+                        is ContactsEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
 
-                        is AlarmEvent.AlarmInserted -> {
+                        is ContactsEvent.Inserted -> {
                             adapter.notifyItemInserted(event.position)
                         }
 
-                        is AlarmEvent.AlarmRemoved -> {
+                        is ContactsEvent.Removed -> {
                             adapter.notifyItemRemoved(event.position)
                         }
 
-                        is AlarmEvent.AlarmMoved -> {
+                        is ContactsEvent.Moved -> {
                             adapter.notifyItemMoved(event.fromPosition, event.toPosition)
                         }
 
-                        is AlarmEvent.NavigateUp -> {
-                            navigateUpInNested()
+                        is ContactsEvent.NavigateUp -> {
+                            findNavController().navigateUp()
                         }
                     }
                 }
@@ -163,7 +214,7 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
     private val adapterDataObserver = object : RecyclerView.AdapterDataObserver() {
         override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
             if (adapter.itemCount <= 0) {
-                viewBind.loadingView.showError(R.string.ds_alarm_no_data)
+                viewBind.loadingView.showError(R.string.tip_current_no_data)
             }
         }
     }
@@ -174,15 +225,10 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
     }
 
     private fun onBackPressed() {
-        if (viewModel.setAlarmsAction.isSuccess()) {
-            navigateUpInNested()
+        if (viewModel.setContactsAction.isSuccess()) {
+            findNavController().navigateUp()
         } else {
-            //If alarm changes not saved, wait!!!
-            SetAlarmsDialogFragment().show(childFragmentManager, null)
+            SetContactsDialogFragment().show(childFragmentManager, null)
         }
-    }
-
-    private fun navigateUpInNested() {
-        parentFragment?.parentFragment?.findNavController()?.navigateUp()
     }
 }

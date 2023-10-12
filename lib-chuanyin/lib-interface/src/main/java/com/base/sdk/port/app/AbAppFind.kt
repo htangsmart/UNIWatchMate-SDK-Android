@@ -35,6 +35,7 @@ abstract class AbAppFind : IWmSupport {
      * @return
      */
     abstract fun stopFindWatch(flag: StopType): Single<Boolean>
+
 }
 
 enum class StopType(val type: Int) {

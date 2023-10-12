@@ -2,24 +2,16 @@ package com.sjbt.sdk.sample.ui.device.dial
 
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
-import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.entity.apps.WmDial
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
-import com.sjbt.sdk.sample.base.SingleAsyncAction
 import com.sjbt.sdk.sample.base.StateEventViewModel
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
-import com.sjbt.sdk.sample.di.Injector
-import com.sjbt.sdk.sample.ui.device.alarm.AlarmEvent
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import com.topstep.fitcloud.sample2.ui.device.alarm.AlarmHelper
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
-import kotlinx.coroutines.rx3.awaitFirst
 import kotlinx.coroutines.rx3.awaitSingle
 
 data class DialState(
@@ -34,14 +26,11 @@ sealed class DialEvent {
 
 class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialState()) {
 
-//    private val deviceManager = Injector.getDeviceManager()
-    val helper = AlarmHelper()
-
     init {
-        requestAlarms()
+        requestInstallDials()
     }
 
-    fun requestAlarms() {
+    fun requestInstallDials() {
         viewModelScope.launch {
             state.copy(requestDials = Loading()).newState()
             runCatchingWithLog {

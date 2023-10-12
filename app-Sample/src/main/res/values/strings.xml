@@ -174,6 +174,7 @@
     <string name="ds_length_unit_imperial">Length Units-Imperial(miles, feet)</string>
     <string name="ds_temperature_unit_fahrenheit">Temperature Units-Fahrenheit(℉)</string>
     <string name="ds_display_weather">Display Weather</string>
+    <string name="ds_test_weather">Test Weather</string>
     <string name="ds_disconnect_reminder">Disconnect Reminder</string>
     <string name="ds_display_exercise_goal">Display Exercise Goal</string>
 
@@ -184,6 +185,15 @@
     <string name="ds_blood_pressure_config">Blood Pressure Reference Config</string>
     <string name="ds_sbp">Systolic pressure</string>
     <string name="ds_dbp">Diastolic pressure</string>
+
+    <string name="ds_heart_rate_config">Heart Rate Config</string>
+    <string name="ds_exercise_heart_rate_high_alert">Exercise heart rate too high alert</string>
+    <string name="ds_exercise_heart_rate_high_alert_switch">Exercise heart rate too high alert switch</string>
+    <string name="ds_quiet_heart_rate_high_alert">Quiet heart rate alert</string>
+    <string name="ds_quiet_heart_rate_high_alert_switch">Quiet heart rate alert switch</string>
+    <string name="ds_automatic_heart_rate_measurement">Automatic heart rate measurement</string>
+    <string name="ds_max_heart_rate">Max heart rate</string>
+    <string name="ds_heart_rate_interva">Heart rate interval</string>
 
     <string name="ds_turn_wrist_lighting_config">Raise to Wake Config</string>
     <string name="ds_synchronize_date_and_time">Synchronize Date And Time</string>
@@ -249,7 +259,7 @@
     <!--Alarms-->
     <string name="ds_alarm">Alarms</string>
     <string name="ds_alarm_no_data">No alarm clock</string>
-    <string name="ds_alarm_limit_count">Can only add 5 alarm clocks</string>
+    <string name="ds_alarm_limit_count">Can only add 10 alarm clocks</string>
     <string name="ds_alarm_label">Label</string>
     <string name="ds_alarm_am">A.M</string>
     <string name="ds_alarm_pm">P.M</string>
@@ -289,6 +299,7 @@
     <string name="ds_dial">Dial</string>
     <string name="ds_dial_library">Dial Library</string>
     <string name="ds_dial_installed">Dial Installed</string>
+    <string name="ds_installed">Installed</string>
     <string name="ds_dial_installed_des">View the watch faces installed on the watch and support removal</string>
     <string name="ds_dial_test_install">Dial Test install</string>
     <string name="ds_dial_test_install_des">Used to test install dial</string>
@@ -346,6 +357,7 @@
     <!--Others Feature-->
     <string name="ds_other_features">Other Features</string>
     <string name="ds_find_device">Find Device</string>
+    <string name="ds_stop_find_device">Stop Find Device</string>
     <string name="ds_device_reboot">Device Reboot</string>
     <string name="ds_device_shutdown">Device Shutdown</string>
     <string name="ds_device_reset">Device Reset</string>
@@ -369,6 +381,7 @@
     <string name="app_view_gridding">gridding</string>
     <string name="app_view_list">list</string>
     <string name="app_view">app_view</string>
+    <string name="language_set">language</string>
 
     <!--sleep config-->
     <string name="ds_sleep_config">sleep config</string>

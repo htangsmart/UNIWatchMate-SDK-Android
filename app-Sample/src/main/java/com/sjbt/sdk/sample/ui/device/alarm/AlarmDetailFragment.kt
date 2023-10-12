@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.base.sdk.entity.apps.AlarmRepeatOption
 import com.base.sdk.entity.apps.WmAlarm
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.github.kilnn.wheellayout.WheelIntConfig
@@ -30,7 +31,7 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     private val args: AlarmDetailFragmentArgs by navArgs()
     private val formatter = FormatterUtil.get02dWheelIntFormatter()
     private val calendar = Calendar.getInstance()
-    private val is24HourFormat by lazy { viewModel.helper.is24HourFormat(requireContext()) }
+    private val is24HourFormat by lazy { AlarmHelper.is24HourFormat(requireContext()) }
 
     private lateinit var alarm: WmAlarm
 
@@ -59,14 +60,18 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
         val alarms = viewModel.state.requestAlarms()
         if (alarms != null && args.position >= 0 && args.position < alarms.size) {
             //Edit Mode
-//            alarm = alarms[args.position].clone()
+            alarm = AlarmHelper.newAlarm(alarms[args.position])
             isEditMode = true
         } else {
             //Add Mode
-//            alarm = FcAlarm(FcAlarm.findNewAlarmId(alarms))
-//            alarm.label = getString(R.string.ds_alarm_label_default)
-//            alarm.hour = calendar.get(Calendar.HOUR_OF_DAY)
-//            alarm.minute = calendar.get(Calendar.MINUTE)
+            alarm = WmAlarm(
+                AlarmHelper.findNewAlarmId(alarms),
+                getString(R.string.ds_alarm_label_default),
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                AlarmHelper.getDefaultRepeatOption()
+            )
+            alarm.isOn = true
             isEditMode = false
         }
 
@@ -81,20 +86,51 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
 
         if (is24HourFormat) {
             viewBind.wheelAmPm.visibility = View.GONE
-            viewBind.wheelHour.setConfig(WheelIntConfig(0, 23, true, getString(R.string.unit_hour), formatter))
+            viewBind.wheelHour.setConfig(
+                WheelIntConfig(
+                    0,
+                    23,
+                    true,
+                    getString(R.string.unit_hour),
+                    formatter
+                )
+            )
         } else {
-            viewBind.wheelAmPm.setConfig(WheelIntConfig(0, 1, false, null, object : WheelIntFormatter {
-                override fun format(index: Int, value: Int): String {
-                    return if (index == 0) {
-                        requireContext().getString(R.string.ds_alarm_am)
-                    } else {
-                        requireContext().getString(R.string.ds_alarm_pm)
-                    }
-                }
-            }))
-            viewBind.wheelHour.setConfig(WheelIntConfig(1, 12, true, getString(R.string.unit_hour), formatter))
+            viewBind.wheelAmPm.setConfig(
+                WheelIntConfig(
+                    0,
+                    1,
+                    false,
+                    null,
+                    object : WheelIntFormatter {
+                        override fun format(index: Int, value: Int): String {
+                            return if (index == 0) {
+                                requireContext().getString(R.string.ds_alarm_am)
+                            } else {
+                                requireContext().getString(R.string.ds_alarm_pm)
+                            }
+                        }
+                    })
+            )
+            viewBind.wheelHour.setConfig(
+                WheelIntConfig(
+                    1,
+                    12,
+                    true,
+                    getString(R.string.unit_hour),
+                    formatter
+                )
+            )
         }
-        viewBind.wheelMinute.setConfig(WheelIntConfig(0, 59, true, getString(R.string.unit_minute), formatter))
+        viewBind.wheelMinute.setConfig(
+            WheelIntConfig(
+                0,
+                59,
+                true,
+                getString(R.string.unit_minute),
+                formatter
+            )
+        )
 
         viewBind.btnSave.clickTrigger(block = blockClick)
         viewBind.btnDelete.clickTrigger(block = blockClick)
@@ -119,10 +155,9 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
                     }
                 }
 
-//                alarm.hour = hour
-//                alarm.minute = viewBind.wheelMinute.getValue()
-//                alarm.isEnabled = true
-//                alarm.adjust()
+                alarm.hour = hour
+                alarm.minute = viewBind.wheelMinute.getValue()
+                alarm.isOn = true
                 if (isEditMode) {
                     viewModel.modifyAlarm(args.position, alarm)
                 } else {
@@ -130,13 +165,16 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
                 }
                 findNavController().navigateUp()
             }
+
             viewBind.btnDelete -> {
                 viewModel.deleteAlarm(args.position)
                 findNavController().navigateUp()
             }
+
             viewBind.itemRepeat -> {
                 AlarmRepeatDialogFragment().show(childFragmentManager, null)
             }
+
             viewBind.itemLabel -> {
                 AlarmLabelDialogFragment().show(childFragmentManager, null)
             }
@@ -144,47 +182,47 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     }
 
     private fun updateUI() {
-//        var hour: Int = alarm.hour
-//        val minute: Int = alarm.minute
-//        if (hour == 24 && minute == 0) {
-//            if (is24HourFormat) {
-//                viewBind.wheelHour.setValue(23)
-//                viewBind.wheelMinute.setValue(59)
-//            } else {
-//                viewBind.wheelAmPm.setValue(0)
-//                viewBind.wheelHour.setValue(12)
-//                viewBind.wheelMinute.setValue(0)
-//            }
-//        } else {
-//            if (is24HourFormat) {
-//                viewBind.wheelHour.setValue(hour)
-//                viewBind.wheelMinute.setValue(minute)
-//            } else {
-//                if (hour < 12) { //AM
-//                    viewBind.wheelAmPm.setValue(0)
-//                    if (hour == 0) {
-//                        hour = 12
-//                    }
-//                } else {
-//                    viewBind.wheelAmPm.setValue(1)
-//                    if (hour > 12) {
-//                        hour -= 12
-//                    }
-//                }
-//                viewBind.wheelHour.setValue(hour)
-//                viewBind.wheelMinute.setValue(minute)
-//            }
-//        }
-//        viewBind.itemLabel.getTextView().text = getAlarmLabel()
-//        viewBind.itemRepeat.getTextView().text = viewModel.helper.repeatToSimpleStr(requireContext(), alarm.repeat)
+        var hour: Int = alarm.hour
+        val minute: Int = alarm.minute
+        if (hour == 24 && minute == 0) {
+            if (is24HourFormat) {
+                viewBind.wheelHour.setValue(23)
+                viewBind.wheelMinute.setValue(59)
+            } else {
+                viewBind.wheelAmPm.setValue(0)
+                viewBind.wheelHour.setValue(12)
+                viewBind.wheelMinute.setValue(0)
+            }
+        } else {
+            if (is24HourFormat) {
+                viewBind.wheelHour.setValue(hour)
+                viewBind.wheelMinute.setValue(minute)
+            } else {
+                if (hour < 12) { //AM
+                    viewBind.wheelAmPm.setValue(0)
+                    if (hour == 0) {
+                        hour = 12
+                    }
+                } else {
+                    viewBind.wheelAmPm.setValue(1)
+                    if (hour > 12) {
+                        hour -= 12
+                    }
+                }
+                viewBind.wheelHour.setValue(hour)
+                viewBind.wheelMinute.setValue(minute)
+            }
+        }
+        viewBind.itemLabel.getTextView().text = getAlarmLabel()
+        viewBind.itemRepeat.getTextView().text = AlarmHelper.repeatToSimpleStr(alarm.repeatOptions)
     }
 
     private fun getAlarmLabel(): String? {
-//        return if (alarm.label.isNullOrEmpty()) {
-//            getString(R.string.ds_alarm_label_default)
-//        } else {
-//            alarm.label
-//        }
+        return if (alarm.alarmName.isNullOrEmpty()) {
+            getString(R.string.ds_alarm_label_default)
+        } else {
+            alarm.alarmName
+        }
         return ""
     }
 
@@ -193,18 +231,19 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     }
 
     override fun dialogSetAlarmLabel(label: String?) {
-//        alarm.label = label
-//        viewBind.itemLabel.getTextView().text = label
+        label?.let {
+            alarm.alarmName = it
+            viewBind.itemLabel.getTextView().text = it
+        }
     }
 
-    override fun dialogGetAlarmRepeat(): Int {
-//        return alarm.repeat
-        return 0
+    override fun dialogGetAlarmRepeat(): Set<AlarmRepeatOption> {
+        return alarm.repeatOptions
     }
 
-    override fun dialogSetAlarmRepeat(repeat: Int) {
-//        alarm.repeat = repeat
-//        viewBind.itemRepeat.getTextView().text = viewModel.helper.repeatToSimpleStr(requireContext(), alarm.repeat)
+    override fun dialogSetAlarmRepeat(options: Set<AlarmRepeatOption>) {
+        alarm.repeatOptions = options
+        viewBind.itemRepeat.getTextView().text = AlarmHelper.repeatToSimpleStr( alarm.repeatOptions)
     }
 
 }

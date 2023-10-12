@@ -16,6 +16,11 @@ public class ToastUtil {
     private static long lastClickTime = 0;
 
     public static void showToast(String text) {
+        showToast(text);
+
+    }
+
+    public static void showToast(String text, boolean showLong) {
         if (TextUtils.isEmpty(text)) {
             return;
         }
@@ -27,7 +32,7 @@ public class ToastUtil {
                         R.layout.toast_layout, null);
                 TextView tvMessage = customview.findViewById(R.id.message);
                 tvMessage.setText(text);
-                Toast mToast = Toast.makeText(MyApplication.Companion.getInstance(), text, Toast.LENGTH_SHORT);
+                Toast mToast = Toast.makeText(MyApplication.Companion.getInstance(), text, showLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
                 mToast.setView(customview);
                 mToast.setGravity(Gravity.TOP, 0, 0);
 

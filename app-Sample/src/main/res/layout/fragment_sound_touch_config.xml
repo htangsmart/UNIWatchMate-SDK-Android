@@ -12,69 +12,68 @@
         android:orientation="vertical"
         android:showDividers="middle">
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_ring_when_call_come_in"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_is_ring_when_call_come_in"/>
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            app:preferenceTitle="@string/ds_is_ring_when_call_come_in" />
+
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_is_notification_touch"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_is_notification_touch"/>
+            app:preferenceTitle="@string/ds_is_notification_touch" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_is_crown_has_tactile_feedback"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_is_crown_has_tactile_feedback"/>
+            app:preferenceTitle="@string/ds_is_crown_has_tactile_feedback" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_is_system_has_tactile_feedback"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:name="@string/ds_is_system_has_tactile_feedback"/>
+            app:preferenceTitle="@string/ds_is_system_has_tactile_feedback" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_is_mute"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:name="@string/ds_is_mute"/>
-<!--
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
-            android:id="@+id/item_display_weather"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:name="@string/ds_display_weather"/>
+            app:preferenceTitle="@string/ds_is_mute" />
+        <!--
+                <com.github.kilnn.tool.widget.item.PreferenceItem
+                    android:id="@+id/item_display_weather"
+                                style="@style/Widget.Sample.PreferenceView.Item.Switch"
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
-            android:id="@+id/item_disconnect_reminder"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:name="@string/ds_disconnect_reminder"/>
+                    app:showSwitch="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:preferenceTitle="@string/ds_display_weather"/>
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
-            android:id="@+id/item_display_exercise_goal"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:name="@string/ds_display_exercise_goal"/>-->
+                <com.github.kilnn.tool.widget.item.PreferenceItem
+                    android:id="@+id/item_disconnect_reminder"
+                                style="@style/Widget.Sample.PreferenceView.Item.Switch"
+
+                    app:showSwitch="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:preferenceTitle="@string/ds_disconnect_reminder"/>
+
+                <com.github.kilnn.tool.widget.item.PreferenceItem
+                    android:id="@+id/item_display_exercise_goal"
+                                style="@style/Widget.Sample.PreferenceView.Item.Switch"
+
+                    app:showSwitch="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:preferenceTitle="@string/ds_display_exercise_goal"/>-->
 
     </LinearLayout>
 

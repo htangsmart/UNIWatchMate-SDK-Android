@@ -8,12 +8,20 @@ import android.os.Looper
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.apps.WmFind
 import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.FormatterUtil
+import com.sjbt.sdk.sample.utils.ToastUtil
+import com.sjbt.sdk.sample.utils.promptToast
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 
 class MyApplication : Application() {
     val TAG: String = "MyApplication"
@@ -47,6 +55,7 @@ class MyApplication : Application() {
 
         initAllProcess()
     }
+
     private fun initAllProcess() {
         FormatterUtil.init(Resources.getSystem().configuration.locale)
     }
@@ -56,49 +65,46 @@ class MyApplication : Application() {
         FormatterUtil.init(Resources.getSystem().configuration.locale)
 
     }
-    /**
-     * 全局监听连接状态
-     */
+
     private fun observeState() {
-        val authManager = Injector.getAuthManager()
-
-        //监听连接状态
-        UNIWatchMate.observeConnectState.subscribe(object : Observer<WmConnectState> {
-            override fun onSubscribe(d: Disposable) {
-
-            }
-
-            override fun onNext(connectState: WmConnectState) {
-
-                when (connectState) {
-                    WmConnectState.BT_DISABLE -> {
-
-                    }
-
-                    WmConnectState.BT_ENABLE -> {
-
-                    }
-
-                    WmConnectState.DISCONNECTED -> {
-
-                    }
-
-                    WmConnectState.CONNECTING -> {
-
-                    }
-
-                    WmConnectState.CONNECTED -> {
-
-                    }
-
-                    WmConnectState.VERIFIED -> {
-
-                    }
-                }
-            }
-
-            override fun onError(e: Throwable) {}
-            override fun onComplete() {}
-        })
+        applicationScope.launch {
+//            UNIWatchMate.wmApps.appWeather.observeWeather
+        }
+//        applicationScope.launch {
+//                UNIWatchMate.wmApps.appFind.observeFindMobile.asFlow().onCompletion {
+//                    UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
+//                        "onCompletion"
+//                    )
+//                }.catch {
+//                    it.message?.let { it1 ->
+//                        UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
+//                            it1
+//                        )
+//                    }
+//                    ToastUtil.showToast(it.toString(),false)
+//
+//                }.collect {
+//                    ToastUtil.showToast(it.toString(),true)
+//                }
+//        }
+//
+//        applicationScope.launch {
+//                UNIWatchMate.wmApps.appFind.stopFindMobile().asFlow().onCompletion {
+//                    UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
+//                        "onCompletion"
+//                    )
+//                }.catch {
+//                    it.message?.let { it1 ->
+//                        UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
+//                            it1
+//                        )
+//                    }
+//                    ToastUtil.showToast(it.toString(),false)
+//
+//                }.collect {
+//                    ToastUtil.showToast(it.toString(),true)
+//                }
+//
+//        }
     }
 }

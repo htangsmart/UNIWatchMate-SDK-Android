@@ -27,7 +27,7 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        viewBind.itemNotification.setOnClickListener(blockClick)
+//      viewBind.itemNotification.setOnClickListener(blockClick)
         viewBind.itemFunction.setOnClickListener(blockClick)
         viewBind.itemHealthMonitor.setOnClickListener(blockClick)
         viewBind.itemSedentary.setOnClickListener(blockClick)
@@ -39,7 +39,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
         viewBind.itemScreenVibrate.setOnClickListener(blockClick)
         viewBind.itemSoundTouchFeedback.setOnClickListener(blockClick)
         viewBind.itemAppView.setOnClickListener(blockClick)
-//        viewBind.itemWristLightingEnabled.getSwitchView()
+        viewBind.itemLanguage.setOnClickListener(blockClick)
+        viewBind.itemHeartRate.setOnClickListener(blockClick)
+//      viewBind.itemWristLightingEnabled.getSwitchView()
 //            .setOnCheckedChangeListener { buttonView, isChecked ->
 //
 //            }
@@ -51,7 +53,7 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewLifecycle.launchRepeatOnStarted {
                 launch {
                     UNIWatchMate.observeConnectState.asFlow().collect {
-                        viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
+//                        viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
                     }
                 }
                 launch {
@@ -89,15 +91,15 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewBind.itemTurnWristLighting -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
             }
-//            viewBind.itemSedentary -> {
-//                findNavController().navigate(DeviceConfigFragmentDirections.toSedentaryConfig())
-//            }
+            viewBind.itemLanguage -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toLanguage())
+            }
 //            viewBind.itemDrinkWater -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toDrinkWaterConfig())
 //            }
-//            viewBind.itemBloodPressure -> {
-//                findNavController().navigate(DeviceConfigFragmentDirections.toBpConfig())
-//            }
+            viewBind.itemHeartRate -> {
+                findNavController().navigate(DeviceConfigFragmentDirections.toHeartRate())
+            }
 //            viewBind.itemTurnWristLighting -> {
 //                findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
 //            }

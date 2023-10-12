@@ -23,12 +23,18 @@ class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycle.launchRepeatOnStarted {
+
             launch {
                 UNIWatchMate?.wmSync?.syncDeviceInfoData?.observeSyncData?.asFlow()?.collect{
                     viewBind.itemDeviceInfo.text = "syncDeviceInfoData\nmac=${it.macAddress}\nbluetoothName=${it.bluetoothName}\n" +
                             "deviceName=${it.deviceName}\n" +
                             "deviceId=${it.deviceId}\n" +
                             "version=${it.version}\n"+
+                            "cw=${it.cw}\n"+
+                            "ch=${it.ch}\n"+
+                            "lang=${it.lang}\n"+
+                            "screen=${it.screen}\n"+
+                            "dialAbility=${it.dialAbility}\n"+
                             "model=${it.model}"
                 }
             }
@@ -39,6 +45,11 @@ class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
                             "deviceName=${it.deviceName}\n" +
                             "deviceId=${it.deviceId}\n" +
                             "version=${it.version}\n"+
+                            "cw=${it.cw}\n"+
+                            "ch=${it.ch}\n"+
+                            "lang=${it.lang}\n"+
+                            "screen=${it.screen}\n"+
+                            "dialAbility=${it.dialAbility}\n"+
                             "model=${it.model}"
                 }
             }

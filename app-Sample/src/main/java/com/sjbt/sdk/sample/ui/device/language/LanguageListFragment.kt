@@ -1,4 +1,4 @@
-package com.sjbt.sdk.sample.ui.device.dial
+package com.sjbt.sdk.sample.ui.device.language
 
 import android.os.Bundle
 import android.view.View
@@ -12,7 +12,7 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.Success
-import com.sjbt.sdk.sample.databinding.FragmentDialInstalledListBinding
+import com.sjbt.sdk.sample.databinding.FragmentLanguageListBinding
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycle
@@ -20,11 +20,11 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 
-class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_list) {
+class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
 
-    private val viewBind: FragmentDialInstalledListBinding by viewBinding()
-    private val viewModel: DialInstalledViewModel by viewModels({ requireParentFragment() })
-    private lateinit var adapter: DialListAdapter
+    private val viewBind: FragmentLanguageListBinding by viewBinding()
+    private val viewModel: LanguagelInstalledViewModel by viewModels({ requireParentFragment() })
+    private lateinit var adapter: LanguageListAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,22 +34,18 @@ class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_
 
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewBind.recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        adapter = DialListAdapter()
-        adapter.listener = object : DialListAdapter.Listener {
-
+        adapter = LanguageListAdapter()
+        adapter.listener = object : LanguageListAdapter.Listener {
             override fun onItemDelete(position: Int) {
-                if (adapter.sources?.get(position)?.status != 1) {
-                    viewModel.deleteAlarm(position)
-                }else{
-                    promptToast.showFailed(getString(R.string.tip_inner_dial_del_error))
-                }
+                viewModel.setLanguage(position)
             }
         }
+
         adapter.registerAdapterDataObserver(adapterDataObserver)
         viewBind.recyclerView.adapter = adapter
 
         viewBind.loadingView.listener = LoadingView.Listener {
-            viewModel.requestInstallDials()
+            viewModel.requestLanguages()
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
 
@@ -57,7 +53,7 @@ class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 viewModel.flowState.collect { state ->
-                    when (state.requestDials) {
+                    when (state.requestLanguages) {
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                         }
@@ -65,13 +61,13 @@ class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_
                             viewBind.loadingView.showError(R.string.tip_load_error)
                         }
                         is Success -> {
-                            val alarms = state.requestDials()
-                            if (alarms == null || alarms.isEmpty()) {
+                            val wmLanguages = state.requestLanguages()
+                            if (wmLanguages.isNullOrEmpty()) {
                                 viewBind.loadingView.showError(R.string.ds_no_data)
                             } else {
                                 viewBind.loadingView.visibility = View.GONE
                             }
-                            adapter.sources = alarms
+                            adapter.sources = wmLanguages
                             adapter.notifyDataSetChanged()
 
                         }
@@ -85,7 +81,7 @@ class DialInstalledListFragment : BaseFragment(R.layout.fragment_dial_installed_
                         is DialEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
-                        is DialEvent.DialRemoved -> {
+                        is DialEvent.LanguageSet -> {
                             viewBind.loadingView.visibility = View.GONE
                             adapter.notifyItemRemoved(event.position)
                         }

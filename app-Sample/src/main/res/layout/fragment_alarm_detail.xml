@@ -39,13 +39,13 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_repeat"
-            style="@style/Widget.Item.Text"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceText="@string/ds_alarm_repeat_never"
             app:preferenceTitle="@string/ds_alarm_repeat"/>
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_label"
-            style="@style/Widget.Item.Text"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_alarm_label"/>
 
         <Button

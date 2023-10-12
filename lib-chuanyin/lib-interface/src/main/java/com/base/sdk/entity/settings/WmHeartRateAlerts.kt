@@ -43,7 +43,6 @@ class WmHeartRateAlerts(
 
     // 内部类，用于表示心率过高提醒的设置
     data class HeartRateThresholdAlert(
-        var isEnabled: Boolean = false,
         var threshold: Int = THRESHOLDS[0]  // 默认值为阈值列表的第一个值
     )
 
@@ -82,7 +81,6 @@ class WmHeartRateAlerts(
 
 
     fun setExerciseHeartRateAlert(isEnabled: Boolean, threshold: Int) {
-        exerciseHeartRateAlert.isEnabled = isEnabled
         if (threshold in THRESHOLDS) {
             exerciseHeartRateAlert.threshold = threshold
         } else {
@@ -91,7 +89,6 @@ class WmHeartRateAlerts(
     }
 
     fun setRestingHeartRateAlert(isEnabled: Boolean, threshold: Int) {
-        restingHeartRateAlert.isEnabled = isEnabled
         if (threshold in THRESHOLDS) {
             restingHeartRateAlert.threshold = threshold
         } else {

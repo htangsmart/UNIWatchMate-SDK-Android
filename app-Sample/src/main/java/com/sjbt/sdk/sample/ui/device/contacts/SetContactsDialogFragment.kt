@@ -1,4 +1,4 @@
-package com.sjbt.sdk.sample.ui.device.alarm
+package com.sjbt.sdk.sample.ui.device.contacts
 
 import android.app.Dialog
 import android.content.DialogInterface
@@ -13,12 +13,10 @@ import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 
-/**
- * Dialog wait alarm changes saving
- */
-class SetAlarmsDialogFragment : AppCompatDialogFragment() {
 
-    private val viewModel: AlarmViewModel by viewModels({ requireParentFragment().requireParentFragment() })
+class SetContactsDialogFragment : AppCompatDialogFragment() {
+
+    private val viewModel: ContactsViewModel by viewModels({ requireParentFragment() })
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,36 +25,33 @@ class SetAlarmsDialogFragment : AppCompatDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.ds_alarm)
+            .setTitle(R.string.ds_contacts)
             .setMessage(R.string.tip_setting_loading)
             .setNegativeButton(android.R.string.cancel) { _, _ ->
-                viewModel.setAlarmsAction.cancel()
+                viewModel.setContactsAction.cancel()
             }
             .setPositiveButton(R.string.action_retry, null)
             .create()
         lifecycle.launchRepeatOnStarted {
-            viewModel.setAlarmsAction.flowState.collect {
+            viewModel.setContactsAction.flowState.collect {
                 when (it) {
                     is Loading -> {
                         dialog.setMessage(getString(R.string.tip_setting_loading))
                         val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                         positiveButton.isVisible = false
                     }
-
                     is Fail -> {
                         dialog.setMessage(getString(R.string.tip_setting_fail))
                         val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
                         positiveButton.isVisible = true
                         positiveButton.setOnClickListener {
-                            viewModel.setAlarmsAction.retry()
+                            viewModel.setContactsAction.retry()
                         }
                     }
-
                     is Success -> {
                         dialog.setMessage(getString(R.string.tip_setting_success))
                         viewModel.sendNavigateUpEvent()
                     }
-
                     else -> {}
                 }
             }

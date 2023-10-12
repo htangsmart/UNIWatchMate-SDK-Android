@@ -8,7 +8,7 @@ class WmAlarm(
     var alarmName: String,//限制最长20
     var hour: Int,
     var minute: Int,
-    var repeatOptions: Set<AlarmRepeatOption>//重复模式
+    var repeatOptions: Set<AlarmRepeatOption>,//重复模式
 ) {
     var isOn: Boolean = false
 
@@ -17,7 +17,7 @@ class WmAlarm(
         name: String,
         hour: Int,
         minute: Int,
-        options: Set<AlarmRepeatOption>
+        options: Set<AlarmRepeatOption>,
     ) {
         this.alarmId = alarmId
         this.alarmName = name
@@ -39,6 +39,7 @@ class WmAlarm(
     override fun toString(): String {
         return "WmAlarm(alarmId=$alarmId, alarmName='$alarmName', hour=$hour, minute=$minute, repeatOptions=$repeatOptions, isOn=$isOn)"
     }
+
 }
 
 /**
