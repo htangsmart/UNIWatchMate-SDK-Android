@@ -86,6 +86,9 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             override fun subscribe(emitter: ObservableEmitter<WmTransferState>) {
                 observableTransferEmitter = emitter
 
+                sjUniWatch.wmLog.logD(TAG,"发射器001:"+emitter)
+                sjUniWatch.wmLog.logD(TAG,"发射器002:"+emitter)
+
                 var fileLen: Long = 0
 
                 files.forEach {
@@ -111,7 +114,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 val byteBuffer = ByteBuffer.wrap(msg)
                 val ota_allow = byteBuffer[16] //是否容许升级 0允许 1不允许
                 val reason = byteBuffer[17] //是否容许升级 0允许 1不允许
-                sjUniWatch.wmLog.logI(TAG, "1.允许传输:$ota_allow")
+                sjUniWatch.wmLog.logD(TAG, "1.允许传输:$ota_allow")
                 if (ota_allow.toInt() == 1) {
                     mSendingFile = mTransferFiles!![0]
 
@@ -119,6 +122,8 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                         it.sendingFile = mSendingFile
                         it.state = State.TRANSFERRING
                         observableTransferEmitter?.onNext(transferState)
+
+                        sjUniWatch.wmLog.logD(TAG, "发射器01:" + observableTransferEmitter)
                     }
 
                     mSendingFile?.let { file ->
@@ -140,7 +145,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mOtaProcess = 0
                 mCellLength = ByteBuffer.wrap(lenArray)
                     .order(ByteOrder.LITTLE_ENDIAN).int - 4
-                sjUniWatch.wmLog.logI(TAG,"cell_length:$mCellLength")
+                sjUniWatch.wmLog.logD(TAG, "cell_length:$mCellLength")
                 if (mCellLength > 0) {
 
                     Thread {
@@ -148,7 +153,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                             FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
 
                         mFileDataArray?.let {
-                            sjUniWatch.wmLog.logI(TAG,"开启线程读取文件字节流长度：" + it.size)
+                            sjUniWatch.wmLog.logD(TAG, "开启线程读取文件字节流长度：" + it.size)
                             continueSendFileData(0, it)
                         }
 
@@ -167,11 +172,14 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = true
                 mErrorSend = isRight.toInt() != 1
                 mOtaProcess = buffer.getInt(17)
-                sjUniWatch.wmLog.logI(TAG,"返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount")
+                sjUniWatch.wmLog.logD(
+                    TAG,
+                    "返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount"
+                )
                 if (mErrorSend) { //失败
                     //                                        removeCallBackRunner(mTransferTimeoutRunner)
                     //                                        mOtaProcess = mOtaProcess > 0 ? mOtaProcess - 1 : mOtaProcess;
-                    sjUniWatch.wmLog.logI(TAG,"出错后序号：$mOtaProcess")
+                    sjUniWatch.wmLog.logD(TAG, "出错后序号：$mOtaProcess")
                     if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         sendErrorMsg(mOtaProcess)
                     } else {
@@ -179,7 +187,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     }
                 } else { //成功
                     mTransferRetryCount = 0
-                    sjUniWatch.wmLog.logI(TAG,"掰正的消息：$mOtaProcess")
+                    sjUniWatch.wmLog.logD(TAG, "掰正的消息：$mOtaProcess")
 
                     Thread {
                         // 执行耗时操作
@@ -206,7 +214,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mOtaProcess = 0
                 //                                    removeCallBackRunner(mTransferTimeoutRunner)
                 val data_success = ByteBuffer.wrap(msg)[16]
-                sjUniWatch.wmLog.logI(TAG,"发送结果:$data_success")
+                sjUniWatch.wmLog.logD(TAG, "发送结果:$data_success")
                 sjUniWatch.clearMsg()
                 if (data_success == 1.toByte()) {
                     mSendFileCount++
@@ -219,10 +227,10 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                             it.progress = 100
                             it.index = mSendFileCount
 
+                            sjUniWatch.wmLog.logD(TAG, "发射器04:" + observableTransferEmitter)
                             observableTransferEmitter?.onNext(it)
                             observableTransferEmitter?.onComplete()
 
-                            transferState = null
                         }
 
                         transferEnd()
@@ -275,7 +283,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = false
                 mCanceledSend = true
                 val reason_cancel = ByteBuffer.wrap(msg)[16]
-                sjUniWatch.wmLog.logI(TAG,"设备取消传输原因：$reason_cancel")
+                sjUniWatch.wmLog.logD(TAG, "设备取消传输原因：$reason_cancel")
                 transferEnd()
                 transferError("file transfer error reason:06 Error")
             }
@@ -300,7 +308,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         for (i in startProcess.toInt() until mPackageCount) {
             mOtaProcess = i
             if (mCanceledSend || mErrorSend) { //取消或者中途出错
-                sjUniWatch.wmLog.logI(TAG,"消息取消或者出错：$mOtaProcess")
+                sjUniWatch.wmLog.logD(TAG, "消息取消或者出错：$mOtaProcess")
                 mTransferring = false
                 break
             }
@@ -321,6 +329,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     it.index = mSendFileCount + 1
                     it.state = State.TRANSFERRING
                     observableTransferEmitter?.onNext(it)
+                    sjUniWatch.wmLog.logD(TAG, "发射器processing:" + observableTransferEmitter)
                 }
 
                 Thread.sleep(MSG_INTERVAL.toLong())
@@ -331,7 +340,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
                 mTransferring = false
-                sjUniWatch.wmLog.logI(TAG,"连续发送过程中出错：" + e.message)
+                sjUniWatch.wmLog.logD(TAG, "连续发送过程中出错：" + e.message)
 
                 observableTransferEmitter?.onError(e)
 
@@ -361,7 +370,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
         }
 
-//        sjUniWatch.wmLog.logI(TAG,"分包类型：" + mDivide);
+//        sjUniWatch.wmLog.logD(TAG,"分包类型：" + mDivide);
         if (otaProcess != mPackageCount - 1) {
             info.offSet = otaProcess * mCellLength
             info.payload = ByteArray(mCellLength)
@@ -373,7 +382,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 info.payload.size
             )
         } else {
-//            sjUniWatch.wmLog.logI(TAG,"最后一包长度：" + mLastDataLength);
+//            sjUniWatch.wmLog.logD(TAG,"最后一包长度：" + mLastDataLength);
             if (mLastDataLength == 0) {
                 info.offSet = otaProcess * mCellLength
                 info.payload = ByteArray(mCellLength)
