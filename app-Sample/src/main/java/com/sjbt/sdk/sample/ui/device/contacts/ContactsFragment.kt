@@ -80,7 +80,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     cursor.close()
                     if (!name.isNullOrEmpty() && !number.isNullOrEmpty()) {
                         number = number.replace(" ".toRegex(), "")
-                        val newContact = WmContact.create(name, number,false)
+                        val newContact = WmContact.create(name, number)
                         newContact?.let { viewModel.addContacts(it) }
                     }
                 }

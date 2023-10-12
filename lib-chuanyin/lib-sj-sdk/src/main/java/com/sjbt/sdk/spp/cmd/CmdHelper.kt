@@ -2139,7 +2139,7 @@ object CmdHelper {
         byteBuffer.put(originNameArray.copyOf(20))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
-        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
         byteBuffer.put(
             if (alarm.isOn) {
                 1.toByte()
@@ -2172,7 +2172,7 @@ object CmdHelper {
         byteBuffer.put(originNameArray.copyOf(20))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
-        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
         byteBuffer.put(
             if (alarm.isOn) {
                 1.toByte()
@@ -2195,7 +2195,7 @@ object CmdHelper {
         byteBuffer.put(originNameArray.copyOf(20))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
-        byteBuffer.put(alarm.repeatOptions.ordinal.toByte())
+        byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
         byteBuffer.put(
             if (alarm.isOn) {
                 1.toByte()

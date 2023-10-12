@@ -8,7 +8,7 @@ class WmAlarm(
     var alarmName: String,//限制最长20
     var hour: Int,
     var minute: Int,
-    var repeatOptions: AlarmRepeatOption//重复模式
+    var repeatOptions: Set<AlarmRepeatOption>//重复模式
 ) {
     var isOn: Boolean = false
 
@@ -34,6 +34,14 @@ enum class AlarmRepeatOption(val value: Int) {
         fun fromValue(value: Int): Set<AlarmRepeatOption> {
             return AlarmRepeatOption.values().filter { option -> option.value and value != 0 }
                 .toSet()
+        }
+
+        fun toValue(options:Set<AlarmRepeatOption>) :Int{
+            var value = 0;
+            options.forEach{
+                value =  value or it.value
+            }
+            return value
         }
     }
 }
