@@ -197,6 +197,7 @@ const val DIVIDE_Y_E_2: Byte = 3
 const val DIVIDE_Y_F_JSON: Byte = 5
 const val DIVIDE_Y_M_JSON: Byte = 6
 const val DIVIDE_Y_E_JSON: Byte = 7
+
 const val DIAL_MSG_LEN = 17
 const val CONTACT_MSG_LEN = 80
 const val CONTACT_NAME_LEN = 60

@@ -32,7 +32,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     override fun syncContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {
         contactSetEmitter = it
         val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
-        sjUniWatch.sendWriteSubpackageNodeCmdList(payloadPackage)
+        sjUniWatch.sendWriteSubpackageNodeCmdList((contactList.size * 52).toShort(), payloadPackage)
     }
 
 

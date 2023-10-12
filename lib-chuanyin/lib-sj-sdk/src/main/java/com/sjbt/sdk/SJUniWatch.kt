@@ -125,6 +125,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         Log.e(">>>>>>>>>", "logEnable:" + logEnable)
     }
 
+    //当前消息的节点信息
+    var mPayloadPackage: PayloadPackage? = null
+
     init {
         mContext = context
         mMsgTimeOut = timeout
@@ -601,11 +604,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     wmLog.logI(TAG, "节点数据：" + msgBean.payload)
 
-                                    var payloadPackage: PayloadPackage =
-                                        PayloadPackage.fromByteArray(msgBean.payload)
-
-                                    parseNodePayload(true, payloadPackage)
-
+                                    if (msgBean.payload.size > 10) {//设备应用层回复
+                                        wmLog.logI(TAG, "应用层消息：" + msgBean.payload.size)
+                                        var payloadPackage: PayloadPackage =
+                                            PayloadPackage.fromByteArray(msgBean.payload)
+                                        parseNodePayload(true, payloadPackage)
+                                    } else {//设备传输层回复
+                                        wmLog.logI(TAG, "传输层消息：" + msgBean.payload.size)
+                                        mPayloadPackage?.let {
+                                            it.itemList[0].data = msgBean.payload
+                                            parseNodePayload(false, it)
+                                        }
+                                    }
                                 }
 
                                 CMD_ID_8002 -> {//响应
@@ -914,7 +924,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     /**
      * 分包发送写入类型Node节点消息
      */
-    fun sendWriteSubpackageNodeCmdList(payloadPackage: PayloadPackage) {
+    fun sendWriteSubpackageNodeCmdList(totalLen: Short, payloadPackage: PayloadPackage) {
 
         val nodeLen = payloadPackage.itemList[0].dataLen + 4
         val nodeCount = payloadPackage.itemList.size
@@ -944,6 +954,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 HEAD_NODE_TYPE,
                 CMD_ID_8001,
                 DIVIDE_N_2,
+                totalLen,
                 0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
@@ -959,6 +970,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 发送写入类型Node节点消息
      */
     fun sendWriteNodeCmdList(payloadPackage: PayloadPackage) {
+
         payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE).forEach {
             var payload: ByteArray = it
 
@@ -967,12 +979,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 CMD_ID_8001,
                 DIVIDE_N_2,
                 0,
+                0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
 
             sendNormalMsg(cmdArray)
         }
+
+        mPayloadPackage = payloadPackage
 
         parseNodePayload(false, payloadPackage)
     }
@@ -989,12 +1004,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 CMD_ID_8001,
                 DIVIDE_N_2,
                 0,
+                0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
 
             sendNormalMsg(cmdArray)
         }
+
+        mPayloadPackage = payloadPackage
 
         parseNodePayload(false, payloadPackage)
     }
@@ -1011,12 +1029,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 CMD_ID_8001,
                 DIVIDE_N_2,
                 0,
+                0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                 payload
             )
 
             sendNormalMsg(cmdArray)
         }
+
+        mPayloadPackage = payloadPackage
 
         parseNodePayload(false, payloadPackage)
     }
@@ -1214,16 +1235,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (it.urn[2]) {
 
                                 URN_APP_FIND_DEVICE_START -> {
-                                    when(it.data[0].toInt()){
-                                        ResponseResultType.RESPONSE_EACH.type->{
+                                    when (it.data[0].toInt()) {
+                                        ResponseResultType.RESPONSE_EACH.type -> {
                                             appFind.startFindWatchEmitter?.onSuccess(true)
                                         }
 
-                                        ResponseResultType.RESPONSE_ALL_OK.type->{
+                                        ResponseResultType.RESPONSE_ALL_OK.type -> {
                                             appFind.startFindWatchEmitter?.onSuccess(true)
                                         }
 
-                                        ResponseResultType.RESPONSE_ALL_FAIL.type->{
+                                        ResponseResultType.RESPONSE_ALL_FAIL.type -> {
                                             appFind.startFindWatchEmitter?.onSuccess(false)
                                         }
                                     }
