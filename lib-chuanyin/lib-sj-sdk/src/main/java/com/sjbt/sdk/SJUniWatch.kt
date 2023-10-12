@@ -16,6 +16,7 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
@@ -48,6 +49,7 @@ import io.reactivex.rxjava3.core.*
 import timber.log.Timber
 import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -1200,10 +1202,40 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (it.urn[2]) {
 
                                 URN_APP_CONTACT_COUNT -> {
-
+                                    appContact.contactCountSetEmitter?.onSuccess(it.data[0].toInt() == 1)
                                 }
 
                                 URN_APP_CONTACT_LIST -> {
+                                    val byteArray =
+                                        ByteBuffer.wrap(it.data).array()
+
+                                    val contacts = mutableListOf<WmContact>()
+                                    val chunkSize = 52
+                                    var i = 0
+                                    while (i < byteArray.size) {
+                                        val nameBytes = byteArray.copyOfRange(i, i + 32)
+                                        val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
+                                        val name = String(nameBytes).trim()
+                                        val num = String(numBytes).trim()
+                                        val contact = WmContact.create(name, num)
+                                        contact?.let {
+                                            contacts.add(it)
+                                        }
+                                        i += chunkSize
+                                    }
+
+                                    appContact.contactListEmitter?.onNext(contacts)
+                                }
+
+                                URN_APP_CONTACT_UPDATE -> {
+
+                                }
+
+                                URN_APP_CONTACT_SET_EMERGENCY -> {
+
+                                }
+
+                                URN_APP_CONTACT_GET_EMERGENCY -> {
 
                                 }
                             }

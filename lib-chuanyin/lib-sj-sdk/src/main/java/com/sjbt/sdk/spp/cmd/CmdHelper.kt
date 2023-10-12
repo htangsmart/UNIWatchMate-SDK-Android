@@ -2212,7 +2212,9 @@ object CmdHelper {
      */
     fun getReadContactCountCmd(contactCount:Byte): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_1), ByteArray(0))
+        val byteBuffer = ByteBuffer.allocate(1)
+        byteBuffer.put(contactCount)
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_1), byteBuffer.array())
         return payloadPackage
     }
 

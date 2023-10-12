@@ -18,7 +18,7 @@ class WmContact internal constructor(
          * @param number Contact phone number
          * @return
          */
-        fun create(name: String?, number: String?, isEmergency: Boolean): WmContact? {
+        fun create(name: String?, number: String?): WmContact? {
             if (name == null || number == null) return null
             //去掉number中的空格
 

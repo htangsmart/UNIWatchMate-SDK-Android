@@ -11,17 +11,21 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
 class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
-    lateinit var contactListEmitter: ObservableEmitter<List<WmContact>>
-    lateinit var contactSetEmitter: SingleEmitter<Boolean>
-    lateinit var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>
-    lateinit var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>
+    var contactListEmitter: ObservableEmitter<List<WmContact>>? = null
+    var contactSetEmitter: SingleEmitter<Boolean>? = null
+    var contactCountSetEmitter: SingleEmitter<Boolean>? = null
+    var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>? = null
+    var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>? = null
 
     override fun isSupport(): Boolean {
         return true
     }
 
     override fun setContactCount(count: Int): Single<Boolean> {
-        TODO("Not yet implemented")
+        return Single.create {
+            contactCountSetEmitter = it
+            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getReadContactCountCmd(count.toByte()))
+        }
     }
 
     override var observableContactList: Observable<List<WmContact>> = Observable.create {
@@ -34,7 +38,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
         sjUniWatch.sendWriteSubpackageNodeCmdList((contactList.size * 52).toShort(), payloadPackage)
     }
-
 
     override fun observableEmergencyContacts(): Observable<WmEmergencyCall> = Observable.create {
         emergencyNumberEmitter = it
