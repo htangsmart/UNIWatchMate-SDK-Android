@@ -108,7 +108,7 @@ class PayloadPackage {
      */
     fun toByteArray(
         mtu: Int = 600,
-        requestType : RequestType
+        requestType: RequestType
     ): List<ByteArray> {
         val limitation = mtu
         val payloadList = mutableListOf<ByteArray>() //payload列表

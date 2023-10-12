@@ -20,7 +20,7 @@ abstract class AbAppFind : IWmSupport {
      * stop find mobile(停止查找手机)
      * @return 0:停止声音和关闭界面 1:停止声音 2:关闭界面
      */
-    abstract fun stopFindMobile(): Observable<StopType>
+    abstract fun stopFindMobile(): Observable<Boolean>
 
     /**
      * find watch(查找手表)
@@ -31,12 +31,8 @@ abstract class AbAppFind : IWmSupport {
     /**
      * stop find watch(停止查找手表)
      *
-     * @param flag 0:停止声音和关闭界面 1:停止声音 2:关闭界面
      * @return
      */
-    abstract fun stopFindWatch(flag: StopType): Single<Boolean>
+    abstract fun stopFindWatch(): Single<Boolean>
 }
 
-enum class StopType(val type: Int) {
-    STOP_VOICE(1), STOP_UI(2), STOP_ALL(0)
-}

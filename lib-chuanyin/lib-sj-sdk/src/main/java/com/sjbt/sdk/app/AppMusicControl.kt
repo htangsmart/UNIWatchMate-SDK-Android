@@ -8,7 +8,14 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 
 class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
 
-    lateinit var observableMusicControlEmitter: ObservableEmitter<WmMusicControlType>
+    private var observableMusicControlEmitter: ObservableEmitter<WmMusicControlType>? = null
+
+    fun observeMusicControl(musicControl: WmMusicControlType) {
+        observableMusicControlEmitter?.let {
+            it.onNext(musicControl)
+        }
+    }
+
     override fun isSupport(): Boolean {
         return true
     }

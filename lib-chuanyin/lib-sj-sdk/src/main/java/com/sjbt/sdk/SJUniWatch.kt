@@ -16,6 +16,7 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
@@ -29,6 +30,7 @@ import com.sjbt.sdk.dfu.SJTransferFile
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.entity.RequestType
+import com.sjbt.sdk.entity.ResponseResultType
 import com.sjbt.sdk.entity.old.AppViewBean
 import com.sjbt.sdk.entity.old.BasicInfo
 import com.sjbt.sdk.entity.old.BiuBatteryBean
@@ -1195,16 +1197,72 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_FIND_PHONE -> {
+                            when (it.urn[2]) {
+
+                                URN_APP_FIND_PHONE_START -> {
+
+                                }
+                                URN_APP_FIND_PHONE_STOP -> {
+
+                                }
+                            }
 
                         }
 
                         URN_APP_FIND_DEVICE -> {
 
+                            when (it.urn[2]) {
 
+                                URN_APP_FIND_DEVICE_START -> {
+                                    when(it.data[0].toInt()){
+                                        ResponseResultType.RESPONSE_EACH.type->{
+                                            appFind.startFindWatchEmitter?.onSuccess(true)
+                                        }
+
+                                        ResponseResultType.RESPONSE_ALL_OK.type->{
+                                            appFind.startFindWatchEmitter?.onSuccess(true)
+                                        }
+
+                                        ResponseResultType.RESPONSE_ALL_FAIL.type->{
+                                            appFind.startFindWatchEmitter?.onSuccess(false)
+                                        }
+                                    }
+
+                                }
+
+                                URN_APP_FIND_DEVICE_STOP -> {
+
+                                }
+                            }
                         }
 
                         URN_APP_MUSIC_CONTROL -> {
 
+                            when (it.data[0]) {
+                                WmMusicControlType.PREV_SONG.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.PREV_SONG)
+                                }
+
+                                WmMusicControlType.NEXT_SONG.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.NEXT_SONG)
+                                }
+
+                                WmMusicControlType.PLAY.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.PLAY)
+                                }
+
+                                WmMusicControlType.PAUSE.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.PAUSE)
+                                }
+
+                                WmMusicControlType.VOLUME_UP.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.VOLUME_UP)
+                                }
+
+                                WmMusicControlType.VOLUME_DOWN.type -> {
+                                    appMusicControl.observeMusicControl(WmMusicControlType.VOLUME_DOWN)
+                                }
+                            }
                         }
                     }
                 }

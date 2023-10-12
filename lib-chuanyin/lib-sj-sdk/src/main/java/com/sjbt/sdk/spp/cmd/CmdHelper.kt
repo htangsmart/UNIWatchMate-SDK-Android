@@ -2177,11 +2177,9 @@ object CmdHelper {
     /**
      * 停止查找手表
      */
-    fun getExecuteStopFindDevice(wmFind: WmFind): PayloadPackage {
+    fun getExecuteStopFindDevice(): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
-        byteBuffer.put(wmFind.count.toByte())
-        byteBuffer.putShort(wmFind.timeSeconds.toShort())
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
         payloadPackage.putData(getUrnId(URN_4, URN_7, URN_2), byteBuffer.array())
         return payloadPackage
     }
