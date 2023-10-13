@@ -32,8 +32,8 @@ data class WmUnitInfo(
     }
 
     enum class TemperatureUnit {
-        CELSIUS,
-        FAHRENHEIT
+        CELSIUS,//摄氏度
+        FAHRENHEIT//华氏度
     }
 
     enum class TimeFormat {

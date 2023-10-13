@@ -44,6 +44,7 @@ import io.reactivex.rxjava3.core.*
 import timber.log.Timber
 import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -111,12 +112,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val settingUnitInfo = wmSettings.settingUnitInfo as SettingUnitInfo
     private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
     private val settingSleepSet = wmSettings.settingSleepSettings as SettingSleepSet
-    private val settingDrinkWaterReminder = wmSettings.settingDrinkWater as SettingDrinkWaterReminder
+    private val settingDrinkWaterReminder =
+        wmSettings.settingDrinkWater as SettingDrinkWaterReminder
 
     private val gson = Gson()
     private var sharedPreferencesUtils: SharedPreferencesUtils
     var sdkLogEnable = false
     private val mHandler = Handler(Looper.getMainLooper())
+
+    var MTU:Int = 600
+
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
         Log.e(">>>>>>>>>", "logEnable:" + logEnable)
@@ -620,6 +625,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {//响应
 
                                 }
+
+                                CMD_ID_8003 -> {
+                                    val byteBuffer = ByteBuffer.wrap(msgBean.payload)
+                                    MTU = byteBuffer.short.toInt()
+                                    wmLog.logD(TAG, "MTU:$MTU")
+                                }
                             }
                         }
                     }
@@ -1045,7 +1056,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
                         URN_SETTING_SPORT -> {//运动目标
-                           settingSportGoal.sportInfoBusiness(it)
+                            settingSportGoal.sportInfoBusiness(it)
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息
@@ -1110,6 +1121,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         URN_APP_WEATHER -> {
 
+                           appWeather.weatherBusiness(it)
                         }
 
                         URN_APP_RATE -> {
@@ -1136,7 +1148,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_MUSIC_CONTROL -> {
-                           appMusicControl.musicControlBusiness(it)
+                            appMusicControl.musicControlBusiness(it)
                         }
                     }
                 }
@@ -1146,7 +1158,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
         }
     }
-
 
 
     private fun isMsgStopped(head: Byte, cmdId: Short): Boolean {

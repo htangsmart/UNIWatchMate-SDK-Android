@@ -195,7 +195,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     )
                     val toDayWeather = TodayWeather(
                         10, WmUnitInfo.TemperatureUnit.CELSIUS, 90, 80,
-                        1, "weatherDesc", System.currentTimeMillis(), 2
+                        1,"weatherDesc", System.currentTimeMillis(), 2
                     )
                     val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
                     weatherForecastList.add(wmWeatherForecast)
@@ -207,7 +207,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                         weatherForecastList,
                         todayWeatherList
                     )
-                    val result =  UNIWatchMate?.wmApps?.appWeather?.pushWeather(wmWeather)?.await()
+                    val result =  UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(wmWeather,WmUnitInfo.TemperatureUnit.CELSIUS)?.await()
                     UNIWatchMate.wmLog.logE(TAG,"set itemTestWeather $result")
                 }
             }
