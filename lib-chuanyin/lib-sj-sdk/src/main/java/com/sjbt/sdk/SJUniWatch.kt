@@ -1187,17 +1187,21 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
-        val device = WmDevice(bindInfo.model)
-        device.address = address
-        device.mode = bindInfo.model
+        val wmDevice = WmDevice(bindInfo.model)
+        wmDevice.address = address
+        wmDevice.mode = bindInfo.model
         mBindInfo = bindInfo
-        device.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
+        wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
-        if (device.isRecognized) {
+        if (wmDevice.isRecognized) {
             wmLog.logD(TAG, " connect:${address}")
-            connectEmitter?.onNext(WmConnectState.CONNECTING)
-
             try {
+                if (!mBtAdapter.isEnabled) {
+                    connectEmitter?.onNext(WmConnectState.BT_DISABLE)
+                    return wmDevice
+                }
+
+                connectEmitter?.onNext(WmConnectState.CONNECTING)
                 mCurrDevice = mBtAdapter.getRemoteDevice(address)
                 mBtEngine.connect(mCurrDevice)
             } catch (e: Exception) {
@@ -1208,7 +1212,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             connectEmitter?.onNext(WmConnectState.DISCONNECTED)
         }
 
-        return device
+        return wmDevice
     }
 
     /**
@@ -1226,10 +1230,17 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
+
         wmDevice.address = bluetoothDevice.address
         wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
         if (wmDevice.isRecognized) {
+
+            if(!mBtAdapter.isEnabled){
+                connectEmitter?.onNext(WmConnectState.BT_DISABLE)
+                return wmDevice
+            }
+
             wmLog.logE(TAG, " connect:${wmDevice}")
             connectEmitter?.onNext(WmConnectState.CONNECTING)
             mBtEngine.connect(bluetoothDevice)
