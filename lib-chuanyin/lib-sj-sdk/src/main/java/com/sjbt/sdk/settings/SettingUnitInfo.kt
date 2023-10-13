@@ -1,6 +1,5 @@
 package com.sjbt.sdk.settings
 
-import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
@@ -11,9 +10,9 @@ import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
 
 class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
-    lateinit var observeEmitter: ObservableEmitter<WmUnitInfo>
-    lateinit var setEmitter: SingleEmitter<WmUnitInfo>
-    lateinit var getEmitter: SingleEmitter<WmUnitInfo>
+    private var observeEmitter: ObservableEmitter<WmUnitInfo>? = null
+    private var setEmitter: SingleEmitter<WmUnitInfo>? = null
+    private var getEmitter: SingleEmitter<WmUnitInfo>? = null
 
     override fun isSupport(): Boolean {
         return true
@@ -51,9 +50,31 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
                 val byteBuffer =
                     ByteBuffer.wrap(it.data)
 
-                val wmSportGoal = WmUnitInfo(WmUnitInfo.WeightUnit.KG, WmUnitInfo.TemperatureUnit.CELSIUS, WmUnitInfo.TimeFormat.TWELVE_HOUR, WmUnitInfo.DistanceUnit.KM)
+                val timeUnit = byteBuffer.get()
+                val distanceUnit = byteBuffer.get()
+                val temperatureUnit = byteBuffer.get()
+//                val weightUnit = byteBuffer.get()
+
+                val wmSportGoal = WmUnitInfo(
+                    temperatureUnit = if (temperatureUnit.toInt() == 0) {
+                        WmUnitInfo.TemperatureUnit.CELSIUS
+                    } else {
+                        WmUnitInfo.TemperatureUnit.FAHRENHEIT
+                    },
+                    timeFormat = if (timeUnit.toInt() == 0) {
+                        WmUnitInfo.TimeFormat.TWELVE_HOUR
+                    } else {
+                        WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR
+                    },
+                    distanceUnit = if (distanceUnit.toInt() == 0) {
+                        WmUnitInfo.DistanceUnit.KM
+                    } else {
+                        WmUnitInfo.DistanceUnit.MILE
+                    }
+                )
 
                 getEmitter?.onSuccess(wmSportGoal)
+                observeEmitter?.onNext(wmSportGoal)
             }
         }
     }

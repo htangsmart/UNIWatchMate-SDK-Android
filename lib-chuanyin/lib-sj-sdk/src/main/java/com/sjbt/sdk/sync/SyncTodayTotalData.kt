@@ -11,8 +11,8 @@ class SyncTodayTotalData : AbSyncData<WmTodayTotalData>() {
 
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<WmTodayTotalData>
-    lateinit var observeChangeEmitter: ObservableEmitter<WmTodayTotalData>
+    private var activityObserveEmitter: SingleEmitter<WmTodayTotalData>? = null
+    private var observeChangeEmitter: ObservableEmitter<WmTodayTotalData>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

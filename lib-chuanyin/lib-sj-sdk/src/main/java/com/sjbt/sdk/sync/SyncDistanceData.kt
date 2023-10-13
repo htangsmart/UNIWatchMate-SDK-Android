@@ -7,12 +7,12 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncDistanceData : AbSyncData<List<WmDistanceData> >() {
+class SyncDistanceData : AbSyncData<List<WmDistanceData>>() {
 
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmDistanceData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmDistanceData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmDistanceData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmDistanceData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

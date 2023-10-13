@@ -7,12 +7,12 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncRealtimeRateData: AbSyncData<List<WmRealtimeRateData>>(){
+class SyncRealtimeRateData : AbSyncData<List<WmRealtimeRateData>>() {
 
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmRealtimeRateData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmRealtimeRateData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmRealtimeRateData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmRealtimeRateData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

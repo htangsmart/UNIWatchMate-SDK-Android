@@ -10,8 +10,8 @@ import io.reactivex.rxjava3.core.SingleEmitter
 class SyncOxygenData : AbSyncData<List<WmOxygenData>>() {
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmOxygenData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmOxygenData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmOxygenData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmOxygenData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

@@ -10,7 +10,6 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
 
     private var observableMusicControlEmitter: ObservableEmitter<WmMusicControlType>? = null
-
     private fun observeMusicControl(musicControl: WmMusicControlType) {
         observableMusicControlEmitter?.let {
             it.onNext(musicControl)

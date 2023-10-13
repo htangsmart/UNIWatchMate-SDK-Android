@@ -8,9 +8,9 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 import io.reactivex.rxjava3.core.SingleOnSubscribe
 
-class AppNotification(sjUniWatch: SJUniWatch): AbAppNotification() {
+class AppNotification(sjUniWatch: SJUniWatch) : AbAppNotification() {
     val sjUniWatch = sjUniWatch
-    lateinit var sendNotificationEmitter: SingleEmitter<Boolean>
+    var sendNotificationEmitter: SingleEmitter<Boolean>? = null
 
     override fun isSupport(): Boolean {
         return true

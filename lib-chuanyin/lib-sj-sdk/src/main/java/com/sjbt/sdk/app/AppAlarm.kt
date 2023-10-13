@@ -13,10 +13,10 @@ import io.reactivex.rxjava3.core.SingleEmitter
 class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
     private var _isSupport: Boolean = true
-    private lateinit var alarmListEmitter: ObservableEmitter<List<WmAlarm>>
-    private lateinit var addAlarmEmitter: SingleEmitter<WmAlarm>
-    private lateinit var deleteAlarmEmitter: SingleEmitter<WmAlarm>
-    private lateinit var updateAlarmEmitter: SingleEmitter<WmAlarm>
+    private var alarmListEmitter: ObservableEmitter<List<WmAlarm>>? = null
+    private var addAlarmEmitter: SingleEmitter<WmAlarm>? = null
+    private var deleteAlarmEmitter: SingleEmitter<WmAlarm>? = null
+    private var updateAlarmEmitter: SingleEmitter<WmAlarm>? = null
 
     private var mAlarm: WmAlarm? = null
 
@@ -31,19 +31,37 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
     private fun addSuccess(success: Boolean) {
         mAlarm?.let {
-            addAlarmEmitter?.onSuccess(if(success){it}else{null})
+            addAlarmEmitter?.onSuccess(
+                if (success) {
+                    it
+                } else {
+                    null
+                }
+            )
         }
     }
 
     private fun deleteSuccess(success: Boolean) {
         mAlarm?.let {
-            deleteAlarmEmitter?.onSuccess(if(success){it}else{null})
+            deleteAlarmEmitter?.onSuccess(
+                if (success) {
+                    it
+                } else {
+                    null
+                }
+            )
         }
     }
 
     private fun updateSuccess(success: Boolean) {
         mAlarm?.let {
-            updateAlarmEmitter?.onSuccess(if(success){it}else{null})
+            updateAlarmEmitter?.onSuccess(
+                if (success) {
+                    it
+                } else {
+                    null
+                }
+            )
         }
     }
 

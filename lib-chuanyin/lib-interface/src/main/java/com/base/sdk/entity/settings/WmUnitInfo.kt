@@ -8,7 +8,7 @@ data class WmUnitInfo(
      * Weight unit
      * KG, LB
      */
-    var weightUnit: WeightUnit,
+    var weightUnit: WeightUnit = WeightUnit.KG,
     /**
      * Temperature unit
      * CELSIUS, FAHRENHEIT

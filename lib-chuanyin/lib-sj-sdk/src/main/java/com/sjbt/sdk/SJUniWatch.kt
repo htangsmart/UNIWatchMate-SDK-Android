@@ -111,6 +111,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val settingUnitInfo = wmSettings.settingUnitInfo as SettingUnitInfo
     private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
     private val settingSleepSet = wmSettings.settingSleepSettings as SettingSleepSet
+    private val settingDrinkWaterReminder = wmSettings.settingDrinkWater as SettingDrinkWaterReminder
 
     private val gson = Gson()
     private var sharedPreferencesUtils: SharedPreferencesUtils
@@ -293,7 +294,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-                                    appNotification.sendNotificationEmitter.onSuccess(msg[16].toInt() == 1)
+                                    appNotification.sendNotificationEmitter?.onSuccess(msg[16].toInt() == 1)
                                 }
 
                                 CMD_ID_8008 -> {//获取AppView List
@@ -309,7 +310,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     }
 
                                     val wmAppView = WmAppView(appViews)
-                                    settingAppView.getEmitter.onSuccess(wmAppView)
+                                    settingAppView.getEmitter?.onSuccess(wmAppView)
                                 }
 
                                 CMD_ID_8009 -> {//APP 视图设置
@@ -341,8 +342,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         }
                                     }
 
-                                    appDial.syncDialListEmitter.onNext(appDial.mMyDialList)
-                                    appDial.syncDialListEmitter.onComplete()
+                                    appDial.syncDialListEmitter?.onNext(appDial.mMyDialList)
+                                    appDial.syncDialListEmitter?.onComplete()
                                 }
 
                                 CMD_ID_8014 -> {//查询表盘当前信息
@@ -411,7 +412,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8028 -> {//收到dev拍照命令
-                                    appCamera.cameraObserveTakePhotoEmitter.onNext(true)
+                                    appCamera.cameraObserveTakePhotoEmitter?.onNext(true)
 
                                     sendNormalMsg(
                                         CmdHelper.getCameraRespondCmd(
@@ -422,11 +423,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
-                                    appCamera.cameraObserveOpenEmitter.onNext(msg[16].toInt() == 1)
+                                    appCamera.cameraObserveOpenEmitter?.onNext(msg[16].toInt() == 1)
                                 }
 
                                 CMD_ID_802A -> {//
-                                    appCamera.cameraSingleOpenEmitter.onSuccess(msg[16].toInt() == 1)
+                                    appCamera.cameraSingleOpenEmitter?.onSuccess(msg[16].toInt() == 1)
                                 }
 
                                 CMD_ID_802B -> {
@@ -436,11 +437,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     if (action == CHANGE_CAMERA) {
                                         val front = stateOn.toInt() == 0
                                         if (front) {
-                                            appCamera.cameraObserveFrontBackEmitter.onNext(
+                                            appCamera.cameraObserveFrontBackEmitter?.onNext(
                                                 WMCameraPosition.WMCameraPositionFront
                                             )
                                         } else {
-                                            appCamera.cameraObserveFrontBackEmitter.onNext(
+                                            appCamera.cameraObserveFrontBackEmitter?.onNext(
                                                 WMCameraPosition.WMCameraPositionRear
                                             )
                                         }
@@ -448,11 +449,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     } else {
                                         val flashOn = stateOn.toInt() == 1
                                         if (flashOn) {
-                                            appCamera.cameraObserveFlashEmitter.onNext(
+                                            appCamera.cameraObserveFlashEmitter?.onNext(
                                                 WMCameraFlashMode.WMCameraFlashModeOn
                                             )
                                         } else {
-                                            appCamera.cameraObserveFlashEmitter.onNext(
+                                            appCamera.cameraObserveFlashEmitter?.onNext(
                                                 WMCameraFlashMode.WMCameraFlashModeOff
                                             )
                                         }
@@ -706,34 +707,24 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     CMD_STR_8005_TIME_OUT -> {}
                     CMD_STR_8006_TIME_OUT -> {}
                     CMD_STR_8007_TIME_OUT -> {
-                        settingDateTime.getEmitter.onError(RuntimeException("get sync time timeout!"))
+                        settingDateTime.getEmitter?.onError(RuntimeException("get sync time timeout!"))
                     }
 
                     CMD_STR_8008_TIME_OUT -> {
-//                        if (emitterGetAppView != null) {
-//                            emitterGetAppView.onError(RuntimeException("get app views"))
-//                        }
-                        settingAppView.getEmitter.onError(RuntimeException("get app views"))
+                        settingAppView.getEmitter?.onError(RuntimeException("get app views"))
                     }
                     CMD_STR_8009_TIME_OUT -> {
-//                        if (singleSetAppViewEmitter != null) {
-//                            singleSetAppViewEmitter.onError(RuntimeException("set app view time out"))
-//                        }
-                        settingAppView.setEmitter.onError(RuntimeException("set app view time out"))
+                        settingAppView.setEmitter?.onError(RuntimeException("set app view time out"))
                     }
                     CMD_STR_800A_TIME_OUT -> {}
                     CMD_STR_800B_TIME_OUT -> {}
                     CMD_STR_800C_TIME_OUT -> {
-//                        if (timeStateEmitter != null) {
-//                            timeStateEmitter.onError(RuntimeException("get time state timeout!"))
-//                        }
-
-                        settingDateTime.getEmitter.onError(RuntimeException("get sync time timeout!"))
+                        settingDateTime.getEmitter?.onError(RuntimeException("get sync time timeout!"))
                     }
                     CMD_STR_800D_TIME_OUT -> {}
                     CMD_STR_800E_TIME_OUT -> {}
                     CMD_STR_800F_TIME_OUT -> {
-                        settingAppView.getEmitter.onError(RuntimeException("getAppViews timeout!"))
+                        settingAppView.getEmitter?.onError(RuntimeException("getAppViews timeout!"))
                     }
 
 //                   TODO
@@ -1070,11 +1061,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_SETTING_SEDENTARY -> {//久坐提醒
-
+                            settingSedentaryReminder.sedentaryReminderBusiness(it)
                         }
 
                         URN_SETTING_DRINK -> {//喝水提醒
-
+                            settingDrinkWaterReminder.drinkWaterBusiness(it)
                         }
 
                         URN_SETTING_DATE_TIME -> {//时间同步

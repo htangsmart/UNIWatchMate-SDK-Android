@@ -10,8 +10,8 @@ import io.reactivex.rxjava3.core.SingleEmitter
 class SyncCaloriesData : AbSyncData<List<WmCaloriesData>>() {
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmCaloriesData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmCaloriesData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmCaloriesData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmCaloriesData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }
