@@ -11,9 +11,9 @@ import io.reactivex.rxjava3.core.SingleEmitter
 import java.nio.charset.StandardCharsets
 
 class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
-    var languageListEmitter: SingleEmitter<List<WmLanguage>>? = null
-    var languageSetEmitter: SingleEmitter<WmLanguage>? = null
-    val languageList = mutableListOf<WmLanguage>()
+    private var languageListEmitter: SingleEmitter<List<WmLanguage>>? = null
+    private var languageSetEmitter: SingleEmitter<WmLanguage>? = null
+    private val languageList = mutableListOf<WmLanguage>()
 
     override fun isSupport(): Boolean {
         return true

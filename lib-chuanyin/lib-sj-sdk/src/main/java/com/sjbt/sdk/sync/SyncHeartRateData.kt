@@ -7,11 +7,11 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncHeartRateData: AbSyncData<List<WmHeartRateData>>() {
+class SyncHeartRateData : AbSyncData<List<WmHeartRateData>>() {
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmHeartRateData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmHeartRateData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmHeartRateData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmHeartRateData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

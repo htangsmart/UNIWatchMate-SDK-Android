@@ -9,12 +9,11 @@ import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncBatteryInfo(uniWatch: SJUniWatch) : AbSyncData<WmBatteryInfo>() {
+class SyncBatteryInfo(val sjUniWatch: SJUniWatch) : AbSyncData<WmBatteryInfo>() {
 
-    val uniWatch = uniWatch
     var batteryEmitter: SingleEmitter<WmBatteryInfo>? = null
     var observeBatteryEmitter: ObservableEmitter<WmBatteryInfo>? = null
-    var lastSyncTime: Long = 0
+    private var lastSyncTime: Long = 0
 
     override fun isSupport(): Boolean {
         return true
@@ -36,7 +35,7 @@ class SyncBatteryInfo(uniWatch: SJUniWatch) : AbSyncData<WmBatteryInfo>() {
      * @param batteryInfoListener
      */
     private fun getBatteryInfo() {
-        uniWatch.sendNormalMsg(CmdHelper.batteryInfo)
+        sjUniWatch.sendNormalMsg(CmdHelper.batteryInfo)
     }
 
     override var observeSyncData: Observable<WmBatteryInfo> =

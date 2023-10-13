@@ -11,10 +11,10 @@ import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
 
-class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>(){
-    lateinit var observeEmitter: ObservableEmitter<WmPersonalInfo>
-    lateinit var setEmitter: SingleEmitter<WmPersonalInfo>
-    lateinit var getEmitter: SingleEmitter<WmPersonalInfo>
+class SettingPersonalInfo(sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalInfo>() {
+    private var observeEmitter: ObservableEmitter<WmPersonalInfo>? = null
+    private var setEmitter: SingleEmitter<WmPersonalInfo>? = null
+    private var getEmitter: SingleEmitter<WmPersonalInfo>? = null
 
     private val sjUniWatch = sjUniWatch
 
@@ -48,16 +48,33 @@ class SettingPersonalInfo(sjUniWatch: SJUniWatch): AbWmSetting<WmPersonalInfo>()
         })
     }
 
-     fun personalInfoBusiness(it: NodeData) {
+    fun personalInfoBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {
 
                 val byteBuffer =
                     ByteBuffer.wrap(it.data)
+                val height = byteBuffer.getShort()
+                val weight = byteBuffer.getShort()
+                val gender = byteBuffer.get()
 
-                val personalInfo=WmPersonalInfo(180,80, WmPersonalInfo.Gender.FEMALE,WmPersonalInfo.BirthDate(20,0,0))
-                getEmitter.onSuccess(personalInfo)
+                val year = byteBuffer.getShort()
+                val month = byteBuffer.get()
+                val day = byteBuffer.get()
 
+                val personalInfo = WmPersonalInfo(
+                    height,
+                    weight,
+                    if (gender.toInt() == 1) {
+                        WmPersonalInfo.Gender.MALE
+                    } else {
+                        WmPersonalInfo.Gender.FEMALE
+                    },
+                    WmPersonalInfo.BirthDate(year, month, day)
+                )
+
+                getEmitter?.onSuccess(personalInfo)
+                observeEmitter?.onNext(personalInfo)
             }
         }
     }

@@ -11,8 +11,8 @@ class SyncStepData : AbSyncData<List<WmStepData>>() {
 
     var is_support: Boolean = true
     var lastSyncTime: Long = 0
-    lateinit var activityObserveEmitter: SingleEmitter<List<WmStepData>>
-    lateinit var observeChangeEmitter: ObservableEmitter<List<WmStepData>>
+    private var activityObserveEmitter: SingleEmitter<List<WmStepData>>? = null
+    private var observeChangeEmitter: ObservableEmitter<List<WmStepData>>? = null
     override fun isSupport(): Boolean {
         return is_support
     }

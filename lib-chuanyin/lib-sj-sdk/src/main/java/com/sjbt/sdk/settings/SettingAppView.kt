@@ -7,9 +7,9 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
-    lateinit var observeEmitter: ObservableEmitter<WmAppView>
-    lateinit var setEmitter: SingleEmitter<WmAppView>
-    lateinit var getEmitter: SingleEmitter<WmAppView>
+    var observeEmitter: ObservableEmitter<WmAppView>? = null
+    var setEmitter: SingleEmitter<WmAppView>? = null
+    var getEmitter: SingleEmitter<WmAppView>? = null
     var is_support: Boolean = false
     private var mAppView: WmAppView? = null
 

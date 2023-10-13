@@ -10,9 +10,9 @@ import io.reactivex.rxjava3.core.*
  * 设置时间功能
  */
 class SettingDateTime(val sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
-    lateinit var observeEmitter: ObservableEmitter<WmDateTime>
-    lateinit var setEmitter: SingleEmitter<WmDateTime>
-    lateinit var getEmitter: SingleEmitter<WmDateTime>
+    var observeEmitter: ObservableEmitter<WmDateTime>? = null
+    var setEmitter: SingleEmitter<WmDateTime>? = null
+    var getEmitter: SingleEmitter<WmDateTime>? = null
 
     override fun isSupport(): Boolean {
         return true
@@ -39,7 +39,7 @@ class SettingDateTime(val sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
         return Single.create(object : SingleOnSubscribe<WmDateTime> {
             override fun subscribe(emitter: SingleEmitter<WmDateTime>) {
                 getEmitter = emitter
-                getEmitter.onError(RuntimeException("time not support get!"))
+                getEmitter?.onError(RuntimeException("time not support get!"))
             }
         })
     }

@@ -8,7 +8,7 @@ data class WmUnitInfo(
      * Weight unit
      * KG, LB
      */
-    var weightUnit: WeightUnit,
+    var weightUnit: WeightUnit = WeightUnit.KG,
     /**
      * Temperature unit
      * CELSIUS, FAHRENHEIT
@@ -32,8 +32,8 @@ data class WmUnitInfo(
     }
 
     enum class TemperatureUnit {
-        CELSIUS,
-        FAHRENHEIT
+        CELSIUS,//摄氏度
+        FAHRENHEIT//华氏度
     }
 
     enum class TimeFormat {

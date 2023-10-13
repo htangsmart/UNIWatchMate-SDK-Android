@@ -10,8 +10,8 @@ class SyncDeviceInfo(uniWatch: SJUniWatch) : AbSyncData<WmDeviceInfo>() {
 
     var deviceEmitter: SingleEmitter<WmDeviceInfo>? = null
     var observeDeviceEmitter: ObservableEmitter<WmDeviceInfo>? = null
-    var lastSyncTime: Long = 0
-    var uniWatch = uniWatch
+    private var lastSyncTime: Long = 0
+    private var uniWatch = uniWatch
 
     override fun isSupport(): Boolean {
         return true

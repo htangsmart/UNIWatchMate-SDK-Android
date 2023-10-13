@@ -40,10 +40,22 @@ data class WmWeatherForecast(
      * 夜晚天气代码（night weather code）
      * */
     val nightCode: Int,
+
+//    /**
+//     * 天气描述长度（day weather description len）
+//     */
+//    val dayDescLen: Int,
+
     /**
      * 白天天气描述（day weather description）
      * */
     val dayDesc: String,
+
+//    /**
+//     * 天气描述长度（night weather description len）
+//     */
+//    val nightDescLen: Int,
+
     /**
      * 夜晚天气描述（night weather description）
      * */
@@ -58,7 +70,7 @@ data class WmWeatherForecast(
      * */
     val week: WmWeek,
 
-) {
+    ) {
     override fun toString(): String {
         return "WmWeatherForecast(lowTemp=$lowTemp, highTemp=$highTemp, curTemp=$curTemp, tempUnit=$tempUnit, humidity=$humidity, uvIndex=$uvIndex, dayCode=$dayCode, nightCode=$nightCode, dayDesc='$dayDesc', nightDesc='$nightDesc', date=$date, week=$week)"
     }
@@ -85,7 +97,13 @@ data class TodayWeather(
     /**
      * 白天天气代码（day weather code）
      * */
-    val weatheCode: Int,
+    val weatherCode: Int,
+
+//    /**
+//     * 天气描述长度
+//     */
+//    val weatherDescLen: Int,
+
     /**
      * 白天天气描述（day weather description）
      * */
@@ -95,20 +113,20 @@ data class TodayWeather(
      * 日期（date）
      * */
     val date: Long,
+
     /**
      * 小时（hour）
      * */
     val hour: Int
 
 
-
 ) {
     override fun toString(): String {
-        return "TodayWeather(curTemp=$curTemp, tempUnit=$tempUnit, humidity=$humidity, uvIndex=$uvIndex, weatheCode=$weatheCode, weatherDesc='$weatherDesc', date=$date, hour=$hour)"
+        return "TodayWeather(curTemp=$curTemp, tempUnit=$tempUnit, humidity=$humidity, uvIndex=$uvIndex, weatheCode=$weatherCode, weatherDesc='$weatherDesc', date=$date, hour=$hour)"
     }
 }
 
-data class WmLocation (
+data class WmLocation(
     /**
      * 国家（country）
      */
@@ -119,8 +137,8 @@ data class WmLocation (
     val city: String,
 
     /**
-     * 区域（district）
-     */
+//     * 区域（district）
+//     */
     val district: String,
     /**
      * 经度（longitude）
@@ -132,13 +150,13 @@ data class WmLocation (
     val latitude: Double,
 ) {
     override fun toString(): String {
-        return "WmLocation(country='$country', city='$city', district='$district', longitude=$longitude, latitude=$latitude)"
+        return "WmLocation(country='$country', city='$city'"
     }
 }
 
 data class WmWeather(
     /**
-     * 发布时间（publish time）
+     * 发布时间/毫秒（publish time）
      */
     val pubDate: Long,
     /**

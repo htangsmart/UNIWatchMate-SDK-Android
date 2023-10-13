@@ -528,66 +528,6 @@ object CmdHelper {
     }
 
     /**
-     * 设置闹钟
-     *
-     * @param alarmBean
-     * @return
-     */
-    fun getSetAlarmCmd(alarmBean: WmAlarm): ByteArray {
-        val payload = ByteArray(4)
-        //        payload[0] = (byte) alarmBean.open;
-//        payload[1] = (byte) alarmBean.hour;
-//        payload[2] = (byte) alarmBean.min;
-//        payload[3] = (byte) alarmBean.repeat;
-        val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-        //logSendMsg("闹钟：$alarmBean")
-        return constructCmd(
-            HEAD_COMMON,
-            CMD_ID_801C.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            crc,
-            payload
-        )
-    }
-
-    /**
-     * 获取闹钟
-     *
-     * @return
-     */
-    val currAlarmCmd: ByteArray
-        get() = constructCmd(
-            HEAD_COMMON,
-            CMD_ID_801E.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-
-    /**
-     * 获取密码设置状态
-     *
-     * @return
-     */
-    val pwdSetCmd: ByteArray
-        get() {
-            //logSendMsg("发送查询密码设置")
-            return constructCmd(
-                HEAD_COMMON,
-                CMD_ID_800A.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
      * 获取时间同步设置状态
      *
      * @return
@@ -796,72 +736,6 @@ object CmdHelper {
         )
     }
 
-    /**
-     * 发送文件请求
-     *
-     * @return
-     */
-    fun getOppFileTransferCmd(file_type: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        //        byteBuffer.put(trans_type);
-        byteBuffer.put(file_type)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_OPP,
-            CMD_ID_8001.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 是否维持OPP
-     *
-     * @return
-     */
-    fun getOppContinueCmd(opp: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(opp)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_OPP,
-            CMD_ID_8003.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 获取停止传输OPP
-     *
-     * @return
-     */
-    fun getOppFinishFileTransferCmd(type: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(type)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_OPP,
-            CMD_ID_8002.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
 
     /**
      * 操作表盘 0x0 type:1设定 2删除
@@ -990,226 +864,6 @@ object CmdHelper {
         )
 
     /**
-     * 从设备端向App端传数据
-     *
-     * @param type
-     * @return
-     */
-    fun getTransferD2A01Cmd(type: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(type)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_SPP_D_2_A,
-            CMD_ID_8001.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 文件长度和名称上报
-     *
-     * @param index 文件序号
-     * @return
-     */
-    fun getTransferD2A02Cmd(index: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.putInt(index.toInt())
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_SPP_D_2_A,
-            CMD_ID_8002.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 83命令
-     *
-     * @param state   状态
-     * @param process 序号
-     * @return
-     */
-    fun getTransferD2A03Cmd(state: Byte, process: Int): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(5)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(state)
-        byteBuffer.putInt(process)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-//        logSendMsg("发送消息序号：$process 成功:$state")
-        return constructCmd(
-            HEAD_FILE_SPP_D_2_A,
-            CMD_ID_8003.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 返回传输结果
-     *
-     * @return
-     */
-    fun getTransferD2A04Cmd(result: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(result)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_FILE_SPP_D_2_A,
-            CMD_ID_8004.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * App端取消接收数据
-     *
-     * @return
-     */
-    fun getTransferD2A05Cmd(result: Byte): ByteArray {
-        return constructCmd(
-            HEAD_FILE_SPP_D_2_A,
-            CMD_ID_8005.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-    }
-
-    /**
-     * 获取添加初始化信息的命令
-     *
-     * @param type  1. 热量(千卡)
-     * 2. 距离(千米)
-     * 3. 步数(步)
-     * 4. 生日(19960605)
-     * 5. 身高（厘米）
-     * 6. 体重(千克)
-     * 7. 性别：1.男 2.女
-     * @param value 整数值
-     * @return
-     */
-    fun initSportHealthCmd(type: Byte, value: Int): ByteArray {
-//        logSendMsg("type:$type value:$value")
-        val byteBuffer = ByteBuffer.allocate(5)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(type)
-        byteBuffer.putInt(value)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_SPORT_HEALTH,
-            CMD_ID_8004.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 获取初始化信息
-     *
-     * @return
-     */
-    val sportHealthInitInfoCmd: ByteArray
-        get() = constructCmd(
-            HEAD_SPORT_HEALTH,
-            CMD_ID_8001.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-
-    /**
-     * 获取运动记录
-     *
-     * @return
-     */
-    val stepRecordCmd: ByteArray
-        get() {
-//            logSendMsg("7.获取运动步数：")
-            return constructCmd(
-                HEAD_SPORT_HEALTH,
-                CMD_ID_8002.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取心率记录
-     *
-     * @return
-     */
-    val rateRecordCmd: ByteArray
-        get() {
-//            logSendMsg("8.获取心率：")
-            return constructCmd(
-                HEAD_SPORT_HEALTH,
-                CMD_ID_8003.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取睡眠记录
-     *
-     * @return
-     */
-    fun getSleepRecordCmd(index: Byte): ByteArray {
-//        logSendMsg("12.获取睡眠")
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(index)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_SPORT_HEALTH,
-            CMD_ID_800F.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
      * 获取睡眠记录
      *
      * @return
@@ -1246,104 +900,6 @@ object CmdHelper {
         return constructCmd(
             HEAD_SPORT_HEALTH,
             CMD_ID_800E.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 获取血氧记录
-     *
-     * @return
-     */
-    val bloodOxRecordCmd: ByteArray
-        get() {
-//            logSendMsg("9.获取血氧")
-            return constructCmd(
-                HEAD_SPORT_HEALTH,
-                CMD_ID_8009.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取血糖记录
-     *
-     * @return
-     */
-    val bloodSugarRecordCmd: ByteArray
-        get() {
-//            logSendMsg("10.获取血糖")
-            return constructCmd(
-                HEAD_SPORT_HEALTH,
-                CMD_ID_800A.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取血压记录
-     *
-     * @return
-     */
-    val bloodPressRecordCmd: ByteArray
-        get() {
-//            logSendMsg("11.获取血压")
-            return constructCmd(
-                HEAD_SPORT_HEALTH,
-                CMD_ID_800B.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取当前支持的功能
-     *
-     * @return
-     */
-    val actionSupportCmd: ByteArray
-        get() {
-//            logSendMsg("获取支持功能列表")
-            return constructCmd(
-                HEAD_COMMON,
-                CMD_ID_802D.toShort(),
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
-        }
-
-    /**
-     * 获取运动健康有数据的日期
-     *
-     * @return
-     */
-    fun getRecordDates(type: Int): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(type.toByte())
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_SPORT_HEALTH,
-            CMD_ID_8006.toShort(),
             DIVIDE_N_2,
             0,
             0,
@@ -1421,22 +977,6 @@ object CmdHelper {
         }
 
     /**
-     * App发起寻找手表
-     *
-     * @return
-     */
-    val searchDeviceCmd: ByteArray
-        get() = constructCmd(
-            HEAD_COMMON,
-            CMD_ID_8021.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-
-    /**
      * 当设备添加通讯录的时候需要给回应，固定是成功
      * CMD_ID_8024/CMD_ID_8026/CMD_ID_8020
      *
@@ -1451,203 +991,6 @@ object CmdHelper {
         return constructCmd(
             HEAD_COMMON,
             cmdId,
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 读取通讯录准备命令
-     *
-     * @return
-     */
-    val contactPreCmd: ByteArray
-        get() = constructCmd(
-            HEAD_COMMON,
-            CMD_ID_8027.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-
-    /**
-     * 获取通讯录
-     *
-     * @param index
-     * @return
-     */
-    fun getReadContactListCmd(index: Byte): ByteArray {
-        val byteBuffer = ByteBuffer.allocate(1)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        byteBuffer.put(index)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_COMMON,
-            CMD_ID_8022.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 添加联系人通讯录
-     *
-     * @return
-     */
-    fun getAddContactCmd(name: String, phoneNum: String): ByteArray {
-        val nameArray = ByteArray(60)
-        val phoneArray = ByteArray(20)
-        val byteBuffer = ByteBuffer.allocate(nameArray.size + phoneArray.size)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        val srcNameArray = name.toByteArray(Charset.defaultCharset())
-        System.arraycopy(
-            srcNameArray,
-            0,
-            nameArray,
-            0,
-            if (srcNameArray.size > nameArray.size) nameArray.size else srcNameArray.size
-        )
-        val srcPhoneArray =
-            phoneNum.replace("\\s".toRegex(), "").toByteArray(Charset.defaultCharset())
-        System.arraycopy(
-            srcPhoneArray,
-            0,
-            phoneArray,
-            0,
-            if (srcPhoneArray.size > phoneArray.size) phoneArray.size else srcPhoneArray.size
-        )
-
-//        SJLog.INSTANCE.logSendMsg("添加的联系人：" + new String(nameArray));
-//        SJLog.INSTANCE.logSendMsg("添加的联系人长度：" + nameArray.length);
-//        SJLog.INSTANCE.logSendMsg("添加的电话号：" + new String(phoneArray));
-//        SJLog.INSTANCE.logSendMsg("添加的电话号长度：" + phoneArray.length);
-        byteBuffer.put(nameArray)
-        byteBuffer.put(phoneArray)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_COMMON,
-            CMD_ID_8023.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 删除通讯录命令
-     *
-     * @return
-     */
-    fun getDeleteContactCmd(name: String, phoneNum: String): ByteArray {
-        val nameArray = ByteArray(60)
-        val phoneArray = ByteArray(20)
-        val byteBuffer = ByteBuffer.allocate(nameArray.size + phoneArray.size)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        val srcNameArray = name.toByteArray(Charset.defaultCharset())
-        System.arraycopy(
-            srcNameArray,
-            0,
-            nameArray,
-            0,
-            if (srcNameArray.size > nameArray.size) nameArray.size else srcNameArray.size
-        )
-        val srcPhoneArray = phoneNum.toByteArray(Charset.defaultCharset())
-        System.arraycopy(
-            srcPhoneArray,
-            0,
-            phoneArray,
-            0,
-            if (srcPhoneArray.size > phoneArray.size) phoneArray.size else srcPhoneArray.size
-        )
-        byteBuffer.put(nameArray)
-        byteBuffer.put(phoneArray)
-        byteBuffer.flip()
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_COMMON,
-            CMD_ID_8025.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-            payload
-        )
-    }
-
-    /**
-     * 读取通讯录准备命令
-     *
-     * @return
-     */
-    val stopRingCmd: ByteArray
-        get() = constructCmd(
-            HEAD_COMMON,
-            CMD_ID_801A.toShort(),
-            DIVIDE_N_2,
-            0,
-            0,
-            0,
-            null
-        )
-
-    /**
-     * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
-     *
-     * @param weatherBean
-     * @return
-     */
-    fun getWeatherListCmd(weatherBean: WmWeather): ByteArray {
-        val cityArray = ByteArray(20)
-        val byteBuffer =
-            ByteBuffer.allocate(cityArray.size + 4 + weatherBean.weatherForecast.size * 5)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
-        val cityName = weatherBean.location.city
-        val srcNameArray = cityName.toByteArray(Charset.defaultCharset())
-        System.arraycopy(
-            srcNameArray,
-            0,
-            cityArray,
-            0,
-            if (srcNameArray.size > cityArray.size) cityArray.size else srcNameArray.size
-        )
-        val date = getFormatTime(weatherBean.pubDate)
-        byteBuffer.put(cityArray)
-        byteBuffer.putInt(date)
-        for ((lowTemp, highTemp, _, _, _, _, dayCode, _, _, _, date1) in weatherBean.weatherForecast) {
-            //week  周几1~7
-//            byte week = getWeek(forecastsBean.getDay());
-            val week = getWeekByTimeStamp(date1)
-            //            SJLog.INSTANCE.logSendMsg("week2:" + week2 + " - week:" + week);
-            byteBuffer.put(week)
-            //天气大类型 1：晴； 2：多云；3：雨；4：雪；5：沙尘
-            val weatherBigCode = getWeatherBigCode(dayCode)
-            byteBuffer.put(weatherBigCode)
-            //天气名称暂时不用
-            //天气代码
-            byteBuffer.put(dayCode.toByte())
-            //高温
-//            byteBuffer.put((byte) ((forecastsBean.getHigh() - 32) / 1.8));
-            byteBuffer.put(highTemp.toByte())
-            //低温
-            byteBuffer.put(lowTemp.toByte())
-            //            byteBuffer.put((byte) ((forecastsBean.getLow() - 32) / 1.8));
-        }
-        val payload = byteBuffer.array()
-        return constructCmd(
-            HEAD_COMMON,
-            CMD_ID_801B,
             DIVIDE_N_2,
             0,
             0,
@@ -2210,7 +1553,7 @@ object CmdHelper {
     /**
      * 获取通讯录总包个数
      */
-    fun getReadContactCountCmd(contactCount:Byte): PayloadPackage {
+    fun getReadContactCountCmd(contactCount: Byte): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer = ByteBuffer.allocate(1)
         byteBuffer.put(contactCount)
@@ -2301,13 +1644,168 @@ object CmdHelper {
     }
 
     /**
-     * 音乐控制
+     * 音乐控制 监听设备端
      */
     fun getExecuteMusicControlCmd(wmMusicControl: WmMusicControlType): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
         byteBuffer.put(wmMusicControl.type)
         payloadPackage.putData(getUrnId(URN_4, URN_B), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 获取当天天气命令
+     * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
+     */
+    fun getWriteTodayWeatherCmd(
+        temperatureUnit: WmUnitInfo.TemperatureUnit,
+        wmWeather: WmWeather
+    ): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+
+        //时间
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = wmWeather.pubDate
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        val second = calendar.get(Calendar.SECOND)
+
+        byteBuffer.putShort(year.toShort())
+        byteBuffer.put(month.toByte())
+        byteBuffer.put(day.toByte())
+        byteBuffer.put(hour.toByte())
+        byteBuffer.put(minute.toByte())
+        byteBuffer.put(second.toByte())
+
+        //位置
+        byteBuffer.put(wmWeather.location.country.length.toByte())
+        byteBuffer.put(wmWeather.location.country.toByteArray())
+        byteBuffer.put(wmWeather.location.city.length.toByte())
+        byteBuffer.put(wmWeather.location.city.toByteArray())
+
+        //当天
+
+        wmWeather.todayWeather.forEach {
+            val currTemp = when (temperatureUnit) {
+                WmUnitInfo.TemperatureUnit.CELSIUS -> {//摄氏度
+                    it.curTemp
+                }
+
+                WmUnitInfo.TemperatureUnit.FAHRENHEIT -> {//华氏度
+//                 摄氏度=(华氏度 - 32°F) ÷ 1.8；
+                    (it.curTemp - 32) / 1.8
+                }
+            }
+
+            byteBuffer.put(currTemp.toByte())
+            byteBuffer.putShort(it.humidity.toShort())
+            byteBuffer.put(it.uvIndex.toByte())
+            byteBuffer.put(it.weatherCode.toByte())
+            byteBuffer.put(it.weatherDesc.length.toByte())
+            byteBuffer.put(it.weatherDesc.toByteArray())
+        }
+
+        payloadPackage.putData(
+            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_TODAY),
+            byteBuffer.array()
+        )
+
+        return payloadPackage
+    }
+
+    /**
+     * 获取当天天气命令
+     * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
+     */
+    fun getWriteSevenTodayWeatherCmd(
+        temperatureUnit: WmUnitInfo.TemperatureUnit,
+        wmWeather: WmWeather
+    ): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+
+        //时间
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = wmWeather.pubDate
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        val second = calendar.get(Calendar.SECOND)
+
+        byteBuffer.putShort(year.toShort())
+        byteBuffer.put(month.toByte())
+        byteBuffer.put(day.toByte())
+        byteBuffer.put(hour.toByte())
+        byteBuffer.put(minute.toByte())
+        byteBuffer.put(second.toByte())
+
+        //位置
+        byteBuffer.put(wmWeather.location.country.length.toByte())
+        byteBuffer.put(wmWeather.location.country.toByteArray())
+        byteBuffer.put(wmWeather.location.city.length.toByte())
+        byteBuffer.put(wmWeather.location.city.toByteArray())
+
+        wmWeather.weatherForecast.forEach {
+
+            when (temperatureUnit) {
+                WmUnitInfo.TemperatureUnit.CELSIUS -> {//摄氏度
+                    byteBuffer.put(it.lowTemp.toByte())
+                    byteBuffer.put(it.highTemp.toByte())
+                    byteBuffer.put(it.curTemp.toByte())
+                }
+
+                WmUnitInfo.TemperatureUnit.FAHRENHEIT -> {//华氏度
+//                 摄氏度=(华氏度 - 32°F) ÷ 1.8；
+                    byteBuffer.put(((it.lowTemp - 32) / 1.8).toInt().toByte())
+                    byteBuffer.put(((it.highTemp - 32) / 1.8).toInt().toByte())
+                    byteBuffer.put(((it.highTemp - 32) / 1.8).toInt().toByte())
+                }
+            }
+
+            byteBuffer.putShort(it.humidity.toShort())
+            byteBuffer.put(it.uvIndex.toByte())
+            byteBuffer.put(it.dayCode.toByte())
+            byteBuffer.put(it.nightCode.toByte())
+            byteBuffer.put(it.dayDesc.length.toByte())
+            byteBuffer.put(it.dayDesc.toByteArray())
+            byteBuffer.put(it.nightCode.toByte())
+            byteBuffer.put(it.nightDesc.length.toByte())
+            byteBuffer.put(it.nightDesc.toByteArray())
+
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it.date
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+            val second = calendar.get(Calendar.SECOND)
+
+            byteBuffer.putShort(year.toShort())
+            byteBuffer.put(month.toByte())
+            byteBuffer.put(day.toByte())
+            byteBuffer.put(hour.toByte())
+            byteBuffer.put(minute.toByte())
+            byteBuffer.put(second.toByte())
+
+            byteBuffer.put(it.week.ordinal.toByte())
+
+        }
+
+        payloadPackage.putData(
+            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_TODAY),
+            byteBuffer.array()
+        )
+
         return payloadPackage
     }
 

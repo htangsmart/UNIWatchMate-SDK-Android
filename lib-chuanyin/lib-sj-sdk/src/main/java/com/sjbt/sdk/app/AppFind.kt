@@ -15,16 +15,16 @@ import io.reactivex.rxjava3.core.SingleEmitter
 
 class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
-    var startFindPhoneEmitter: ObservableEmitter<WmFind>? = null
-    var stopFindPhoneEmitter: ObservableEmitter<Boolean>? = null
-    var startFindWatchEmitter: SingleEmitter<Boolean>? = null
-    var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
+    private var startFindPhoneEmitter: ObservableEmitter<WmFind>? = null
+    private var stopFindPhoneEmitter: ObservableEmitter<Boolean>? = null
+    private var startFindWatchEmitter: SingleEmitter<Boolean>? = null
+    private var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
 
     override fun isSupport(): Boolean {
         return true
     }
 
-    override var observeFindMobile: Observable<WmFind> = Observable.create{
+    override var observeFindMobile: Observable<WmFind> = Observable.create {
         startFindPhoneEmitter = it
     }
 

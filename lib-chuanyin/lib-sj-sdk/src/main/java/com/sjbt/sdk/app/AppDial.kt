@@ -1,6 +1,5 @@
 package com.sjbt.sdk.app
 
-import android.graphics.BitmapFactory
 import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.port.app.AbAppDial
 import com.sjbt.sdk.SJUniWatch
@@ -9,7 +8,6 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.DIAL_MSG_LEN
 import com.sjbt.sdk.uparser.model.JpgInfo
 import com.sjbt.sdk.utils.BtUtils
-import com.sjbt.sdk.utils.FileUtils
 import com.sjbt.sdk.utils.UParseUtil
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.core.Observable
@@ -18,8 +16,8 @@ import java.util.*
 
 class AppDial(sjUniWatch: SJUniWatch) : AbAppDial() {
     val sjUniWatch = sjUniWatch
-    lateinit var syncDialListEmitter: ObservableEmitter<List<WmDial>>
-    private lateinit var deleteEmitter: SingleEmitter<WmDial>
+    var syncDialListEmitter: ObservableEmitter<List<WmDial>>?=null
+    var deleteEmitter: SingleEmitter<WmDial>?=null
     private var wmDial: WmDial? = null
 
     //表盘列表
