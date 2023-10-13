@@ -57,10 +57,10 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
             override fun onItemClick(packet: DialMock) {
                 if (Injector.getDeviceManager().isConnected()) {
-                    dialLibraryViewModel.state.async()?.let {
+//                    dialLibraryViewModel.state.async()?.let {
                         DialLibraryDfuDialogFragment.newInstance(packet)
                             .show(childFragmentManager, null)
-                    }
+//                    }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
                 }

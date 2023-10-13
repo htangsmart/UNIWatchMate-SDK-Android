@@ -122,6 +122,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     var MTU: Int = 600
 
+    private var mtuEmitter: SingleEmitter<Int>? = null
+
+    val observableMtu: Single<Int> = Single.create { emitter ->
+        mtuEmitter = emitter
+        sendNormalMsg(CmdHelper.getMTUCmd)
+    }
+
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
         Log.e(">>>>>>>>>", "logEnable:" + logEnable)
@@ -564,8 +571,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {//请求
 
-                                    wmLog.logI(TAG, "节点数据：" + msgBean.payload)
-
                                     if (msgBean.payload.size > 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payload.size)
 
@@ -587,8 +592,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8003 -> {
-                                    val byteBuffer = ByteBuffer.wrap(msgBean.payload)
-                                    MTU = byteBuffer.short.toInt()
+                                    MTU = BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
+                                    mtuEmitter?.onSuccess(MTU)
                                     wmLog.logD(TAG, "MTU:$MTU")
                                 }
                             }
@@ -629,7 +634,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             e.printStackTrace()
         }
     }
-
 
     private fun msgTimeOut(msg: ByteArray) {
 
@@ -884,25 +888,29 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     /**
      * 分包发送写入类型Node节点消息
      */
-    fun sendWriteSubpackageNodeCmdList(totalLen: Short, payloadPackage: PayloadPackage) {
+    fun sendWriteSubpackageNodeCmdList(
+        totalLen: Short,
+        itemLen: Int,
+        payloadPackage: PayloadPackage
+    ) {
 
         val nodeLen = payloadPackage.itemList[0].dataLen + 4
         val nodeCount = payloadPackage.itemList.size
 
-        var itemLen = 0
-
-        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
-
-            if (nodeLen < 20) {
-                itemLen = nodeLen * 30
-            } else if (nodeLen < 30) {
-                itemLen = nodeLen * 20
-            } else if (nodeLen < 60) {
-                itemLen = nodeLen * 10
-            } else if (nodeLen < 90) {
-                itemLen = nodeLen * 7
-            }
-        }
+//        var itemLen = 0
+//
+//        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
+//
+//            if (nodeLen < 20) {
+//                itemLen = nodeLen * 30
+//            } else if (nodeLen < 30) {
+//                itemLen = nodeLen * 20
+//            } else if (nodeLen < 60) {
+//                itemLen = nodeLen * 10
+//            } else if (nodeLen < 90) {
+//                itemLen = nodeLen * 7
+//            }
+//        }
 
         payloadPackage.toByteArray(
             mtu = itemLen,
@@ -1236,7 +1244,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         if (wmDevice.isRecognized) {
 
-            if(!mBtAdapter.isEnabled){
+            if (!mBtAdapter.isEnabled) {
                 connectEmitter?.onNext(WmConnectState.BT_DISABLE)
                 return wmDevice
             }

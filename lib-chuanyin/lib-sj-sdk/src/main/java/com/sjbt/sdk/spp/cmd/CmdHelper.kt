@@ -1809,4 +1809,20 @@ object CmdHelper {
         return payloadPackage
     }
 
+    /**
+     * 获取MTU
+     *
+     * @return
+     */
+    val getMTUCmd: ByteArray
+        get() = constructCmd(
+            HEAD_NODE_TYPE,
+            CMD_ID_8003,
+            DIVIDE_N_2,
+            0,
+            0,
+            0,
+            null
+        )
+
 }

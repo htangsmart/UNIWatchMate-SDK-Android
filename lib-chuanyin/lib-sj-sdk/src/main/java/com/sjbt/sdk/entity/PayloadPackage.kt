@@ -1,5 +1,6 @@
 package com.sjbt.sdk.entity
 
+import com.sjbt.sdk.spp.cmd.DEFAULT_ITEM_MAX_LEN
 import java.nio.ByteBuffer
 
 class PayloadPackage {
@@ -107,7 +108,7 @@ class PayloadPackage {
      * @return
      */
     fun toByteArray(
-        mtu: Int = 600,
+        mtu: Int = DEFAULT_ITEM_MAX_LEN,
         requestType: RequestType
     ): List<ByteArray> {
         val limitation = mtu
