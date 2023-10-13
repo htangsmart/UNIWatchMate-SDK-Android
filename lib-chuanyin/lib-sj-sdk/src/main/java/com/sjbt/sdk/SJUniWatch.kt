@@ -525,54 +525,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         HEAD_SPORT_HEALTH -> {
-
                             when (msgBean.cmdId.toShort()) {
-                                CMD_ID_800C -> {
-                                    val sleepOpen = msg[16].toInt()
-                                    val startHour = msg[17].toInt()
-                                    val startMin = msg[18].toInt()
-                                    val endHour = msg[19].toInt()
-                                    val endMin = msg[20].toInt()
-                                    val wmSleepSettings = WmSleepSettings(
-                                        sleepOpen == 1,
-                                        startHour,
-                                        startMin,
-                                        endHour,
-                                        endMin
-                                    )
-
-                                    settingSleepSet.getSleepSettingEmitter?.onSuccess(
-                                        wmSleepSettings
-                                    )
-                                    settingSleepSet.observeSleepSetting(
-                                        wmSleepSettings
-                                    )
-                                }
-                                CMD_ID_800D -> {
-                                    val sleepOpen2 = msg[16].toInt()
-                                    val startHour2 = msg[17].toInt()
-                                    val startMin2 = msg[18].toInt()
-                                    val endHour2 = msg[19].toInt()
-                                    val endMin2 = msg[20].toInt()
-
-                                    settingSleepSet.observeSleepSetting(
-                                        WmSleepSettings(
-                                            sleepOpen2 == 1,
-                                            startHour2,
-                                            startMin2,
-                                            endHour2,
-                                            endMin2
-                                        )
-                                    )
-                                    sendNormalMsg(CmdHelper.getRespondSuccessCmd(CMD_ID_800D))
-                                }
-
-                                CMD_ID_800E -> {
-                                    val setSleepResult = msg[16].toInt()
-                                    settingSleepSet.setSleepConfigSuccess(setSleepResult == 1)
+                                CMD_ID_800C, CMD_ID_800D, CMD_ID_800E -> {
+                                    settingSleepSet.sleepSetBusiness(msgBean, msg)
                                 }
                             }
-
                         }
 
                         HEAD_CAMERA_PREVIEW -> {
