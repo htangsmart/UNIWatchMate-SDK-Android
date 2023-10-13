@@ -2,6 +2,7 @@ package com.base.sdk.entity.apps
 
 /**
  * 天气请求返回
+ * bcp
  */
 data class WmWeatherRequest(val bcp: String,val wmWeatherTime: WmWeatherTime)
 

@@ -27,26 +27,23 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     var cameraFlashSwitchEmitter: ObservableEmitter<WMCameraFlashMode>? = null
     var cameraPreviewReadyEmitter: SingleEmitter<Boolean>? = null
 
-    val TAG = "AppCamera"
+    private var cameraObserver: Single<Boolean>? = null
 
-    //相机预览相关
-    var mCameraFrameInfo: WmCameraFrameInfo? = null
-    var mH264FrameMap: H264FrameMap = H264FrameMap()
-    var mLatestIframeId: Long = 0
-    var mLatestPframeId: Long = 0
-    private lateinit var mCameraThread: HandlerThread
-    private lateinit var mCameraHandler: Handler
-    var needNewH264Frame = false
+    private val TAG = "AppCamera"//相机预览相关
+    private var mCameraFrameInfo: WmCameraFrameInfo? = null
+    val mH264FrameMap: H264FrameMap = H264FrameMap()
     var continueUpdateFrame: Boolean = false
-    var mCellLength = 0
-    var mDivide: Byte = 0
-    var mOtaProcess = 0
-    var mFramePackageCount = 0
-    var mFrameLastLen = 0
 
-    init {
-        mCameraThread = HandlerThread("camera_send_thread")
-    }
+    private var mLatestIframeId: Long = 0
+    private var mLatestPframeId: Long = 0
+    private var mCameraThread: HandlerThread = HandlerThread("camera_send_thread")
+    private lateinit var mCameraHandler: Handler
+    private var needNewH264Frame = false
+    private var mCellLength = 0
+    private var mDivide: Byte = 0
+    private var mOtaProcess = 0
+    private var mFramePackageCount = 0
+    private var mFrameLastLen = 0
 
     open fun startCameraThread() {
         if (!mCameraThread.isAlive) {
@@ -66,20 +63,25 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     override fun openCloseCamera(open: Boolean): Single<Boolean> {
-        return Single.create(object : SingleOnSubscribe<Boolean> {
-            override fun subscribe(emitter: SingleEmitter<Boolean>) {
-                cameraSingleOpenEmitter = emitter
-                sjUniWatch.sendNormalMsg(
-                    CmdHelper.getAppCallDeviceCmd(
-                        if (open) {
-                            1.toByte()
-                        } else {
-                            0.toByte()
-                        }
+
+        if (cameraObserver == null || cameraSingleOpenEmitter == null || cameraSingleOpenEmitter!!.isDisposed) {
+            cameraObserver = Single.create(object : SingleOnSubscribe<Boolean> {
+                override fun subscribe(emitter: SingleEmitter<Boolean>) {
+                    cameraSingleOpenEmitter = emitter
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getAppCallDeviceCmd(
+                            if (open) {
+                                1.toByte()
+                            } else {
+                                0.toByte()
+                            }
+                        )
                     )
-                )
-            }
-        })
+                }
+            })
+        }
+
+        return cameraObserver!!
     }
 
     override var observeCameraOpenState: Observable<Boolean> =

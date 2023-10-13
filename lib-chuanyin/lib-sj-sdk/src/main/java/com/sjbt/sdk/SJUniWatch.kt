@@ -44,7 +44,6 @@ import io.reactivex.rxjava3.core.*
 import timber.log.Timber
 import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -55,11 +54,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     var mBtStateReceiver: BtStateReceiver? = null
 
-    val mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+    private val mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
     private var connectEmitter: ObservableEmitter<WmConnectState>? = null
+
     var mBindInfo: WmBindInfo? = null
     var mCurrDevice: BluetoothDevice? = null
     var mCurrAddress: String? = null
@@ -120,7 +120,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var sdkLogEnable = false
     private val mHandler = Handler(Looper.getMainLooper())
 
-    var MTU:Int = 600
+    var MTU: Int = 600
 
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
@@ -187,7 +187,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             override fun onClassicBtOpen() {
                 wmLog.logD(TAG, "onClassicBtOpen")
-                btStateChange(WmConnectState.BT_ENABLE)
 //                removeCallBackRunner(mConnectTimeoutRunner)
             }
 
@@ -218,6 +217,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             }
         })
+
+        if (mBtAdapter.isEnabled) {
+            btStateChange(WmConnectState.BT_DISABLE)
+        }
 
         appCamera.startCameraThread()
     }
@@ -1121,7 +1124,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         URN_APP_WEATHER -> {
 
-                           appWeather.weatherBusiness(it)
+                            appWeather.weatherBusiness(it)
                         }
 
                         URN_APP_RATE -> {
@@ -1300,22 +1303,32 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private var unbindEmitter: CompletableEmitter? = null
     override fun reset(): Completable {
-        return Completable.create(object : CompletableOnSubscribe {
-            override fun subscribe(emitter: CompletableEmitter) {
-                unbindEmitter = emitter
+        return Completable.create { emitter ->
+            unbindEmitter = emitter
 
-                if (mConnectState == WmConnectState.VERIFIED) {
-                    sendNormalMsg(CmdHelper.getUnBindCmd())
-                } else {
-                    emitter.onError(RuntimeException("not VERIFIED"))
-                }
+            if (mConnectState == WmConnectState.VERIFIED) {
+                sendNormalMsg(CmdHelper.getUnBindCmd())
+            } else {
+                emitter.onError(RuntimeException("not VERIFIED"))
             }
-        })
+        }
     }
 
-    override val observeConnectState: Observable<WmConnectState> = Observable.create {
-        connectEmitter = it
+    private fun getObservableConnectState(): Observable<WmConnectState> {
+        if (currentConnectState == null || connectEmitter == null || connectEmitter!!.isDisposed) {
+            currentConnectState = Observable.create {
+                connectEmitter = it
+            }
+        } else {
+            currentConnectState
+        }
+
+        return currentConnectState!!
     }
+
+    private var currentConnectState: Observable<WmConnectState>? = null
+
+    override val observeConnectState: Observable<WmConnectState> = getObservableConnectState()
 
     override fun getConnectState(): WmConnectState {
         return mConnectState
@@ -1365,6 +1378,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 mHandler.postDelayed(object : Runnable {
                     override fun run() {
+
+                        if (ActivityCompat.checkSelfPermission(
+                                mContext,
+                                Manifest.permission.BLUETOOTH_SCAN
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            return
+                        }
+
                         mBtAdapter?.cancelDiscovery()
                     }
                 }, stopAfter)
