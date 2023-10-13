@@ -13,10 +13,12 @@ import com.base.sdk.entity.apps.WmNotificationType
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherForecast
 import com.base.sdk.entity.common.WmWeek
+import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.DeviceManagerImpl
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
@@ -29,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
+import java.util.TimeZone
 
 @StringRes
 fun WmConnectState.toStringRes(): Int {
@@ -66,11 +69,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemCamera.setOnClickListener(blockClick)
         viewBind.itemTransferFile.setOnClickListener(blockClick)
         viewBind.itemTestWeather.setOnClickListener(blockClick)
-//        viewBind.itemModifyLogo.clickTrigger(block = blockClick)
-//        viewBind.itemEpoUpgrade.clickTrigger(block = blockClick)
-//        viewBind.itemCricket.clickTrigger(block = blockClick)
+        viewBind.itemPushDateTime.setOnClickListener(blockClick)
         viewBind.itemOtherFeatures.setOnClickListener(blockClick)
-//        viewBind.itemVersionInfo.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
@@ -94,7 +94,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                         Timber.tag(it1).i("flowConnectorState=$it")
                     }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-//                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
+//                  viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
 
@@ -107,41 +107,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                         viewBind.batteryView.setBatteryStatus(it.isCharge, it.currValue)
                     }
                 }
-            }
-
-            launch {
-//                deviceManager.configFeature.observerDeviceInfo().startWithItem(
-//                    deviceManager.configFeature.getDeviceInfo()
-//                ).asFlow().collect {
-//                    viewBind.itemQrCodes.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.COLLECTION_CODE) ||
-//                            it.isSupportFeature(FcDeviceInfo.Feature.BUSINESS_CARD) ||
-//                            it.isSupportFeature(FcDeviceInfo.Feature.NUCLEIC_ACID_CODE) ||
-//                            it.isSupportFeature(FcDeviceInfo.Feature.QR_CODE_EXTENSION_1)
-//                    viewBind.itemContacts.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.CONTACTS)
-//                    viewBind.itemPowerSaveMode.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.POWER_SAVE_MODE)
-//                    viewBind.itemGamePush.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.GAME_PUSH)
-//                    viewBind.itemSportPush.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.SPORT_PUSH)
-//                    viewBind.itemCricket.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.CRICKET_MATCH)
-//                    viewBind.itemVersionInfo.getTextView().text = it.hardwareInfoDisplay()
-//                }
-            }
-
-            launch {
-//                viewModel.flowEvent.collect {
-//                    when (it) {
-//                        is AsyncEvent.OnFail -> promptToast.showFailed(it.error)
-//                        is AsyncEvent.OnSuccess<*> -> {
-//                            if (it.property == State::asyncCheckUpgrade) {
-//                                val info = it.value as HardwareUpgradeInfo?
-//                                if (info == null) {
-//                                    promptToast.showInfo(R.string.version_is_latest_version)
-//                                } else {
-//                                    findNavController().navigate(DeviceFragmentDirections.toHardwareUpgrade(info))
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
             }
         }
     }
@@ -175,43 +140,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 findNavController().navigate(DeviceFragmentDirections.toAlarm())
             }
 
-            viewBind.itemTestWeather -> {
-                applicationScope.launchWithLog {
-                    val weatherForecastList = mutableListOf<WmWeatherForecast>()
-                    val todayWeatherList = mutableListOf<TodayWeather>()
-                    val wmWeatherForecast = WmWeatherForecast(
-                        10,
-                        30,
-                        20,
-                        WmUnitInfo.TemperatureUnit.CELSIUS,
-                        90,
-                        80,
-                        1,
-                        2,
-                        "白天天气描述",
-                        "夜晚天气描述",
-                        System.currentTimeMillis(),
-                        WmWeek.THURSDAY
-                    )
-                    val toDayWeather = TodayWeather(
-                        10, WmUnitInfo.TemperatureUnit.CELSIUS, 90, 80,
-                        1, "weatherDesc", System.currentTimeMillis(), 2
-                    )
-                    val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
-                    weatherForecastList.add(wmWeatherForecast)
-                    todayWeatherList.add(toDayWeather)
-
-                    val wmWeather = WmWeather(
-                        System.currentTimeMillis(),
-                        wmLocation,
-                        weatherForecastList,
-                        todayWeatherList
-                    )
-                    val result =  UNIWatchMate?.wmApps?.appWeather?.pushWeather(wmWeather)?.await()
-                    UNIWatchMate.wmLog.logE(TAG,"set itemTestWeather $result")
-                }
-            }
-
             viewBind.itemTransferFile -> {
                 activity?.let {
                     PermissionHelper.requestAppStoreage(this@DeviceFragment) { permission ->
@@ -240,12 +168,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     }
                 }
             }
-//            viewBind.itemGamePush -> {
-//                findNavController().navigate(DeviceFragmentDirections.toGamePush())
-//            }
-//            viewBind.itemSportPush -> {
-//                findNavController().navigate(DeviceFragmentDirections.toSportPush())
-//            }
 
             viewBind.itemCamera -> {
                 PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
@@ -267,23 +189,75 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     }
                 }
             }
-//            viewBind.itemModifyLogo -> {
-//                findNavController().navigate(DeviceFragmentDirections.toModifyLogo())
-//            }
-//            viewBind.itemEpoUpgrade -> {
-//                findNavController().navigate(DeviceFragmentDirections.toEpoUpgrade())
-//            }
-//            viewBind.itemCricket -> {
-//                findNavController().navigate(DeviceFragmentDirections.toCricket())
-//            }
-//            viewBind.itemOtherFeatures -> {
-//                findNavController().navigate(DeviceFragmentDirections.toOtherFeatures())
-//            }
-//            viewBind.itemVersionInfo -> {
-//                viewModel.checkUpgrade()
-////If you jump directly , you can select a local file for OTA. This may be more convenient for testing
-////                findNavController().navigate(DeviceFragmentDirections.toHardwareUpgrade(null))
-//            }
+
+            viewBind.itemPushDateTime -> {
+                applicationScope.launchWithLog {
+                    val nowMillis = System.currentTimeMillis()
+                    val wmDateTime =
+                        WmDateTime(
+                            TimeZone.getDefault().id,
+                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
+                            WmUnitInfo.DateFormat.YYYY_MM_DD,
+                            nowMillis,
+                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
+                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
+                        )
+                    val result = UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
+                    Timber.tag(TAG).i("settingDateTime result=${result}")
+                    ToastUtil.showToast("push date time result = $result")
+                }
+            }
+
+            viewBind.itemTestWeather -> {
+                applicationScope.launchWithLog {
+                    val weatherForecastList = mutableListOf<WmWeatherForecast>()
+                    val todayWeatherList = mutableListOf<TodayWeather>()
+
+//                 uvindex   0—15
+                    for (index in 0..23) {
+                        val toDayWeather = TodayWeather(
+                            10, WmUnitInfo.TemperatureUnit.CELSIUS, 66, 5,
+                            0, "晴", System.currentTimeMillis(), index
+                        )
+                        todayWeatherList.add(toDayWeather)
+                    }
+                    val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
+
+                    for (index in 0..6) {
+                        val wmWeatherForecast = WmWeatherForecast(
+                            10,
+                            30,
+                            20,
+                            WmUnitInfo.TemperatureUnit.CELSIUS,
+                            90,
+                            5,
+                            0,
+                            0,
+                            "白天天气描述",
+                            "夜晚天气描述",
+                            System.currentTimeMillis() + index * 3600 * 24 * 1000,
+                            WmWeek.values()[index]
+                        )
+                        weatherForecastList.add(wmWeatherForecast)
+                    }
+
+                    val wmWeather = WmWeather(
+                        System.currentTimeMillis(),
+                        wmLocation,
+                        weatherForecastList,
+                        todayWeatherList
+                    )
+                    val result = UNIWatchMate?.wmApps?.appWeather?.pushWeather(wmWeather)?.await()
+                    UNIWatchMate.wmLog.logE(TAG, "push weather result = $result")
+                    ToastUtil.showToast(
+                        "push weather test ${
+                            if (result) getString(R.string.tip_success) else getString(
+                                R.string.tip_failed
+                            )
+                        }"
+                    )
+                }
+            }
         }
     }
 

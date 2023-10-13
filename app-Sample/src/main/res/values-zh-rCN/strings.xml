@@ -1,5 +1,5 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">sample</string>
+    <string name="app_name">Unisample</string>
 
     <string name="percent_param" translatable="false"><xliff:g id="params1">%1$d</xliff:g>%%</string>
 
@@ -459,5 +459,7 @@
     <string name="ds_device_reboot">重启</string>
     <string name="ds_device_shutdown">关机</string>
     <string name="ds_device_reset">恢复出厂设置</string>
+
+    <string name="in_development">开发中</string>
 
 </resources>

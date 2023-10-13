@@ -25,6 +25,10 @@ import com.sjbt.sdk.sample.model.device.ConnectorDevice
 import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
+import com.sjbt.sdk.spp.cmd.CmdHelper
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.CompletableEmitter
+import io.reactivex.rxjava3.core.CompletableOnSubscribe
 import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitSingleOrNull
 import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -289,10 +294,16 @@ internal class DeviceManagerImpl(
                     UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
                 }
                 runCatchingWithLog {
-                    Timber.tag(TAG).i("setExerciseGoal")
+                    sportGoalRepository.flowCurrent.value?.let {
+                        if (flowConnectorState.value == WmConnectState.VERIFIED) {
+                            Timber.tag(TAG).i("setExerciseGoal")
+                            applicationScope.launchWithLog {
+                                UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
+                            }
+                        }
+                    }
                 }
                 runCatchingWithLog {
-                    Timber.tag(TAG).i("setUserInfo")
                     userInfoRepository.flowCurrent.value?.let {
                         val birthDate = WmPersonalInfo.BirthDate(
                             it.birthYear.toShort(),
@@ -305,7 +316,8 @@ internal class DeviceManagerImpl(
                             if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
                             birthDate
                         )
-//                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
+                        Timber.tag(TAG).i("setUserInfo")
+                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }
 
@@ -396,13 +408,9 @@ internal class DeviceManagerImpl(
 
     override suspend fun reset() {
         Timber.tag(TAG).i("reset")
-        UNIWatchMate.reset().doOnSubscribe {
-
-        }.doOnError {
-            it.printStackTrace()
-        }.doOnComplete {
-
-        }.subscribe()
+        UNIWatchMate.reset().onErrorReturn {
+             Completable.create { emitter -> emitter.onComplete() }
+        }.awaitSingleOrNull()
         clearDevice()
     }
 

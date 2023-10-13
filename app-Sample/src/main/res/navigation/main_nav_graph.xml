@@ -128,11 +128,11 @@
     <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.BloodPressureFragment"-->
     <!--        android:label="@string/data_blood_pressure"-->
     <!--        tools:layout="@layout/fragment_data_list"/>-->
-        <fragment
-            android:id="@+id/heartRateConfigFragment"
-            android:name="com.sjbt.sdk.sample.ui.setting.HeartRateConfigFragment"
-            android:label="@string/ds_heart_rate_config"
-            tools:layout="@layout/fragment_heart_rate_config"/>
+    <fragment
+        android:id="@+id/heartRateConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.HeartRateConfigFragment"
+        android:label="@string/ds_heart_rate_config"
+        tools:layout="@layout/fragment_heart_rate_config" />
     <!--    <fragment-->
     <!--        android:id="@+id/temperatureFragment"-->
     <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.TemperatureFragment"-->
@@ -244,8 +244,8 @@
             android:id="@+id/toNotificationConfig"
             app:destination="@id/notificationConfigFragment" />
         <action
-            android:id="@+id/toFunctionConfig"
-            app:destination="@id/functionConfigFragment" />
+            android:id="@+id/toUnitConfig"
+            app:destination="@id/unitConfigFragment" />
         <action
             android:id="@+id/toSoundTouchFeedback"
             app:destination="@id/soundTouchConfigFragment" />
@@ -260,24 +260,19 @@
             android:id="@+id/toHeartRate"
             app:destination="@id/heartRateConfigFragment" />
 
-        <!--<action
-         android:id="@+id/toSedentaryConfig"
-         app:destination="@id/sedentaryConfigFragment"/>
-     <action
-         android:id="@+id/toDrinkWaterConfig"
-         app:destination="@id/drinkWaterConfigFragment"/>
-     <action
-         android:id="@+id/toBpConfig"
-         app:destination="@id/bpConfigFragment"/>-->
+        <action
+            android:id="@+id/toDrinkWaterConfig"
+            app:destination="@id/drinkWaterConfigFragment" />
+        <action
+            android:id="@+id/toSedentary"
+            app:destination="@id/sedentaryConfigFragment" />
         <action
             android:id="@+id/toTurnWristLightingConfig"
             app:destination="@id/turnWristLightingConfigFragment" />
         <action
             android:id="@+id/toSleepConfig"
             app:destination="@id/sleepConfigFragment" />
-        <!--<action
-          android:id="@+id/toScreenVibrateConfig"
-          app:destination="@id/screenVibrateConfigFragment"/>-->
+
     </fragment>
 
     <!--    <fragment-->
@@ -293,9 +288,9 @@
         tools:layout="@layout/fragment_notification_config" />
 
     <fragment
-        android:id="@+id/functionConfigFragment"
+        android:id="@+id/unitConfigFragment"
         android:name="com.sjbt.sdk.sample.ui.setting.FunctionConfigFragment"
-        android:label="@string/ds_function_config"
+        android:label="@string/ds_unit_config"
         tools:layout="@layout/fragment_function_config" />
     <fragment
         android:id="@+id/soundTouchConfigFragment"
@@ -338,23 +333,18 @@
     <!--        android:label="@string/ds_blood_pressure_alarm"-->
     <!--        tools:layout="@layout/fragment_bp_alarm_config"/>-->
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/sedentaryConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.SedentaryConfigFragment"-->
-    <!--        android:label="@string/ds_sedentary_config"-->
-    <!--        tools:layout="@layout/fragment_sedentary_config"/>-->
+    <fragment
+        android:id="@+id/sedentaryConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.SedentaryConfigFragment"
+        android:label="@string/ds_sedentary_config"
+        tools:layout="@layout/fragment_sedentary_config" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/drinkWaterConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.DrinkWaterConfigFragment"-->
-    <!--        android:label="@string/ds_drink_water_config"-->
-    <!--        tools:layout="@layout/fragment_drink_water_config"/>-->
+    <fragment
+        android:id="@+id/drinkWaterConfigFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.DrinkWaterConfigFragment"
+        android:label="@string/ds_drink_water_config"
+        tools:layout="@layout/fragment_drink_water_config" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/bpConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.BloodPressureConfigFragment"-->
-    <!--        android:label="@string/ds_blood_pressure_config"-->
-    <!--        tools:layout="@layout/fragment_blood_pressure_config"/>-->
 
     <fragment
         android:id="@+id/turnWristLightingConfigFragment"

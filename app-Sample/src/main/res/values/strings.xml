@@ -1,5 +1,5 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">sample</string>
+    <string name="app_name">Unisample</string>
 
     <!--Get Photo-->
     <string name="action_take_photo">Take Pictures</string>
@@ -12,6 +12,9 @@
     <string name="permission_explain_msg">Following permissions are required. Do you want to request for the next step?</string>
     <string name="permission_to_settings_msg">Permission request failed. Do you want to enter the System Settings to grant these permissions?</string>
     <!--Unit-->
+    <string name="ds_unit_config">unit_config</string>
+
+
     <string name="unit_year">年</string>
     <string name="unit_month">月</string>
     <string name="unit_day">日</string>
@@ -181,6 +184,7 @@
     <string name="ds_health_monitor_config">Health Monitor Config</string>
     <string name="ds_sedentary_config">Sedentary Reminder Config</string>
     <string name="ds_drink_water_config">Drink Water Reminder Config</string>
+    <string name="ds_no_disturb_lunch_break">No disturb lunch break</string>
 
     <string name="ds_blood_pressure_config">Blood Pressure Reference Config</string>
     <string name="ds_sbp">Systolic pressure</string>
@@ -476,4 +480,6 @@
     <string name="ds_dfu_error_low_battery">Low battery</string>
     <string name="ds_dfu_error_device_not_found">No device found</string>
     <string name="ds_dfu_tips_location_service">Location Services is disabled, and upgrade/push operations may fail</string>
+
+    <string name="in_development">in development</string>
 </resources>

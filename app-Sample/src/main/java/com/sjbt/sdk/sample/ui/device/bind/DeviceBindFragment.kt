@@ -39,6 +39,7 @@ import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import com.sjbt.sdk.utils.UrlParse
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
@@ -273,7 +274,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private fun startDiscover() {
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.collect {
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
+                    this::class.simpleName?.let { tag ->
+                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                    }
+                    ToastUtil.showToast(it.message,true)
+                }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }

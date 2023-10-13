@@ -116,53 +116,49 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sport_push"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
+            android:visibility="gone"
             app:preferenceTitle="@string/ds_sport_push" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_dial"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_dial" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_camera"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_camera_control"/>
+            app:preferenceTitle="@string/ds_camera_control" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_basic_device_info"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_basic_device_info" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_transfer_file"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_transfer_file" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_test_weather"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_test_weather" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_other_features"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_other_features"/>
-        <!-- <com.sjbt.sdk.sample.widget.PreferenceItemView
-             android:id="@+id/item_modify_logo"
-             style="@style/Widget.Sample.PreferenceView.Item.Text"
-             app:name="@string/ds_modify_logo"/>
+            app:preferenceTitle="@string/ds_other_features" />
 
-         <com.sjbt.sdk.sample.widget.PreferenceItemView
-             android:id="@+id/item_epo_upgrade"
-             style="@style/Widget.Sample.PreferenceView.Item.Text"
-             app:name="@string/epo_upgrade_manual"/>
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_push_date_time"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/ds_synchronize_date_and_time" />
 
-         <com.sjbt.sdk.sample.widget.PreferenceItemView
-             android:id="@+id/item_cricket"
-             style="@style/Widget.Sample.PreferenceView.Item.Text"
-             app:name="@string/cricket_match"/>
-
-         <com.sjbt.sdk.sample.widget.PreferenceItemView
-             android:id="@+id/item_version_info"
-             style="@style/Widget.Sample.PreferenceView.Item.Text"
-             app:name="@string/version_info"/>-->
+       <!-- <com.sjbt.sdk.sample.widget.PreferenceItemView
+            android:id="@+id/item_version_info"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:name="@string/version_info" />-->
     </LinearLayout>
 
 </ScrollView>

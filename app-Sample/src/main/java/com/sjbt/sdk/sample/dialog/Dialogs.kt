@@ -5,17 +5,25 @@ import androidx.fragment.app.Fragment
 import com.sjbt.sdk.sample.R
 
 const val DIALOG_START_TIME = "start_time"
+const val DIALOG_START_TIME_NDLB = "start_time_no_disturb_lunch_break"
 fun Fragment.showStartTimeDialog(timeMinute: Int) {
     TimePickerDialogFragment.newInstance(timeMinute, getString(R.string.ds_config_start_time))
         .show(childFragmentManager, DIALOG_START_TIME)
 }
-
+fun Fragment.showStartTimeDialog(timeMinute: Int,tag:String) {
+    TimePickerDialogFragment.newInstance(timeMinute, getString(R.string.ds_config_start_time))
+        .show(childFragmentManager, tag)
+}
 const val DIALOG_END_TIME = "end_time"
+const val DIALOG_END_TIME_NDLB = "end_time_no_disturb_lunch_break"
 fun Fragment.showEndTimeDialog(timeMinute: Int) {
     TimePickerDialogFragment.newInstance(timeMinute, getString(R.string.ds_config_end_time))
         .show(childFragmentManager, DIALOG_END_TIME)
 }
-
+fun Fragment.showEndTimeDialog(timeMinute: Int,tag:String) {
+    TimePickerDialogFragment.newInstance(timeMinute, getString(R.string.ds_config_end_time))
+        .show(childFragmentManager, tag)
+}
 const val DIALOG_INTERVAL_TIME = "interval_time"
 fun Fragment.showIntervalDialog(value: Int, from: Int, to: Int) {
     SelectIntDialogFragment.newInstance(
