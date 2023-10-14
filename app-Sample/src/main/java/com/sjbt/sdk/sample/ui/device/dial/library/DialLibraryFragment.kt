@@ -64,7 +64,6 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                 }
             }
         }
-
         viewBind.recyclerView.adapter = adapter
         viewBind.loadingView.listener = LoadingView.Listener {
             dialInstalledViewModel.requestInstallDials()
@@ -88,6 +87,7 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                                 adapter.notifyDataSetChanged()
                                 viewBind.loadingView.visibility = View.GONE
                             }
+
                         }
                         else -> {}
                     }

@@ -16,8 +16,8 @@ const val HEAD_FILE_SPP_A_2_D = 0x0E.toByte() //App到设备端发送文件
 const val HEAD_FILE_SPP_D_2_A = 0xFF.toByte() //从设备端到App端传文件
 const val HEAD_DEVICE_ERROR = 0xEF.toByte() //从设备向App端报告错误
 const val HEAD_COLLECT_DEBUG_DATA = 0xDF.toByte() //收集调试数据
-const val HEAD_CAMERA_PREVIEW = 0x1A.toByte() //收集调试数据
-const val HEAD_NODE_TYPE = 0x1B.toByte() //收集调试数据
+const val HEAD_CAMERA_PREVIEW = 0x1A.toByte() //相机预览头
+const val HEAD_NODE_TYPE = 0x1B.toByte() //节点数据头
 const val TRANSFER_KEY: Short = 0X7FFF
 
 /**
@@ -284,4 +284,4 @@ const val URN_SPORT: Byte = URN_5
 const val CHANGE_CAMERA = 0.toByte()
 const val CHANGE_FLASH = 1.toByte()
 
-const val ITEM_MAX_LEN = 600
+const val DEFAULT_ITEM_MAX_LEN = 600

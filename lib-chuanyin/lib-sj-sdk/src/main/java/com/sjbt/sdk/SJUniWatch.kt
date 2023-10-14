@@ -44,7 +44,6 @@ import io.reactivex.rxjava3.core.*
 import timber.log.Timber
 import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -55,11 +54,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     var mBtStateReceiver: BtStateReceiver? = null
 
-    val mBtAdapter = BluetoothAdapter.getDefaultAdapter()
+    private val mBtAdapter = BluetoothAdapter.getDefaultAdapter()
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
     private var connectEmitter: ObservableEmitter<WmConnectState>? = null
+
     var mBindInfo: WmBindInfo? = null
     var mCurrDevice: BluetoothDevice? = null
     var mCurrAddress: String? = null
@@ -120,7 +120,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var sdkLogEnable = false
     private val mHandler = Handler(Looper.getMainLooper())
 
-    var MTU:Int = 600
+    var MTU: Int = 600
+
+    private var mtuEmitter: SingleEmitter<Int>? = null
+
+    val observableMtu: Single<Int> = Single.create { emitter ->
+        mtuEmitter = emitter
+        sendNormalMsg(CmdHelper.getMTUCmd)
+    }
 
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
@@ -187,7 +194,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             override fun onClassicBtOpen() {
                 wmLog.logD(TAG, "onClassicBtOpen")
-                btStateChange(WmConnectState.BT_ENABLE)
 //                removeCallBackRunner(mConnectTimeoutRunner)
             }
 
@@ -218,6 +224,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             }
         })
+
+        if (mBtAdapter.isEnabled) {
+            btStateChange(WmConnectState.BT_DISABLE)
+        }
 
         appCamera.startCameraThread()
     }
@@ -522,54 +532,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         HEAD_SPORT_HEALTH -> {
-
                             when (msgBean.cmdId.toShort()) {
-                                CMD_ID_800C -> {
-                                    val sleepOpen = msg[16].toInt()
-                                    val startHour = msg[17].toInt()
-                                    val startMin = msg[18].toInt()
-                                    val endHour = msg[19].toInt()
-                                    val endMin = msg[20].toInt()
-                                    val wmSleepSettings = WmSleepSettings(
-                                        sleepOpen == 1,
-                                        startHour,
-                                        startMin,
-                                        endHour,
-                                        endMin
-                                    )
-
-                                    settingSleepSet.getSleepSettingEmitter?.onSuccess(
-                                        wmSleepSettings
-                                    )
-                                    settingSleepSet.observeSleepSetting(
-                                        wmSleepSettings
-                                    )
-                                }
-                                CMD_ID_800D -> {
-                                    val sleepOpen2 = msg[16].toInt()
-                                    val startHour2 = msg[17].toInt()
-                                    val startMin2 = msg[18].toInt()
-                                    val endHour2 = msg[19].toInt()
-                                    val endMin2 = msg[20].toInt()
-
-                                    settingSleepSet.observeSleepSetting(
-                                        WmSleepSettings(
-                                            sleepOpen2 == 1,
-                                            startHour2,
-                                            startMin2,
-                                            endHour2,
-                                            endMin2
-                                        )
-                                    )
-                                    sendNormalMsg(CmdHelper.getRespondSuccessCmd(CMD_ID_800D))
-                                }
-
-                                CMD_ID_800E -> {
-                                    val setSleepResult = msg[16].toInt()
-                                    settingSleepSet.setSleepConfigSuccess(setSleepResult == 1)
+                                CMD_ID_800C, CMD_ID_800D, CMD_ID_800E -> {
+                                    settingSleepSet.sleepSetBusiness(msgBean, msg)
                                 }
                             }
-
                         }
 
                         HEAD_CAMERA_PREVIEW -> {
@@ -604,8 +571,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {//请求
 
-                                    wmLog.logI(TAG, "节点数据：" + msgBean.payload)
-
                                     if (msgBean.payload.size > 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payload.size)
 
@@ -627,8 +592,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8003 -> {
-                                    val byteBuffer = ByteBuffer.wrap(msgBean.payload)
-                                    MTU = byteBuffer.short.toInt()
+                                    MTU = BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
+                                    mtuEmitter?.onSuccess(MTU)
                                     wmLog.logD(TAG, "MTU:$MTU")
                                 }
                             }
@@ -669,7 +634,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             e.printStackTrace()
         }
     }
-
 
     private fun msgTimeOut(msg: ByteArray) {
 
@@ -924,25 +888,29 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     /**
      * 分包发送写入类型Node节点消息
      */
-    fun sendWriteSubpackageNodeCmdList(totalLen: Short, payloadPackage: PayloadPackage) {
+    fun sendWriteSubpackageNodeCmdList(
+        totalLen: Short,
+        itemLen: Int,
+        payloadPackage: PayloadPackage
+    ) {
 
         val nodeLen = payloadPackage.itemList[0].dataLen + 4
         val nodeCount = payloadPackage.itemList.size
 
-        var itemLen = 0
-
-        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
-
-            if (nodeLen < 20) {
-                itemLen = nodeLen * 30
-            } else if (nodeLen < 30) {
-                itemLen = nodeLen * 20
-            } else if (nodeLen < 60) {
-                itemLen = nodeLen * 10
-            } else if (nodeLen < 90) {
-                itemLen = nodeLen * 7
-            }
-        }
+//        var itemLen = 0
+//
+//        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
+//
+//            if (nodeLen < 20) {
+//                itemLen = nodeLen * 30
+//            } else if (nodeLen < 30) {
+//                itemLen = nodeLen * 20
+//            } else if (nodeLen < 60) {
+//                itemLen = nodeLen * 10
+//            } else if (nodeLen < 90) {
+//                itemLen = nodeLen * 7
+//            }
+//        }
 
         payloadPackage.toByteArray(
             mtu = itemLen,
@@ -1121,7 +1089,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                         URN_APP_WEATHER -> {
 
-                           appWeather.weatherBusiness(it)
+                            appWeather.weatherBusiness(it)
                         }
 
                         URN_APP_RATE -> {
@@ -1227,17 +1195,21 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
-        val device = WmDevice(bindInfo.model)
-        device.address = address
-        device.mode = bindInfo.model
+        val wmDevice = WmDevice(bindInfo.model)
+        wmDevice.address = address
+        wmDevice.mode = bindInfo.model
         mBindInfo = bindInfo
-        device.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
+        wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
-        if (device.isRecognized) {
+        if (wmDevice.isRecognized) {
             wmLog.logD(TAG, " connect:${address}")
-            connectEmitter?.onNext(WmConnectState.CONNECTING)
-
             try {
+                if (!mBtAdapter.isEnabled) {
+                    connectEmitter?.onNext(WmConnectState.BT_DISABLE)
+                    return wmDevice
+                }
+
+                connectEmitter?.onNext(WmConnectState.CONNECTING)
                 mCurrDevice = mBtAdapter.getRemoteDevice(address)
                 mBtEngine.connect(mCurrDevice)
             } catch (e: Exception) {
@@ -1248,7 +1220,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             connectEmitter?.onNext(WmConnectState.DISCONNECTED)
         }
 
-        return device
+        return wmDevice
     }
 
     /**
@@ -1266,10 +1238,17 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
+
         wmDevice.address = bluetoothDevice.address
         wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
         if (wmDevice.isRecognized) {
+
+            if (!mBtAdapter.isEnabled) {
+                connectEmitter?.onNext(WmConnectState.BT_DISABLE)
+                return wmDevice
+            }
+
             wmLog.logE(TAG, " connect:${wmDevice}")
             connectEmitter?.onNext(WmConnectState.CONNECTING)
             mBtEngine.connect(bluetoothDevice)
@@ -1300,22 +1279,32 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private var unbindEmitter: CompletableEmitter? = null
     override fun reset(): Completable {
-        return Completable.create(object : CompletableOnSubscribe {
-            override fun subscribe(emitter: CompletableEmitter) {
-                unbindEmitter = emitter
+        return Completable.create { emitter ->
+            unbindEmitter = emitter
 
-                if (mConnectState == WmConnectState.VERIFIED) {
-                    sendNormalMsg(CmdHelper.getUnBindCmd())
-                } else {
-                    emitter.onError(RuntimeException("not VERIFIED"))
-                }
+            if (mConnectState == WmConnectState.VERIFIED) {
+                sendNormalMsg(CmdHelper.getUnBindCmd())
+            } else {
+                emitter.onError(RuntimeException("not VERIFIED"))
             }
-        })
+        }
     }
 
-    override val observeConnectState: Observable<WmConnectState> = Observable.create {
-        connectEmitter = it
+    private fun getObservableConnectState(): Observable<WmConnectState> {
+        if (currentConnectState == null || connectEmitter == null || connectEmitter!!.isDisposed) {
+            currentConnectState = Observable.create {
+                connectEmitter = it
+            }
+        } else {
+            currentConnectState
+        }
+
+        return currentConnectState!!
     }
+
+    private var currentConnectState: Observable<WmConnectState>? = null
+
+    override val observeConnectState: Observable<WmConnectState> = getObservableConnectState()
 
     override fun getConnectState(): WmConnectState {
         return mConnectState
@@ -1365,6 +1354,15 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 mHandler.postDelayed(object : Runnable {
                     override fun run() {
+
+                        if (ActivityCompat.checkSelfPermission(
+                                mContext,
+                                Manifest.permission.BLUETOOTH_SCAN
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            return
+                        }
+
                         mBtAdapter?.cancelDiscovery()
                     }
                 }, stopAfter)
