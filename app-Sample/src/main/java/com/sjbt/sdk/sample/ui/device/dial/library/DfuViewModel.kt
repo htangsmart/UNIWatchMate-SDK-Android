@@ -19,6 +19,7 @@ import com.topstep.fitcloud.sdk.exception.FcDfuException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
@@ -59,12 +60,20 @@ class DfuViewModel : ViewModel() {
                 coverList.add(File(coverPath))
                 dialList.add(File(dialPath))
                 UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL_COVER, coverList)
-                    .asFlow().collect {
+                    .asFlow()
+//                    .catch {
+//                        UNIWatchMate.wmLog.logI("DfuViewModel","startTransfer DIAL_COVER fail ${it.message}")
+//                    }
+                    .collect {
                         callBack.callBack(it)
                     }
                 UNIWatchMate.wmLog.logI("DfuViewModel","startTransfer DIAL")
                 UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL, dialList)
-                    .asFlow().collect {
+                    .asFlow()
+//                    .catch {
+//                        UNIWatchMate.wmLog.logI("DfuViewModel","startTransfer DIAL fail ${it.message}")
+//                    }
+                    .collect {
                         callBack.callBack(it)
                     }
                 _flowDfuEvent.send(DfuEvent.OnSuccess)

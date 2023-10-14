@@ -57,15 +57,14 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
             override fun onItemClick(packet: DialMock) {
                 if (Injector.getDeviceManager().isConnected()) {
-                    dialLibraryViewModel.state.async()?.let {
                         DialLibraryDfuDialogFragment.newInstance(packet)
                             .show(childFragmentManager, null)
-                    }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
                 }
             }
         }
+
         viewBind.recyclerView.adapter = adapter
         viewBind.loadingView.listener = LoadingView.Listener {
             dialInstalledViewModel.requestInstallDials()
@@ -89,7 +88,6 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                                 adapter.notifyDataSetChanged()
                                 viewBind.loadingView.visibility = View.GONE
                             }
-
                         }
                         else -> {}
                     }
@@ -124,11 +122,6 @@ data class PushParamsAndPackets(
  */
 class DialLibraryViewModel(
 ) : AsyncViewModel<SingleAsyncState<PushParamsAndPackets>>(SingleAsyncState()) {
-
-    init {
-        viewModelScope.launch {
-        }
-    }
 
     fun refreshInternal(wmDials: MutableList<WmDial>): MutableList<DialMock> {
         val packets = mutableListOf<DialMock>()

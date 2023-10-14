@@ -3,6 +3,7 @@ package com.sjbt.sdk.sample.model.user
 import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.settings.WmPersonalInfo
 
 data class UserInfo(
     val id: Long,
@@ -11,7 +12,7 @@ data class UserInfo(
     var sex: Boolean,//True for male, false for female
     var birthYear: Int,
     var birthMonth: Int,
-    var birthDay: Int
+    var birthDay: Int,
 )
 
 fun UserInfo?.getBirthday(): String {
@@ -20,6 +21,7 @@ fun UserInfo?.getBirthday(): String {
     }
     return ""
 }
+
 /**
  * Calculate step size in meters
  */
@@ -54,6 +56,17 @@ fun UserInfo?.getWeight(): Float {
     return weight
 }
 
-fun UserInfo?.toSdkUser(bindType: BindType): WmBindInfo {
-    return WmBindInfo("${this?.id ?:0} ", "name",bindType,WmDeviceModel.SJ_WATCH)
+fun UserInfo.toSdkUser(): WmPersonalInfo {
+    val birthDay = WmPersonalInfo.BirthDate(
+        birthYear.toShort(),
+        this.birthMonth.toByte(),
+        this.birthDay.toByte()
+    )
+
+    return WmPersonalInfo(
+        height.toShort(),
+        weight.toShort(),
+        if (sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
+        birthDay
+    )
 }

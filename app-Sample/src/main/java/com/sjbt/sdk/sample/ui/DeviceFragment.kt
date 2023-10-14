@@ -12,6 +12,7 @@ import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherForecast
+import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.common.WmWeek
 import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmUnitInfo
@@ -210,48 +211,26 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
             viewBind.itemTestWeather -> {
                 applicationScope.launchWithLog {
-                    val weatherForecastList = mutableListOf<WmWeatherForecast>()
-                    val todayWeatherList = mutableListOf<TodayWeather>()
-
-//                 uvindex   0—15
-                    for (index in 0..23) {
-                        val toDayWeather = TodayWeather(
-                            10, WmUnitInfo.TemperatureUnit.CELSIUS, 66, 5,
-                            0, "晴", System.currentTimeMillis(), index
-                        )
-                        todayWeatherList.add(toDayWeather)
-                    }
-                    val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
-
-                    for (index in 0..6) {
-                        val wmWeatherForecast = WmWeatherForecast(
-                            10,
-                            30,
-                            20,
-                            WmUnitInfo.TemperatureUnit.CELSIUS,
-                            90,
-                            5,
-                            0,
-                            0,
-                            "白天天气描述",
-                            "夜晚天气描述",
-                            System.currentTimeMillis() + index * 3600 * 24 * 1000,
-                            WmWeek.values()[index]
-                        )
-                        weatherForecastList.add(wmWeatherForecast)
-                    }
-
-                    val wmWeather = WmWeather(
-                        System.currentTimeMillis(),
-                        wmLocation,
-                        weatherForecastList,
-                        todayWeatherList
-                    )
-                    val result = UNIWatchMate?.wmApps?.appWeather?.pushWeather(wmWeather)?.await()
-                    UNIWatchMate.wmLog.logE(TAG, "push weather result = $result")
+                    val result = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        getTestWeatherdata(WmWeatherTime.TODAY),
+                        WmUnitInfo.TemperatureUnit.CELSIUS
+                    )?.await()
+                    UNIWatchMate.wmLog.logE(TAG, "push today weather result = $result")
                     ToastUtil.showToast(
-                        "push weather test ${
+                        "push today weather test ${
                             if (result) getString(R.string.tip_success) else getString(
+                                R.string.tip_failed
+                            )
+                        }"
+                    )
+                    val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+                        WmUnitInfo.TemperatureUnit.CELSIUS
+                    )?.await()
+                    UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
+                    ToastUtil.showToast(
+                        "push seven_days weather test ${
+                            if (result2) getString(R.string.tip_success) else getString(
                                 R.string.tip_failed
                             )
                         }"

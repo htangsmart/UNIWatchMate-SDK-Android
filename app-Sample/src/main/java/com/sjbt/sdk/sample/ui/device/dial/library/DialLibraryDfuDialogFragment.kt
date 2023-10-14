@@ -82,12 +82,15 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
                         is DfuViewModel.DfuEvent.OnSuccess -> {
                             promptToast.showSuccess(R.string.ds_push_success, intercept = true)
                             lifecycleScope.launchWhenStarted {
-                                delay(2000)
+                                delay(1000)
                                 dismiss()
                             }
                         }
                         is DfuViewModel.DfuEvent.OnFail -> {
                             promptToast.showDfuFail(requireContext(), it.error)
+                            delay(1000)
+                            viewBind.stateView.text=it.error.message
+                            isCancelable = true
                         }
                     }
                 }

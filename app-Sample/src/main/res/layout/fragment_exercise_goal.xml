@@ -17,12 +17,6 @@
             app:preferenceTitle="@string/exercise_goal_step" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_distance"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
-            android:visibility="gone"
-            app:preferenceTitle="@string/exercise_goal_distance" />
-
-        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_calories"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/exercise_goal_calories" />

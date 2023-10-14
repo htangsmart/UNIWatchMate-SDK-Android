@@ -6,6 +6,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.settings.WmSedentaryReminder
 import com.base.sdk.entity.settings.WmSportGoal
 import com.github.kilnn.wheellayout.OneWheelLayout
 import com.github.kilnn.wheellayout.WheelIntConfig
@@ -16,9 +18,13 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentExerciseGoalBinding
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.base.storage.InternalStorage
+import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
 import com.sjbt.sdk.sample.utils.FormatterUtil
+import com.sjbt.sdk.sample.utils.launchWithLog
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.await
 
 
 /**
@@ -36,137 +42,135 @@ import com.sjbt.sdk.sample.utils.FormatterUtil
  * Set the exercise goal to device when device connected or goal changed.
  */
 class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
-    SelectIntDialogFragment.Listener, DistanceMetricDialogFragment.Listener,
-    DistanceImperialDialogFragment.Listener {
+    SelectIntDialogFragment.Listener {
 
     private val viewBind: FragmentExerciseGoalBinding by viewBinding()
 
-    private val internalStorage: InternalStorage = Injector.getInternalStorage()
+    private val applicationScope = Injector.getApplicationScope()
 
-    //    private val deviceManager = Injector.getDeviceManager()
+    private val deviceManager = Injector.getDeviceManager()
     private val exerciseGoalRepository = Injector.getExerciseGoalRepository()
     private val authedUserId = Injector.requireAuthedUserId()
-    private var isLengthMetric: Boolean = true
-    private lateinit var exerciseGoal: WmSportGoal
+    private var exerciseGoal: WmSportGoal? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        isLengthMetric = !deviceManager.configFeature.getFunctionConfig().isFlagEnabled(FcFunctionConfig.Flag.LENGTH_UNIT)
-        exerciseGoal = exerciseGoalRepository.flowCurrent.value
-//        exerciseGoal=WmSportGoal(1,2.0,3.0,4)
-        lifecycleScope.launchWhenStarted {
-            internalStorage.flowAuthedUserId.collect {
-
-            }
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        updateStep()
-        updateDistance()
-        updateCalories()
-        updateActivityDuration()
+        lifecycleScope.launchWhenStarted {
+            launch {
+                exerciseGoal = exerciseGoalRepository.flowCurrent.value
+                updateUI()
+            }
+        }
         viewBind.itemStep.setOnClickListener(blockClick)
-        viewBind.itemDistance.setOnClickListener(blockClick)
         viewBind.itemCalories.setOnClickListener(blockClick)
         viewBind.itemActivityDuration.setOnClickListener(blockClick)
     }
 
     private fun updateStep() {
-        viewBind.itemStep.getTextView().text =
-            getString(R.string.unit_step_param, exerciseGoal.steps)
+        exerciseGoal?.let {
+            viewBind.itemStep.getTextView().text =
+                getString(R.string.unit_step_param, exerciseGoal!!.steps)
+        }
     }
 
-    private fun updateDistance() {
-//        if (isLengthMetric) {
-//            viewBind.itemDistance.getTextView().text = getString(
-//                R.string.unit_km_param, FormatterUtil.decimal1Str(getHalfFloat(exerciseGoal.distance))
-//            )
-//        } else {
-//            viewBind.itemDistance.getTextView().text = getString(
-//                R.string.unit_mi_param, FormatterUtil.decimal1Str(getHalfFloat(exerciseGoal.distance*0.394))
-//            )
-//        }
+    private fun WmSportGoal.saveConfig() {
+        applicationScope.launchWithLog {
+            if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
+                UNIWatchMate.wmSettings.settingSportGoal.set(this@saveConfig).await()
+            }
+        }
+        updateUI()
+    }
+
+    private fun updateUI() {
+        updateStep()
+        updateCalories()
+        updateActivityDuration()
     }
 
     private fun updateCalories() {
-        viewBind.itemCalories.getTextView().text = getString(
-            R.string.unit_k_calories_param, exerciseGoal.calories.toString()
-        )
+        exerciseGoal?.let {
+            viewBind.itemCalories.getTextView().text = getString(
+                R.string.unit_k_calories_param, exerciseGoal!!.calories.toString()
+            )
+        }
+
     }
 
     private fun updateActivityDuration() {
-        viewBind.itemActivityDuration.getTextView().text = getString(
-            R.string.unit_minute_param, exerciseGoal.activityDuration
-        )
+        exerciseGoal?.let {
+            viewBind.itemActivityDuration.getTextView().text = getString(
+                R.string.unit_minute_param, exerciseGoal!!.activityDuration
+            )
+        }
     }
 
     private val blockClick: (View) -> Unit = { view ->
         when (view) {
             viewBind.itemStep -> {
-                showExerciseStepDialog(exerciseGoal.steps)
-            }
-
-            viewBind.itemDistance -> {
-                if (isLengthMetric) {
-                    DistanceMetricDialogFragment().show(childFragmentManager, null)
-                } else {
-                    DistanceImperialDialogFragment().show(childFragmentManager, null)
-                }
+                exerciseGoal?.let { showExerciseStepDialog(it.steps) }
             }
 
             viewBind.itemCalories -> {
-                showExerciseCalorieDialog(exerciseGoal.calories)
+                exerciseGoal?.let { showExerciseCalorieDialog(it.calories) }
             }
+
             viewBind.itemActivityDuration -> {
-                showExerciseDurationDialog(exerciseGoal.activityDuration)
+                exerciseGoal?.let { showExerciseDurationDialog(it.activityDuration) }
             }
         }
     }
 
     override fun onDialogSelectInt(tag: String?, selectValue: Int) {
         if (DIALOG_EXERCISE_STEP == tag) {
-            exerciseGoal = exerciseGoal.copy(selectValue)
+            exerciseGoal = exerciseGoal?.copy(selectValue)
             updateStep()
-            exerciseGoalRepository.modify(authedUserId, exerciseGoal)
+            exerciseGoal?.let {
+                exerciseGoalRepository.modify(authedUserId, it)
+                it.saveConfig()
+            }
         } else if (DIALOG_EXERCISE_CALORIE == tag) {
-            exerciseGoal = exerciseGoal.copy(calories = selectValue)
+            exerciseGoal = exerciseGoal?.copy(calories = selectValue)
             updateCalories()
-            exerciseGoalRepository.modify(authedUserId, exerciseGoal)
+            exerciseGoal?.let {
+                exerciseGoalRepository.modify(authedUserId, it)
+                it.saveConfig()
+            }
         } else if (DIALOG_EXERCISE_ACTIVITY_DURATION == tag) {
-            exerciseGoal = exerciseGoal.copy(activityDuration = selectValue.toShort())
+            exerciseGoal = exerciseGoal?.copy(activityDuration = selectValue.toShort())
             updateActivityDuration()
-            exerciseGoalRepository.modify(authedUserId, exerciseGoal)
+            exerciseGoal?.let {
+                exerciseGoalRepository.modify(authedUserId, it)
+                it.saveConfig()
+            }
         }
-
-        setExerciseGoal()
     }
 
-    private fun setExerciseGoal() {
-        UNIWatchMate.wmSettings.settingSportGoal.set(exerciseGoal)
-    }
 
-    override fun dialogGetDistanceMetric(): Float {
-        return getHalfFloat(exerciseGoal.distance.toDouble())
-    }
+//    override fun dialogGetDistanceMetric(): Float {
+//        return getHalfFloat(exerciseGoal!!.distance.toDouble())
+//    }
+//
+//    override fun dialogSetDistanceMetric(value: Float) {
+//        exerciseGoal = exerciseGoal?.copy(distance = value.toInt())
+////        updateDistance()
+//        exerciseGoal?.let { exerciseGoalRepository.modify(authedUserId, it) }
+//    }
 
-    override fun dialogSetDistanceMetric(value: Float) {
-        exerciseGoal = exerciseGoal.copy(distance = value.toInt())
-        updateDistance()
-        exerciseGoalRepository.modify(authedUserId, exerciseGoal)
-    }
+//    override fun dialogGetDistanceImperial(): Float {
+////        return getHalfFloat(exerciseGoal.distance.km2mi())
+//        return getHalfFloat(exerciseGoal!!.distance * 0.394)
+//    }
 
-    override fun dialogGetDistanceImperial(): Float {
-//        return getHalfFloat(exerciseGoal.distance.km2mi())
-        return getHalfFloat(exerciseGoal.distance * 0.394)
-    }
-
-    override fun dialogSetDistanceImperial(value: Float) {
+//    override fun dialogSetDistanceImperial(value: Float) {
 //        exerciseGoal = exerciseGoal.copy(distance = value * 0.394)
 //        updateDistance()
 //        exerciseGoalRepository.modify(authedUserId, exerciseGoal)
-    }
+//    }
 
     /**
      * Convert to numbers in multiples of 0.5。Such as：
@@ -183,81 +187,3 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
     }
 }
 
-class DistanceMetricDialogFragment : AppCompatDialogFragment() {
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val multiples = 0.5f
-        val listener = parentFragment as? Listener
-
-        val layout = OneWheelLayout(requireContext())
-        layout.setConfig(
-            WheelIntConfig(
-                2,
-                80,
-                false,
-                getString(R.string.unit_km),
-                object : WheelIntFormatter {
-                    override fun format(index: Int, value: Int): String {
-                        return FormatterUtil.decimal1Str(value * multiples)
-                    }
-                })
-        )
-
-        if (listener != null) {
-            layout.setValue((listener.dialogGetDistanceMetric() / multiples).toInt())
-        }
-
-        return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.exercise_goal_distance)
-            .setView(layout)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                listener?.dialogSetDistanceMetric(layout.getValue() * multiples)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .create()
-    }
-
-    interface Listener {
-        fun dialogGetDistanceMetric(): Float
-        fun dialogSetDistanceMetric(value: Float)
-    }
-}
-
-class DistanceImperialDialogFragment : AppCompatDialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val multiples = 0.5f
-        val listener = parentFragment as? Listener
-
-        val layout = OneWheelLayout(requireContext())
-        layout.setConfig(
-            WheelIntConfig(
-                1,
-                50,
-                false,
-                getString(R.string.unit_mi),
-                object : WheelIntFormatter {
-                    override fun format(index: Int, value: Int): String {
-                        return FormatterUtil.decimal1Str(value * multiples)
-                    }
-                })
-        )
-
-        if (listener != null) {
-            layout.setValue((listener.dialogGetDistanceImperial() / multiples).toInt())
-        }
-
-        return MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.exercise_goal_distance)
-            .setView(layout)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                listener?.dialogSetDistanceImperial(layout.getValue() * multiples)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .create()
-    }
-
-    interface Listener {
-        fun dialogGetDistanceImperial(): Float
-        fun dialogSetDistanceImperial(value: Float)
-    }
-}

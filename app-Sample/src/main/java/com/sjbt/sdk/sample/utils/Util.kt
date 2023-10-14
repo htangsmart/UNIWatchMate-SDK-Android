@@ -22,6 +22,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.fragment.NavHostFragment
+import com.base.sdk.entity.apps.TodayWeather
+import com.base.sdk.entity.apps.WmLocation
+import com.base.sdk.entity.apps.WmWeather
+import com.base.sdk.entity.apps.WmWeatherForecast
+import com.base.sdk.entity.apps.WmWeatherTime
+import com.base.sdk.entity.common.WmWeek
+import com.base.sdk.entity.settings.WmUnitInfo
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.DrawableImageViewTarget
@@ -286,6 +293,49 @@ fun glideShowMipmapImage(imageView: ImageView, res: Int, inRecyclerView: Boolean
     } else {
         builder.into(imageView)
     }
+}
+
+fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
+    val weatherForecastList = mutableListOf<WmWeatherForecast>()
+    val todayWeatherList = mutableListOf<TodayWeather>()
+
+//                 uvindex   0—15
+    if (wmWeatherTime == WmWeatherTime.TODAY) {
+        for (index in 0..23) {
+            val toDayWeather = TodayWeather(
+                10, WmUnitInfo.TemperatureUnit.CELSIUS, 66, 5,
+                0, "晴", System.currentTimeMillis(), index
+            )
+            todayWeatherList.add(toDayWeather)
+        }
+    }else{
+        for (index in 0..6) {
+            val wmWeatherForecast = WmWeatherForecast(
+                10,
+                30,
+                20,
+                WmUnitInfo.TemperatureUnit.CELSIUS,
+                90,
+                5,
+                0,
+                0,
+                "白天天气描述",
+                "夜晚天气描述",
+                System.currentTimeMillis() + index * 3600 * 24 * 1000,
+                WmWeek.values()[index]
+            )
+            weatherForecastList.add(wmWeatherForecast)
+        }
+    }
+
+    val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
+
+    return  WmWeather(
+        System.currentTimeMillis(),
+        wmLocation,
+        weatherForecastList,
+        todayWeatherList
+    )
 }
 //fun glideLoadDialBackground(context: Context, dialView: DialView, uri: Any) {
 //    Glide.with(context)

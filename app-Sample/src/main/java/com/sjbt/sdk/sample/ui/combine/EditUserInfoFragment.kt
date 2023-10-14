@@ -4,16 +4,23 @@ import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.WmConnectState
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentEditUserInfoBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.model.user.UserInfo
+import com.sjbt.sdk.sample.model.user.toSdkUser
 import com.sjbt.sdk.sample.ui.dialog.DatePickerDialogFragment
 import com.sjbt.sdk.sample.utils.DateTimeUtils
 import com.sjbt.sdk.sample.utils.FormatterUtil
+import com.sjbt.sdk.sample.utils.ToastUtil
+import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.rx3.await
 import java.util.Calendar
 import java.util.Date
 
@@ -27,6 +34,8 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
     private val userBirthday = "user_birthday"
     private var valueDate:Date?=null
     private val dateFormat = FormatterUtil.getFormatterYYYYMMMdd()
+    private val deviceManager = Injector.getDeviceManager()
+    private val applicationScope = Injector.getApplicationScope()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,20 +91,24 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
 //            promptToast.showInfo(R.string.account_age_error)
 //            return
 //        }
-        lifecycleScope.launchWhenStarted {
-            info?.let {
-                it.birthYear=valueDate!!.year+1900
-                it.birthMonth=valueDate!!.month+1
-                it.birthDay=valueDate!!.date
-                it.sex=sex
-                it.weight=weight
-                it.height=height
+        applicationScope.launchWithLog {
+            info?.let { it ->
+                it.birthYear = valueDate!!.year + 1900
+                it.birthMonth = valueDate!!.month + 1
+                it.birthDay = valueDate!!.date
+                it.sex = sex
+                it.weight = weight
+                it.height = height
                 userInfoRepository.setUserInfo(
                     it
                 )
+                if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
+                    UNIWatchMate.wmSettings.settingPersonalInfo.set(it.toSdkUser()).doOnError {
+                        ToastUtil.showToast(it.message)
+                    }.await()
+                }
+                findNavController().popBackStack()
             }
-
-            findNavController().popBackStack()
         }
     }
 

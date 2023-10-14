@@ -1,6 +1,7 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
 import android.app.Dialog
+import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -24,6 +25,7 @@ import com.base.sdk.entity.BindType
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -232,14 +234,20 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-//                deviceManager.flowConnectorState.collect {
-////                    if (it == ConnectorState.CONNECTED) {
-////                        /**
-////                         * Show bind success, and exit in [onPromptCancel]
-////                         */
-////                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
-////                    }
-//                }
+                deviceManager.flowConnectorState.collect {
+                    if (it == WmConnectState.VERIFIED) {
+                        /**
+                         * Show bind success, and exit in [onPromptCancel]
+                         */
+                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
+                        toggleBluetoothAlert(false)
+                    }
+                    else if (it == WmConnectState.BT_DISABLE) {
+                        toggleBluetoothAlert(true)
+                    }else{
+                        toggleBluetoothAlert(false)
+                    }
+                }
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
                 launch {

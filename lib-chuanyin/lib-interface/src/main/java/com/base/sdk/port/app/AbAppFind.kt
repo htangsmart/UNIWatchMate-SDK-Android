@@ -18,7 +18,6 @@ abstract class AbAppFind : IWmSupport {
 
     /**
      * stop find mobile(停止查找手机)
-     * @return 0:停止声音和关闭界面 1:停止声音 2:关闭界面
      */
     abstract fun stopFindMobile(): Observable<Boolean>
 

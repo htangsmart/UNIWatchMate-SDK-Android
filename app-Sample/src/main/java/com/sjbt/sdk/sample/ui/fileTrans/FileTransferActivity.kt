@@ -25,7 +25,7 @@ import com.sjbt.sdk.sample.base.Config
 import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.ActivityFileTransferBinding
 import com.sjbt.sdk.sample.di.Injector
-import com.sjbt.sdk.sample.ui.camera.BaseMwActivity
+import com.sjbt.sdk.sample.base.BaseActivity
 import com.sjbt.sdk.sample.ui.dialog.SendMusicDialog
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
@@ -42,8 +42,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import java.io.File
 import java.util.*
-
-class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
+ val TAG = "FileTransferActivity"
+class FileTransferActivity : BaseActivity(), View.OnClickListener,
     CancelTransferFileListener {
     private var mMusicAdapter: MusicAdapter? = null
     private val mLocalFileBeanList: MutableList<LocalFileBean> = ArrayList()
@@ -512,8 +512,8 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
                     .onCompletion {
 
                     }.catch {
-//                        e.printStackTrace()
-//                        ToastUtil.showToast(e.message)
+                        it.printStackTrace()
+                        ToastUtil.showToast(it.message)
                     }.flowOn(Dispatchers.Main).collect { wmTransferState: WmTransferState ->
                         if (wmTransferState.state === State.PRE_TRANSFER) {
                         } else if (wmTransferState.state === State.TRANSFERRING) {
@@ -553,6 +553,8 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
                             } else if (transferType === FileType.AVI) {
                                 mSendVideCount = wmTransferState.index
                             }
+                            UNIWatchMate.wmLog.logD(
+                                TAG, "State.FINISH)")
                             transferEnd()
                             fileSelected.clear()
                             binding!!.tvSend.text = getString(R.string.send_no_count)
@@ -587,7 +589,8 @@ class FileTransferActivity : BaseMwActivity(), View.OnClickListener,
 
 
     private fun sendEndTransferFile() {
-        UNIWatchMate.wmLog.logD(TAG, "发送结束命令")
+        UNIWatchMate.wmLog.logD(
+            TAG, "发送结束命令")
 
         hideLoadingDlg()
         setTransferring(false)

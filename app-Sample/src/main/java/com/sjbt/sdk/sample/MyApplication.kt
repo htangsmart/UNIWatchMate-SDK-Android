@@ -9,10 +9,15 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmFind
+import com.base.sdk.entity.apps.WmWeatherTime
+import com.base.sdk.entity.settings.WmUnitInfo
+import com.blankj.utilcode.util.ActivityUtils
 import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.ui.camera.CameraActivity
 import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.ToastUtil
+import com.sjbt.sdk.sample.utils.getTestWeatherdata
 import com.sjbt.sdk.sample.utils.promptToast
 import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.disposables.Disposable
@@ -22,6 +27,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
 
 class MyApplication : Application() {
     val TAG: String = "MyApplication"
@@ -63,48 +69,88 @@ class MyApplication : Application() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         FormatterUtil.init(Resources.getSystem().configuration.locale)
-
     }
 
     private fun observeState() {
         applicationScope.launch {
-//            UNIWatchMate.wmApps.appWeather.observeWeather
+            UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
+                if (it.wmWeatherTime == WmWeatherTime.SEVEN_DAYS) {
+                    val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+                        WmUnitInfo.TemperatureUnit.CELSIUS
+                    )?.await()
+                    UNIWatchMate.wmLog.logE(com.sjbt.sdk.sample.utils.TAG, "push seven_days weather result = $result2")
+                    ToastUtil.showToast(
+                        "push seven_days weather test ${
+                            if (result2) getString(R.string.tip_success) else getString(
+                                R.string.tip_failed
+                            )
+                        }"
+                    )
+                } else if (it.wmWeatherTime == WmWeatherTime.TODAY) {
+                    val result = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        getTestWeatherdata(WmWeatherTime.TODAY),
+                        WmUnitInfo.TemperatureUnit.CELSIUS
+                    )?.await()
+                    UNIWatchMate.wmLog.logE(
+                        com.sjbt.sdk.sample.utils.TAG,
+                        "push today weather result = $result"
+                    )
+                    ToastUtil.showToast(
+                        "push today weather test ${
+                            if (result) getString(R.string.tip_success) else getString(
+                                R.string.tip_failed
+                            )
+                        }"
+                    )
+                }
+            }
         }
-//        applicationScope.launch {
-//                UNIWatchMate.wmApps.appFind.observeFindMobile.asFlow().onCompletion {
-//                    UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
-//                        "onCompletion"
-//                    )
-//                }.catch {
-//                    it.message?.let { it1 ->
-//                        UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
-//                            it1
-//                        )
-//                    }
-//                    ToastUtil.showToast(it.toString(),false)
-//
-//                }.collect {
-//                    ToastUtil.showToast(it.toString(),true)
-//                }
-//        }
-//
-//        applicationScope.launch {
-//                UNIWatchMate.wmApps.appFind.stopFindMobile().asFlow().onCompletion {
-//                    UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
-//                        "onCompletion"
-//                    )
-//                }.catch {
-//                    it.message?.let { it1 ->
-//                        UNIWatchMate.wmLog.logE(MyApplication.javaClass.simpleName,
-//                            it1
-//                        )
-//                    }
-//                    ToastUtil.showToast(it.toString(),false)
-//
-//                }.collect {
-//                    ToastUtil.showToast(it.toString(),true)
-//                }
-//
-//        }
+        applicationScope.launch {
+            UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
+                if (it) {
+                    if (ActivityUtils.getTopActivity() != null) {
+                        CameraActivity.launchActivity(ActivityUtils.getTopActivity())
+                    }
+                } else if (ActivityUtils.getTopActivity() is CameraActivity) {
+                    ActivityUtils.getTopActivity().finish()
+                }
+            }
+        }
+        applicationScope.launch {
+            UNIWatchMate.wmApps.appFind.observeFindMobile.asFlow().catch {
+                it.message?.let { it1 ->
+                    UNIWatchMate.wmLog.logE(
+                        MyApplication.javaClass.simpleName,
+                        it1
+                    )
+                }
+                ToastUtil.showToast(it.toString(), false)
+
+            }.collect {
+                ToastUtil.showToast(it.toString(), true)
+            }
+        }
+
+        applicationScope.launch {
+            UNIWatchMate.wmApps.appFind.stopFindMobile().asFlow().onCompletion {
+                UNIWatchMate.wmLog.logE(
+                    MyApplication.javaClass.simpleName,
+                    "onCompletion"
+                )
+            }.catch {
+                it.message?.let { it1 ->
+                    UNIWatchMate.wmLog.logE(
+                        MyApplication.javaClass.simpleName,
+                        it1
+                    )
+                }
+                ToastUtil.showToast(it.toString(), false)
+
+            }.collect {
+                ToastUtil.showToast(it.toString(), true)
+            }
+
+        }
     }
 }

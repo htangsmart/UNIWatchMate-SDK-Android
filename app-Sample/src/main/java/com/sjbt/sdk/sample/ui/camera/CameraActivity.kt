@@ -69,7 +69,6 @@ class CameraActivity : BaseActivity() {
     private var myOrientationListener: MyOrientationListener? = null
     private val isSupportCameraPreview = true
     private val deviceManager = Injector.getDeviceManager()
-    private val mHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

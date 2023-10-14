@@ -16,7 +16,7 @@ public class ToastUtil {
     private static long lastClickTime = 0;
 
     public static void showToast(String text) {
-        showToast(text);
+        showToast(text,false);
 
     }
 

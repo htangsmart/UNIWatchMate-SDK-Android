@@ -235,29 +235,11 @@ internal class DeviceManagerImpl(
             }
         }
 
-//        UNIWatchMate.wmConnect.observeConnectState.subscribe {
-//                Timber.tag(TAG).e("observeConnectState it=$it")
-//        }
-        applicationScope.launch {
-//            UNIWatchMate.wmConnect.connect()
-
-        }
-
         applicationScope.launch {
             flowConnectorState.collect {
                 Timber.tag(TAG).e("onConnected if verified state:%s", it)
                 if (it == WmConnectState.VERIFIED) {
                     onConnected()
-                }
-            }
-        }
-
-        applicationScope.launch {
-            sportGoalRepository.flowCurrent.drop(1).collect {
-                if (flowConnectorState.value == WmConnectState.VERIFIED) {
-                    applicationScope.launchWithLog {
-                        UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
-                    }
                 }
             }
         }
