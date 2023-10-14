@@ -4,11 +4,13 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.settings.WmSedentaryReminder
 import com.base.sdk.entity.settings.WmSportGoal
+import com.blankj.utilcode.util.LogUtils
 import com.github.kilnn.wheellayout.OneWheelLayout
 import com.github.kilnn.wheellayout.WheelIntConfig
 import com.github.kilnn.wheellayout.WheelIntFormatter
@@ -69,7 +71,9 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
         viewBind.itemCalories.setOnClickListener(blockClick)
         viewBind.itemActivityDuration.setOnClickListener(blockClick)
 
-        UNIWatchMate.wmSettings.settingSportGoal.get().subscribe()
+        UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
+            UNIWatchMate.wmLog.logE("体育消息",""+it)
+        }
     }
 
     private fun updateStep() {

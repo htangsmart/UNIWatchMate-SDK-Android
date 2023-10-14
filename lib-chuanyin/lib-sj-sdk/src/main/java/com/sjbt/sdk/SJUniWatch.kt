@@ -570,6 +570,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {//请求
 
+//                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
                                     if (msgBean.payload.size > 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payload.size)
 
@@ -997,7 +998,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, null, payloadPackage)
+//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1022,7 +1023,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, null, payloadPackage)
+//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1047,7 +1048,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-        parseNodePayload(false, null, payloadPackage)
+//        parseNodePayload(false, null, payloadPackage)
     }
 
     private fun parseNodePayload(

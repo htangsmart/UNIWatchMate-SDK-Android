@@ -11,6 +11,7 @@ import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_CAMERA_PREVIEW;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_COMMON;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_DEVICE_ERROR;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_FILE_SPP_A_2_D;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_NODE_TYPE;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -375,6 +376,7 @@ public class BtEngine {
                 || (type == HEAD_COMMON && cmdId == CMD_ID_800F)//我的表盘列表
                 || (type == HEAD_CAMERA_PREVIEW && cmdId == CMD_ID_8002)//相机预览
                 || (type == HEAD_COMMON && cmdId == CMD_ID_802E)//绑定
+                || (type == HEAD_NODE_TYPE && cmdId == CMD_ID_8002)//节点消息
                 ;
     }
 
@@ -481,7 +483,6 @@ public class BtEngine {
     }
 
     private static void notifyUI(final int state, final Object obj) {
-
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
