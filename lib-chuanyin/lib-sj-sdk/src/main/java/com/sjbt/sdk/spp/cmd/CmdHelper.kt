@@ -72,6 +72,47 @@ object CmdHelper {
     /**
      * 组包公用方法
      */
+    fun constructCmdOld(
+        head: Byte,
+        cmd_id: Short,
+        divideType: Byte,
+        dividePayloadTotalLen: Short = 0,
+        offset: Int,
+        crc: Int,
+        payload: ByteArray?
+    ): ByteArray {
+        val payLoadLength = payload?.size ?: 0
+        val byteBuffer = ByteBuffer.allocate(16 + payLoadLength)
+        byteBuffer.order(ByteOrder.LITTLE_ENDIAN) //采用小端
+
+        //TYPE
+        byteBuffer.put(head)
+        byteBuffer.put(CMD_ORDER_ARRAY[command_index % CMD_ORDER_ARRAY.size])
+        byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
+
+        //Length
+        byteBuffer.put(divideType)
+        byteBuffer.put(0)
+        byteBuffer.putShort(payLoadLength.toShort())
+
+        //Offset
+        byteBuffer.putInt(offset)
+
+        //CRC
+        byteBuffer.putInt(crc)
+
+        //Payload
+        if (payload != null) {
+            byteBuffer.put(payload)
+        }
+        byteBuffer.flip()
+        command_index++
+        return byteBuffer.array()
+    }
+
+    /**
+     * 组包公用方法
+     */
     fun constructCmd(
         head: Byte,
         cmd_id: Short,
@@ -91,7 +132,7 @@ object CmdHelper {
         byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
-        byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen))
+        byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen).reversedArray())
         byteBuffer.putShort(payLoadLength.toShort())
 
         //Offset

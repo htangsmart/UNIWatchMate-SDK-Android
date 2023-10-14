@@ -71,6 +71,8 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
         viewBind.itemDistance.setOnClickListener(blockClick)
         viewBind.itemCalories.setOnClickListener(blockClick)
         viewBind.itemActivityDuration.setOnClickListener(blockClick)
+
+        UNIWatchMate.wmSettings.settingSportGoal.get().subscribe()
     }
 
     private fun updateStep() {
