@@ -12,6 +12,8 @@ import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.ActivityUtils
+import com.blankj.utilcode.util.AppUtils
+import com.blankj.utilcode.util.Utils
 import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
@@ -51,7 +53,7 @@ class MyApplication : Application() {
         //UNIWatchMate.scanQr("www.shenju.watch?mac=00:00:56:78:9A:BC?name=SJ 8020N")
         //全局监听
         observeState()
-
+        Utils.init(instance)
         //监听sdk变化
         UNIWatchMate.observeUniWatchChange().subscribe {
             it.setLogEnable(true)
@@ -79,7 +81,7 @@ class MyApplication : Application() {
                         getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
-                    UNIWatchMate.wmLog.logE(com.sjbt.sdk.sample.utils.TAG, "push seven_days weather result = $result2")
+                    UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
                     ToastUtil.showToast(
                         "push seven_days weather test ${
                             if (result2) getString(R.string.tip_success) else getString(
@@ -93,7 +95,7 @@ class MyApplication : Application() {
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
                     UNIWatchMate.wmLog.logE(
-                        com.sjbt.sdk.sample.utils.TAG,
+                        TAG,
                         "push today weather result = $result"
                     )
                     ToastUtil.showToast(
@@ -109,8 +111,12 @@ class MyApplication : Application() {
         applicationScope.launch {
             UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
                 if (it) {
-                    if (ActivityUtils.getTopActivity() != null) {
-                        CameraActivity.launchActivity(ActivityUtils.getTopActivity())
+                    if (ActivityUtils.getTopActivity() != null) {//打开CameraActivity后需要传输什么数据吗
+                        UNIWatchMate.wmLog.logE(
+                            TAG,
+                            "CameraActivity.launchActivity"
+                        )
+                        CameraActivity.launchActivity(ActivityUtils.getTopActivity(),)
                     }
                 } else if (ActivityUtils.getTopActivity() is CameraActivity) {
                     ActivityUtils.getTopActivity().finish()
@@ -121,7 +127,7 @@ class MyApplication : Application() {
             UNIWatchMate.wmApps.appFind.observeFindMobile.asFlow().catch {
                 it.message?.let { it1 ->
                     UNIWatchMate.wmLog.logE(
-                        MyApplication.javaClass.simpleName,
+                        TAG,
                         it1
                     )
                 }
@@ -135,13 +141,13 @@ class MyApplication : Application() {
         applicationScope.launch {
             UNIWatchMate.wmApps.appFind.stopFindMobile().asFlow().onCompletion {
                 UNIWatchMate.wmLog.logE(
-                    MyApplication.javaClass.simpleName,
+                    TAG,
                     "onCompletion"
                 )
             }.catch {
                 it.message?.let { it1 ->
                     UNIWatchMate.wmLog.logE(
-                        MyApplication.javaClass.simpleName,
+                        TAG,
                         it1
                     )
                 }

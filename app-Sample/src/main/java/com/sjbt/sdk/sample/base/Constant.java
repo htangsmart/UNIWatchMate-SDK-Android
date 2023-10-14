@@ -82,4 +82,6 @@ public class Constant {
     public static final String RU = "ru";
     public static final String VI = "vi";
     public static final String ZH = "zh";
+    public static final String UP = "up", UP_EX = "upex";
+
 }

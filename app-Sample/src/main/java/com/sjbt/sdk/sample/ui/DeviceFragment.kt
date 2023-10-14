@@ -5,21 +5,15 @@ import android.view.View
 import androidx.annotation.StringRes
 import androidx.navigation.fragment.findNavController
 import com.base.api.UNIWatchMate
-import com.base.sdk.entity.apps.TodayWeather
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.apps.WmLocation
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.entity.apps.WmNotificationType
-import com.base.sdk.entity.apps.WmWeather
-import com.base.sdk.entity.apps.WmWeatherForecast
 import com.base.sdk.entity.apps.WmWeatherTime
-import com.base.sdk.entity.common.WmWeek
 import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.TimeUtils
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
-import com.sjbt.sdk.sample.data.device.DeviceManagerImpl
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
@@ -143,7 +137,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
             viewBind.itemTransferFile -> {
                 activity?.let {
-                    PermissionHelper.requestAppStoreage(this@DeviceFragment) { permission ->
+                    PermissionHelper.requestAppStorage(this@DeviceFragment) { permission ->
                         if (permission) {
                             FileTransferActivity.launchActivity(it)
                         }

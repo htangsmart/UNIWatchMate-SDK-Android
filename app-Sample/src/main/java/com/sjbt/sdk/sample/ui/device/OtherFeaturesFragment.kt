@@ -1,23 +1,46 @@
 package com.sjbt.sdk.sample.ui.device
 
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
+import android.text.TextUtils
 import android.view.View
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmFind
+import com.base.sdk.port.FileType
+import com.blankj.utilcode.util.FileUtils
 import com.github.kilnn.tool.widget.ktx.clickTrigger
+import com.obsez.android.lib.filechooser.ChooserDialog
+import com.sjbt.sdk.sample.BuildConfig
 import com.sjbt.sdk.sample.R
+import com.sjbt.sdk.sample.base.BTConfig.UP
+import com.sjbt.sdk.sample.base.BTConfig.UP_EX
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
+import com.sjbt.sdk.sample.utils.PermissionHelper
+import com.sjbt.sdk.sample.utils.ToastUtil
+import com.sjbt.sdk.sample.utils.ToastUtil.showToast
+import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
+import java.io.File
+
 
 class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
     private val viewBind: FragmentOtherFeaturesBinding by viewBinding()
     private val deviceManager = Injector.getDeviceManager()
-
+    private var isLocalUpdate = false
+    private var otaFile: File? = null
+    private val applicationScope = Injector.getApplicationScope()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBind.itemFindDevice.clickTrigger {
@@ -35,6 +58,108 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
         viewBind.itemDeviceReset.clickTrigger {
             viewLifecycleScope.launch {
                 deviceManager.reset()
+            }
+        }
+        viewBind.itemLocalOta.clickTrigger {
+            viewLifecycleScope.launch {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                    // Access to all files
+                    val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                    startActivity(intent)
+                } else {
+                    isLocalUpdate = true
+                    checkReadFilePermission()
+                }
+            }
+        }
+    }
+
+    private fun checkReadFilePermission() {
+        PermissionHelper.requestAppStorage(this@OtherFeaturesFragment) {
+            if (it) {
+                showFileChooserDialog();
+            } else {
+                ToastUtil.showToast(getString(R.string.permission_fail));
+            }
+        }
+    }
+
+    private fun showFileChooserDialog() {
+        //choose a file
+        //choose a file
+        context?.let { ctx ->
+
+            val chooserDialog = ChooserDialog(ctx, R.style.FileChooserStyle)
+
+            chooserDialog
+                .withResources(
+                    R.string.choose_file,
+                    R.string.title_choose, R.string.dialog_cancel
+                )
+                .disableTitle(false)
+                .enableOptions(false)
+                .titleFollowsDir(false)
+                .cancelOnTouchOutside(false)
+                .displayPath(true)
+                .enableDpad(true)
+
+            chooserDialog.withFilter(false, false, UP, UP_EX)
+
+            chooserDialog.withNegativeButtonListener(DialogInterface.OnClickListener { dialog, which -> })
+
+            chooserDialog.withChosenListener { dir, dirFile ->
+//            Toast.makeText(ctx, (dirFile.isDirectory() ? "FOLDER: " : "FILE: ") + dir,
+//                    Toast.LENGTH_SHORT).show();
+                if (!dirFile.isFile()) {
+                    return@withChosenListener
+                }
+                val file: File = dirFile
+                startLocalUpdate(file)
+            }
+
+            chooserDialog.withOnBackPressedListener { dialog -> chooserDialog.goBack() }
+
+            chooserDialog.show()
+        }
+    }
+
+    private fun startLocalUpdate(file: File?) {
+        if (file == null || !file.exists()) {
+            showToast(getString(R.string.error_up_file))
+            return
+        }
+        if (file.length() < 100) { //长度小于100
+            showToast(getString(R.string.error_up_file))
+            return
+        }
+        val extension = FileUtils.getFileExtension(file)
+        try {
+            if (!TextUtils.isEmpty(extension)) {
+                if (extension != UP && extension != UP_EX) {
+                    showToast(getString(R.string.error_up_file))
+                    return
+                }
+            }
+            otaFile = file
+            setTransferring(true)
+            startOta()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showToast(getString(R.string.error_up_file))
+            setTransferring(false)
+            return
+        }
+    }
+
+    private fun startOta() {
+        applicationScope.launchWithLog {
+            val fileList = mutableListOf<File>()
+            otaFile?.let {
+                fileList.add(it)
+                UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList).asFlow().collect{
+
+                }
             }
         }
     }

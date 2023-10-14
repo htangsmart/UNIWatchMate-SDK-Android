@@ -13,6 +13,7 @@
     <string name="permission_to_settings_msg">Permission request failed. Do you want to enter the System Settings to grant these permissions?</string>
     <!--Unit-->
     <string name="ds_unit_config">unit_config</string>
+    <string name="permission_fail">permission_fail</string>
 
 
     <string name="unit_year">年</string>
@@ -365,6 +366,7 @@
     <string name="ds_device_reboot">Device Reboot</string>
     <string name="ds_device_shutdown">Device Shutdown</string>
     <string name="ds_device_reset">Device Reset</string>
+    <string name="ds_device_local_ota">Device Local Ota</string>
 
 
     <string name="device_scan_bind_tips1">This is a simulated code scanning page, developers need to complete the scanning function by themselves</string>
@@ -482,4 +484,7 @@
     <string name="ds_dfu_tips_location_service">Location Services is disabled, and upgrade/push operations may fail</string>
 
     <string name="in_development">in development</string>
+
+    <string name="error_up_file">Firmware abnormal, please reselect</string>
+
 </resources>

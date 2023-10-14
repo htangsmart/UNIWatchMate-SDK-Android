@@ -54,7 +54,7 @@ object PermissionHelper {
         requestPermission(fragment, permissions, grantResult)
     }
 
-    fun requestAppStoreage(fragment: Fragment, grantResult: ((Boolean) -> Unit)) {
+    fun requestAppStorage(fragment: Fragment, grantResult: ((Boolean) -> Unit)) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             grantResult.invoke(true)
             return
@@ -64,6 +64,12 @@ object PermissionHelper {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         requestPermission(fragment, permissions, grantResult)
+    }
+    fun hasAppStorage(context: Context): Boolean {
+        return hasPermissions(context, arrayListOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ))
     }
     fun hasCamera(context: Context): Boolean {
         return hasPermissions(context, arrayListOf(Manifest.permission.CAMERA))
