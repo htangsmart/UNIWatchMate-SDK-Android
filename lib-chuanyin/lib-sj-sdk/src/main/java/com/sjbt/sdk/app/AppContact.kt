@@ -45,7 +45,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
         sjUniWatch.observableMtu.subscribe { mtu ->
             sjUniWatch.sendWriteSubpackageNodeCmdList(
-                (contactList.size * 52).toShort(),
+                (contactList.size * 52 + 10).toShort(),//通讯录个数长度+payload头长度
                 mtu,
                 payloadPackage
             )

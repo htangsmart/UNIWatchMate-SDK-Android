@@ -119,10 +119,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private var sharedPreferencesUtils: SharedPreferencesUtils
     var sdkLogEnable = false
     private val mHandler = Handler(Looper.getMainLooper())
-
     var MTU: Int = 600
-
     private var mtuEmitter: SingleEmitter<Int>? = null
+    private val mPayloadMap = PayloadMap()
 
     val observableMtu: Single<Int> = Single.create { emitter ->
         mtuEmitter = emitter
@@ -578,23 +577,46 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                             PayloadPackage.fromByteArray(msgBean.payload)
 
                                         parseNodePayload(true, msgBean, payloadPackage)
+
                                     } else {//设备传输层回复
                                         wmLog.logI(TAG, "传输层消息：" + msgBean.payload.size)
                                         mPayloadPackage?.let {
                                             it.itemList[0].data = msgBean.payload
+
                                             parseNodePayload(false, msgBean, it)
                                         }
                                     }
                                 }
 
                                 CMD_ID_8002 -> {//响应
+                                    //
+                                    sendCommunityResponse()
+
+                                    if (msgBean.payloadLen >= 10) {//设备应用层回复
+                                        wmLog.logI(TAG, "应用层消息：" + msgBean.payloadLen)
+
+                                        var payloadPackage: PayloadPackage =
+                                            PayloadPackage.fromByteArray(msgBean.payload)
+
+                                        parseNodePayload(true, msgBean, payloadPackage)
+                                    } else {//设备传输层回复
+                                        wmLog.logI(TAG, "传输层消息：" + msgBean.payloadLen)
+
+                                    }
+
+                                    wmLog.logI(TAG, "响应消息：" + msgBean.payload.size)
 
                                 }
 
                                 CMD_ID_8003 -> {
-                                    MTU = BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
+                                    MTU =
+                                        BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
                                     mtuEmitter?.onSuccess(MTU)
                                     wmLog.logD(TAG, "MTU:$MTU")
+                                }
+
+                                CMD_ID_8004 -> {
+                                    wmLog.logI(TAG, "收到通讯层消息：" + msgBean.payload.size)
                                 }
                             }
                         }
@@ -633,6 +655,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * 回复通讯层消息
+     */
+    private fun sendCommunityResponse() {
+        sendNormalMsg(
+            CmdHelper.constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8004,
+                DIVIDE_N_2,
+                0,
+                0,
+                0,
+                null
+            )
+        )
     }
 
     private fun msgTimeOut(msg: ByteArray) {
@@ -894,6 +933,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         payloadPackage: PayloadPackage
     ) {
 
+        mPayloadMap.putFrame(payloadPackage)
         val nodeLen = payloadPackage.itemList[0].dataLen + 4
         val nodeCount = payloadPackage.itemList.size
 
@@ -1015,6 +1055,30 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         msgBean: MsgBean? = null,
         payloadPackage: PayloadPackage
     ) {
+
+        if (response) {
+            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
+                if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
+                    wmLog.logD(TAG, "结果全部OK")
+                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
+                    wmLog.logD(TAG, "结果全部Fail")
+                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
+                    parseResponseEachNode(payloadPackage, msgBean)
+                }
+            } else {
+                wmLog.logE(TAG, "设备回复错误消息！！！")
+            }
+
+        } else {
+            parseResponseEachNode(payloadPackage, msgBean)
+        }
+
+    }
+
+    private fun parseResponseEachNode(
+        payloadPackage: PayloadPackage,
+        msgBean: MsgBean?
+    ) {
         payloadPackage.itemList.forEach {
             when (it.urn[0]) {
                 URN_CONNECT -> {//蓝牙连接 暂用旧协议格式
@@ -1024,7 +1088,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
                         URN_SETTING_SPORT -> {//运动目标
-                            settingSportGoal.sportInfoBusiness(it)
+                            if (it.data.size <= 1) {
+                                wmLog.logD(TAG, "体育目标设置成功")
+                            } else {
+                                settingSportGoal.sportInfoBusiness(it)
+                            }
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息
@@ -1101,7 +1169,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 URN_APP_FIND_PHONE_START -> {
 
-//                                    appFind.startFindPhoneEmitter?.onSuccess(true)
+                                    //                                    appFind.startFindPhoneEmitter?.onSuccess(true)
 
                                 }
 
