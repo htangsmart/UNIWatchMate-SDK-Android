@@ -58,7 +58,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         lifecycleScope.launchWhenStarted {
             launch {
                 deviceManager.flowStateConnected().collect {
-//                    viewBind.layoutContent.setAllChildEnabled(it)
+                    viewBind.layoutContent.setAllChildEnabled(it)
                 }
 
                 launch {

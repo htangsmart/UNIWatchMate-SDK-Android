@@ -1,6 +1,5 @@
 package com.sjbt.sdk.sample.ui.device
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -13,12 +12,12 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.FileType
 import com.blankj.utilcode.util.FileUtils
+import com.github.kilnn.tool.storage.FileUtil
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.obsez.android.lib.filechooser.ChooserDialog
 import com.sjbt.sdk.sample.BuildConfig
 import com.sjbt.sdk.sample.R
-import com.sjbt.sdk.sample.base.BTConfig.UP
-import com.sjbt.sdk.sample.base.BTConfig.UP_EX
+import com.sjbt.sdk.sample.base.BTConfig
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
@@ -62,7 +61,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
         }
         viewBind.itemLocalOta.clickTrigger {
             viewLifecycleScope.launch {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
                     // Access to all files
                     val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                     val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
@@ -88,30 +87,35 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     private fun showFileChooserDialog() {
         //choose a file
         //choose a file
-        context?.let { ctx ->
+        activity?.let { ctx ->
 
             val chooserDialog = ChooserDialog(ctx, R.style.FileChooserStyle)
-
             chooserDialog
                 .withResources(
                     R.string.choose_file,
                     R.string.title_choose, R.string.dialog_cancel
                 )
                 .disableTitle(false)
+                .withFilter(false, false, BTConfig.UP, BTConfig.UP_EX, BTConfig.JPG)
                 .enableOptions(false)
                 .titleFollowsDir(false)
                 .cancelOnTouchOutside(false)
                 .displayPath(true)
                 .enableDpad(true)
 
-            chooserDialog.withFilter(false, false, UP, UP_EX)
-
-            chooserDialog.withNegativeButtonListener(DialogInterface.OnClickListener { dialog, which -> })
+            chooserDialog.withNegativeButtonListener { dialog, which ->
+                startLocalUpdate(
+                    File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            .absolutePath + "/w20.up"
+                    )
+                )
+            }
 
             chooserDialog.withChosenListener { dir, dirFile ->
 //            Toast.makeText(ctx, (dirFile.isDirectory() ? "FOLDER: " : "FILE: ") + dir,
 //                    Toast.LENGTH_SHORT).show();
-                if (!dirFile.isFile()) {
+                if (!dirFile.isFile) {
                     return@withChosenListener
                 }
                 val file: File = dirFile
@@ -136,7 +140,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
         val extension = FileUtils.getFileExtension(file)
         try {
             if (!TextUtils.isEmpty(extension)) {
-                if (extension != UP && extension != UP_EX) {
+                if (extension != BTConfig.UP && extension != BTConfig.UP_EX) {
                     showToast(getString(R.string.error_up_file))
                     return
                 }
@@ -157,9 +161,10 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
             val fileList = mutableListOf<File>()
             otaFile?.let {
                 fileList.add(it)
-                UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList).asFlow().collect{
+                UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
+                    .collect {
 
-                }
+                    }
             }
         }
     }

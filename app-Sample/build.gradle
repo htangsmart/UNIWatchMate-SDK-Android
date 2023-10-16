@@ -118,6 +118,7 @@ dependencies {
     implementation project(path: ':lib-chuanyin:lib-fc-sdk')
     implementation project(path: ':lib-chuanyin:lib-api')
     implementation project(path: ':zbarlibrary')
+    implementation project(path: ':file-chooser-lib')
 
     //Required
     implementation "com.jakewharton.timber:timber:$timber_version"
@@ -205,6 +206,5 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    implementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
 
 }

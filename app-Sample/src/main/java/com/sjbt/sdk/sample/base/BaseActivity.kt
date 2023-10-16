@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.dialog.ConfirmDialog
 import com.sjbt.sdk.sample.ui.dialog.LoadingDialog
+import com.sjbt.sdk.sample.utils.promptProgress
 
 abstract class BaseActivity : AppCompatActivity() {
     protected var mConfirmDialog: ConfirmDialog? = null
@@ -19,6 +20,8 @@ abstract class BaseActivity : AppCompatActivity() {
     protected var mHandler = Handler(Looper.getMainLooper())
     protected var isFront = false
     protected var mBluetoothAdapter: BluetoothAdapter? = null
+    protected val promptProgress by promptProgress()
+
     override fun setRequestedOrientation(requestedorientation: Int) {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O && isTranslucentorFloating) {
             return

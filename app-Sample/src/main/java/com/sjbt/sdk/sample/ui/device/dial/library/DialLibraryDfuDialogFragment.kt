@@ -21,6 +21,8 @@ import com.sjbt.sdk.sample.utils.glideShowMipmapImage
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
@@ -42,7 +44,7 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
     private var _viewBind: DialogDialLibraryDfuBinding? = null
     private val viewBind get() = _viewBind!!
 
-    private val dfuViewModel: DfuViewModel by viewModels({ requireParentFragment() })
+    private val dfuViewModel: DfuViewModel by viewModels({ requireParentFragment()})
     private val promptToast by promptToast()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,9 +79,10 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
         }
         lifecycle.launchRepeatOnStarted {
             launch {
-                dfuViewModel.flowDfuEvent.collect {
+                dfuViewModel.flowDfuEvent.drop(1).collect {
                     when (it) {
                         is DfuViewModel.DfuEvent.OnSuccess -> {
+                            isCancelable = true
                             promptToast.showSuccess(R.string.ds_push_success, intercept = true)
                             lifecycleScope.launchWhenStarted {
                                 delay(1000)
@@ -108,7 +111,6 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
             if (it.state == State.FINISH) {
                 viewBind.stateView.progress=100
                 viewBind.stateView.text=getString(R.string.ds_push_success)
-                isCancelable = true
             }else{
                 viewBind.stateView.progress=it.progress
                 viewBind.stateView.text=if(it.sendingFile!!.name.contains("jpg")) getString(R.string.send_dial_Cover)

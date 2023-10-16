@@ -3,6 +3,7 @@ package com.sjbt.sdk.sample.ui.device.dial.library
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.base.sdk.entity.apps.WmDial
@@ -26,15 +27,16 @@ import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.GridSpacingItemDecoration
 import com.sjbt.sdk.sample.widget.LoadingView
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
     private val viewBind: FragmentDialLibraryBinding by viewBinding()
-
+    private val dfuViewModel: DfuViewModel by viewModels()
     private val dialInstalledViewModel: DialInstalledViewModel by viewModels()
     private val dialLibraryViewModel: DialLibraryViewModel by viewModels()
-
+    private var wmDials: MutableList<WmDial>? = mutableListOf()
     private lateinit var adapter: DialLibraryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,8 +59,12 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
             override fun onItemClick(packet: DialMock) {
                 if (Injector.getDeviceManager().isConnected()) {
+                    if (packet.installed == 1) {
+                        promptToast.showInfo(R.string.ds_dial_installed)
+                    } else {
                         DialLibraryDfuDialogFragment.newInstance(packet)
                             .show(childFragmentManager, null)
+                    }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
                 }
@@ -75,20 +81,19 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                         }
+
                         is Fail -> {
                             viewBind.loadingView.showError(R.string.tip_load_error)
                         }
+
                         is Success -> {
-                            val wmDials = state.requestDials()
-                            if (wmDials.isNullOrEmpty()) {
-                                viewBind.loadingView.showError(R.string.ds_no_data)
-                            } else {
-                                adapter.items = dialLibraryViewModel.refreshInternal(wmDials)
-                                adapter.notifyDataSetChanged()
-                                viewBind.loadingView.visibility = View.GONE
-                            }
+                            wmDials = state.requestDials()
+                            adapter.items = dialLibraryViewModel.refreshInternal(wmDials)
+                            adapter.notifyDataSetChanged()
+                            viewBind.loadingView.visibility = View.GONE
 
                         }
+
                         else -> {}
                     }
                 }
@@ -99,9 +104,21 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         is DialEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
-                        is DialEvent.DialRemoved -> {
-                            viewBind.loadingView.visibility = View.GONE
+                    }
+                }
+            }
+            launch {
+                dfuViewModel.flowDfuEvent.collect { event ->
+                    when (event) {
+                        is DfuViewModel.DfuEvent.OnSuccess -> {
+                            wmDials?.let {
+                                val intalledDialMock = event.installed
+                                it.add(WmDial(intalledDialMock.id, 0))
+                                adapter.items = dialLibraryViewModel.refreshInternal(it)
+                                adapter.notifyDataSetChanged()
+                            }
                         }
+
                     }
                 }
             }
@@ -123,47 +140,58 @@ data class PushParamsAndPackets(
 class DialLibraryViewModel(
 ) : AsyncViewModel<SingleAsyncState<PushParamsAndPackets>>(SingleAsyncState()) {
 
-    fun refreshInternal(wmDials: MutableList<WmDial>): MutableList<DialMock> {
+    fun refreshInternal(wmDials: MutableList<WmDial>?): MutableList<DialMock> {
         val packets = mutableListOf<DialMock>()
         packets.add(
             DialMock(
                 R.mipmap.a8c637a6c26d476db361051786e773df7,
-                "8c637a6c26d476db361051786e773df7.dial",installDialsContain(wmDials,"8c637a6c26d476db361051786e773df7")
+                "8c637a6c26d476db361051786e773df7.dial",
+                installDialsContain(wmDials, "8c637a6c26d476db361051786e773df7"),
+                "8c637a6c26d476db361051786e773df7"
             )
         )
         packets.add(
             DialMock(
                 R.mipmap.a59c4aad46ed434ca58786f3232aba673_california_simple,
-                "59c4aad46ed434ca58786f3232aba673.dial",installDialsContain(wmDials,"59c4aad46ed434ca58786f3232aba673")
+                "59c4aad46ed434ca58786f3232aba673.dial",
+                installDialsContain(wmDials, "59c4aad46ed434ca58786f3232aba673"),
+                "59c4aad46ed434ca58786f3232aba673"
             )
         )
-        packets.add(
-            DialMock(
-                R.mipmap.a4974f889d52c4a519eac9ea409b3295c,
-                "4974f889d52c4a519eac9ea409b3295c.dial",installDialsContain(wmDials,"4974f889d52c4a519eac9ea409b3295c")
-            )
-        )
+//        packets.add(
+//            DialMock(
+//                R.mipmap.a4974f889d52c4a519eac9ea409b3295c,
+//                "4974f889d52c4a519eac9ea409b3295c.dial",installDialsContain(wmDials,"4974f889d52c4a519eac9ea409b3295c")
+//            )
+//        )
         packets.add(
             DialMock(
                 R.mipmap.a1245156a62de4d6d8d60d8f8ff751302,
-                "1245156a62de4d6d8d60d8f8ff751302.dial",installDialsContain(wmDials,"1245156a62de4d6d8d60d8f8ff751302")
+                "1245156a62de4d6d8d60d8f8ff751302.dial",
+                installDialsContain(wmDials, "1245156a62de4d6d8d60d8f8ff751302"),
+                "1245156a62de4d6d8d60d8f8ff751302"
             )
         )
         packets.add(
             DialMock(
                 R.mipmap.aaab168c15c7b40eab361ca98fdd213ee,
-                "aab168c15c7b40eab361ca98fdd213ee.dial",installDialsContain(wmDials,"aab168c15c7b40eab361ca98fdd213ee")
+                "aab168c15c7b40eab361ca98fdd213ee.dial",
+                installDialsContain(wmDials, "aab168c15c7b40eab361ca98fdd213ee"),
+                "aab168c15c7b40eab361ca98fdd213ee"
             )
         )
         return packets
     }
 
-    private fun installDialsContain(wmDials: MutableList<WmDial>, s: String): Int {
-        for (bean in wmDials) {
-            if (s.contains(bean.id)) {
-                return 1
+    private fun installDialsContain(wmDials: MutableList<WmDial>?, s: String): Int {
+        wmDials?.let {
+            for (bean in wmDials) {
+                if (s.contains(bean.id)) {
+                    return 1
+                }
             }
         }
+
         return 0
 
     }

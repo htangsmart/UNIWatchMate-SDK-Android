@@ -44,6 +44,6 @@ public class BTConfig {
     public static final int OTA_STEP_MAIN_PROCESS = 200;
     public static final int OTA_STEP_VICE_PROCESS = 201;
 
-    public static final String UP = "up", UP_EX = "upex";
+    public static final String UP = "up", UP_EX = "upex",JPG="jpg";
 
 }

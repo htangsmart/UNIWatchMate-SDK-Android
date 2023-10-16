@@ -49,22 +49,9 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewLifecycle.launchRepeatOnStarted {
                 launch {
                     UNIWatchMate.observeConnectState.asFlow().collect {
-//                        viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
+                        viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
                     }
                 }
-                launch {
-//                    UNIWatchMate.wmSettings.settingWistRaise.observeChange().asFlow().collect {
-//                        wistRaiseconfig = it
-//                        viewBind.itemWristLightingEnabled.getSwitchView().isChecked=it.isScreenWakeEnabled
-//                    }
-                }
-
-                launch {
-//                    wistRaiseconfig = UNIWatchMate.wmSettings.settingWistRaise.get().blockingGet()
-//                    viewBind.itemWristLightingEnabled.getSwitchView().isChecked=wistRaiseconfig?.isScreenWakeEnabled?:false
-                }
-
-
             }
         }
     }

@@ -9,6 +9,7 @@ import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.StateEventViewModel
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
+import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
@@ -55,9 +56,13 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
         viewModelScope.launch {
             val alarms = state.requestDials()
             if (alarms != null && position < alarms.size) {
-                UNIWatchMate.wmApps.appDial.deleteDial(alarms[position]).await()
-                alarms.removeAt(position)
-                DialEvent.DialRemoved(position).newEvent()
+                try {
+                    UNIWatchMate.wmApps.appDial.deleteDial(alarms[position]).await()
+                    alarms.removeAt(position)
+                    DialEvent.DialRemoved(position).newEvent()
+                } catch (e: Exception) {
+                    ToastUtil.showToast(e.message)
+                }
             }
         }
     }

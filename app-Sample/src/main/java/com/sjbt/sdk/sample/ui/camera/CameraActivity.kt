@@ -85,13 +85,14 @@ class CameraActivity : BaseActivity() {
         myOrientationListener = MyOrientationListener(this)
         UNIWatchMate.wmApps.appCamera.cameraBackSwitch(WMCameraPosition.WMCameraPositionFront)
         UNIWatchMate.wmApps.appCamera.cameraFlashSwitch(WMCameraFlashMode.WMCameraFlashModeOn)
-        val width = 320
-        val height = 240
+        var width = 320
+        var height = 240
+        val basicInfo = CacheDataHelper.getCurrentDeiceBean()
 
-//        if (basicInfo != null) {
-//            width = basicInfo.cw;
-//            height = basicInfo.ch;
-//        }
+        if (basicInfo != null) {
+            width = basicInfo.cw;
+            height = basicInfo.ch;
+        }
 
         osiJni.initEncoder(width, height)
         initView()

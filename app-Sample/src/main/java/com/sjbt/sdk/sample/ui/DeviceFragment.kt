@@ -42,6 +42,7 @@ fun WmConnectState.toStringRes(): Int {
     }
 }
 
+const val TAG = "DeviceFragment"
 class DeviceFragment : BaseFragment(R.layout.fragment_device) {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
@@ -71,7 +72,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             launch {
 
                 deviceManager.flowDevice?.collect {
-                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowDevice=$it") }
+                    this::class.simpleName?.let { it1 -> Timber.i("flowDevice=$it") }
                     if (it == null) {
                         viewBind.itemDeviceBind.visibility = View.VISIBLE
                         viewBind.itemDeviceInfo.visibility = View.GONE
@@ -86,16 +87,16 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             launch {
                 deviceManager.flowConnectorState.collect {
                     this::class.simpleName?.let { it1 ->
-                        Timber.tag(it1).i("flowConnectorState=$it")
+                        Timber.i("flowConnectorState=$it")
                     }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-//                  viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
+                  viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
 
             launch {
                 deviceManager.flowBattery.collect {
-                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i("flowBattery=$it") }
+                    this::class.simpleName?.let { it1 -> Timber.i("flowBattery=$it") }
                     if (it == null) {
                         viewBind.batteryView.setBatteryUnknown()
                     } else {

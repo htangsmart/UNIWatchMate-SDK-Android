@@ -22,23 +22,13 @@ object CacheDataHelper {
 
     private var currDeviceBean: WmDeviceInfo? = null
 
-//    fun setCurrentDeviceBean(deviceBean: DeviceBean?) {
-//        currDeviceBean = deviceBean
-//    }
-//
-//    fun getCurrentDeiceBean(): DeviceBean? {
-//
-//        if (currDeviceBean == null) {
-//            currDeviceBean = DeviceBean()
-//        }
-//
-//        return currDeviceBean
-//    }
-//
-//    fun setBasicInfo(info: WmDeviceInfo) {
-//        basicInfo = info
-//        currDeviceBean?.basicInfo = info
-//    }
+    fun setCurrentDeviceInfo(deviceBean: WmDeviceInfo?) {
+        currDeviceBean = deviceBean
+    }
+    fun getCurrentDeiceBean(): WmDeviceInfo? {
+        return currDeviceBean
+    }
+
 
 
     fun getTransferring(): Boolean {

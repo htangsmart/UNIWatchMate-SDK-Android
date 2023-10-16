@@ -19,6 +19,9 @@ import com.topstep.fitcloud.sdk.exception.FcDfuException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -32,12 +35,12 @@ import java.io.File
 class DfuViewModel : ViewModel() {
 
     sealed class DfuEvent {
-        object OnSuccess : DfuEvent()
+        class OnSuccess(val installed:DialMock) : DfuEvent()
         class OnFail(val error: Throwable) : DfuEvent()
     }
 
-    private val _flowDfuEvent = Channel<DfuEvent>()
-    val flowDfuEvent = _flowDfuEvent.receiveAsFlow()
+    private val _flowDfuEvent = MutableStateFlow<DfuEvent?>(null)
+    val flowDfuEvent = _flowDfuEvent.asStateFlow()
 
     private var dfuJob: Job? = null
 
@@ -76,11 +79,11 @@ class DfuViewModel : ViewModel() {
                     .collect {
                         callBack.callBack(it)
                     }
-                _flowDfuEvent.send(DfuEvent.OnSuccess)
+                _flowDfuEvent.value=DfuEvent.OnSuccess(dialMock)
             } catch (e: Exception) {
                 if (e !is CancellationException) {
                     e.printStackTrace()
-                    _flowDfuEvent.send(DfuEvent.OnFail(e))
+                    _flowDfuEvent.value = DfuEvent.OnFail(e)
                 }
             }
         }

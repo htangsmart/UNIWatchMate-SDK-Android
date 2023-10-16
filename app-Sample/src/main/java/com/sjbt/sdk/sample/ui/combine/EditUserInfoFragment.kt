@@ -17,7 +17,9 @@ import com.sjbt.sdk.sample.ui.dialog.DatePickerDialogFragment
 import com.sjbt.sdk.sample.utils.DateTimeUtils
 import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.ToastUtil
+import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
+import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.rx3.await
@@ -25,14 +27,15 @@ import java.util.Calendar
 import java.util.Date
 
 
-class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), DatePickerDialogFragment.Listener {
+class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
+    DatePickerDialogFragment.Listener {
 
     private val viewBind: FragmentEditUserInfoBinding by viewBinding()
     private val userInfoRepository = Injector.getUserInfoRepository()
     private val authedUserId = Injector.requireAuthedUserId()
-    private var info:UserInfo?=null
+    private var info: UserInfo? = null
     private val userBirthday = "user_birthday"
-    private var valueDate:Date?=null
+    private var valueDate: Date? = null
     private val dateFormat = FormatterUtil.getFormatterYYYYMMMdd()
     private val deviceManager = Injector.getDeviceManager()
     private val applicationScope = Injector.getApplicationScope()
@@ -40,11 +43,11 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleScope.launchWhenStarted {
-             info = userInfoRepository.getUserInfo(authedUserId)
+            info = userInfoRepository.getUserInfo(authedUserId)
             if (info == null) {
-                info = UserInfo(0,175,75,true,1995,1,1)
+                info = UserInfo(0, 175, 75, true, 1995, 1, 1)
             }
-            valueDate=Date(info!!.birthYear-1900,info!!.birthMonth-1,info!!.birthDay)
+            valueDate = Date(info!!.birthYear - 1900, info!!.birthMonth - 1, info!!.birthDay)
             viewBind.editHeight.setText(info!!.height.toString())
             viewBind.editWeight.setText(info!!.weight.toString())
             viewBind.rgSex.check(
@@ -63,18 +66,19 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
             info?.let {
                 val calendar = Calendar.getInstance()
                 val end = Date()
-                val start = DateTimeUtils.getDateBetween(calendar, end, -365*150)
+                val start = DateTimeUtils.getDateBetween(calendar, end, -365 * 150)
                 DatePickerDialogFragment.newInstance(
                     start = start,
                     end = end,
                     value = valueDate,
                     getString(R.string.account_edit_birthday),
-                    ).show(childFragmentManager, userBirthday)
+                ).show(childFragmentManager, userBirthday)
             }
         }
     }
 
     private fun save() {
+//        promptProgress.showProgress(R.string.action_loading)
         val height = viewBind.editHeight.text.trim().toString().toIntOrNull() ?: return
         if (height !in 50..300) {
             promptToast.showInfo(getString(R.string.account_height_error))
@@ -107,6 +111,9 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
                         ToastUtil.showToast(it.message)
                     }.await()
                 }
+//                viewLifecycle.launchRepeatOnStarted {
+//                    promptProgress.dismiss()
+//                }
                 findNavController().popBackStack()
             }
         }
@@ -115,11 +122,12 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info), Dat
     override fun onDialogDatePicker(tag: String?, date: Date) {
         tag?.let { it ->
             when (it) {
-                userBirthday->{
-                    valueDate=date
+                userBirthday -> {
+                    valueDate = date
                     viewBind.piBirthday.getTextView()?.text = dateFormat.format(valueDate)
                 }
-                else->{
+
+                else -> {
 
                 }
             }
