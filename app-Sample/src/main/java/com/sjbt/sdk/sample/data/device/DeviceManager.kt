@@ -256,7 +256,6 @@ internal class DeviceManagerImpl(
     private fun onConnected() {
         val userId = internalStorage.flowAuthedUserId.value
         if (userId != null) {
-//            showLoadingDialog()
             applicationScope.launchWithLog {
 //                if(abUniWatch?.wmConnect?.)
 //                if () {//This connection is in binding mode
@@ -319,7 +318,6 @@ internal class DeviceManagerImpl(
                     syncData()
                 }
                 UNIWatchMate.wmLog.logI(TAG, "onConnected over")
-                hideLoadingDialog()
             }
         } else {
             UNIWatchMate.wmLog.logW(TAG, "onConnected error because no authed user")

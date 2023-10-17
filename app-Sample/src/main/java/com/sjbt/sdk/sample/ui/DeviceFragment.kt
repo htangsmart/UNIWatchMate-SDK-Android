@@ -12,6 +12,7 @@ import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.TimeUtils
+import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
@@ -67,6 +68,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         viewBind.itemTestWeather.setOnClickListener(blockClick)
         viewBind.itemPushDateTime.setOnClickListener(blockClick)
         viewBind.itemOtherFeatures.setOnClickListener(blockClick)
+
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
@@ -154,7 +156,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 applicationScope.launchWithLog {
                     UNIWatchMate?.wmApps?.appNotification?.sendNotification(
                         WmNotification(
-                            WmNotificationType.WECHAT,
+                            "test.notification",
                             "title_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
                             "content_notification${TimeUtils.millis2String(System.currentTimeMillis())}",
                             "sub_content_notification"

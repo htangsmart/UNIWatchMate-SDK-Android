@@ -121,14 +121,14 @@ class MyApplication : Application() {
 //                            )
 //                            return
 //                        }
-                        if (ActivityUtils.getTopActivity() != null) {//打开CameraActivity后需要传输什么数据吗
+                        if (ActivityUtils.getTopActivity() != null) {
                             UNIWatchMate.wmLog.logE(
                                 TAG,
                                 "CameraActivity.launchActivity"
                             )
                             CameraActivity.launchActivity(ActivityUtils.getTopActivity())
                             UNIWatchMate.wmApps.appCamera.startCameraPreview()
-//                            btSppWrapper.sendNormalMsg(getCameraRespondCmd(CMD_ID_8029, 1.toByte()))
+//                          btSppWrapper.sendNormalMsg(getCameraRespondCmd(CMD_ID_8029, 1.toByte()))
                         }
                     } else if (ActivityUtils.getTopActivity() is CameraActivity) {
                         ActivityUtils.getTopActivity().finish()

@@ -12,10 +12,11 @@
         android:orientation="vertical"
         android:showDividers="middle|end">
 
-        <!--        <com.github.kilnn.tool.widget.item.PreferenceItem-->
-        <!--            android:id="@+id/item_notification"-->
-        <!--            style="@style/Widget.Sample.PreferenceView.Item.Text"-->
-        <!--            app:preferenceTitle="@string/ds_notification_config" />-->
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_notification"
+            android:visibility="gone"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/ds_notification_config" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_unit_config"
@@ -41,6 +42,7 @@
             android:id="@+id/item_heart_rate"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_heart_rate_config" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_turn_wrist_lighting"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
@@ -50,6 +52,7 @@
             android:id="@+id/item_sleep"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_sleep_config" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_app_view"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
