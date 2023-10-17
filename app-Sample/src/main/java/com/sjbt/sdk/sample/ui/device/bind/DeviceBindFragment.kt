@@ -135,10 +135,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private fun tryingBind(scanResult: ScanResult) {
         this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
+
         val userInfo = WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
         val wmScanDevice = parseScanQr(scanResult.getContent())
 
         wmScanDevice?.let {
+
             if (wmScanDevice.address != null) {
                 deviceManager.bind(
                     wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
@@ -151,9 +153,11 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     scanResult.getContent(),
                     userInfo
                 )
+                DeviceConnectDialogFragment().show(childFragmentManager, null)
+            }else{
+                ToastUtil.showToast(getString(R.string.device_scan_tips_error))
             }
         }
-        DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
 
     override fun onPromptCancel(promptId: Int, cancelReason: Int, tag: String?) {
@@ -291,7 +295,6 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }
-
             }
         }
     }

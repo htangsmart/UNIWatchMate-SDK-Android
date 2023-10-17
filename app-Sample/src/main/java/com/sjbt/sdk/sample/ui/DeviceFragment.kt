@@ -191,16 +191,16 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
             viewBind.itemPushDateTime -> {
                 applicationScope.launchWithLog {
                     val nowMillis = System.currentTimeMillis()
-                    val wmDateTime =
-                        WmDateTime(
-                            TimeZone.getDefault().id,
-                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
-                            WmUnitInfo.DateFormat.YYYY_MM_DD,
-                            nowMillis,
-                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
-                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
-                        )
-                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(wmDateTime).await()
+//                    val wmDateTime =
+//                        WmDateTime(
+//                            TimeZone.getDefault().id,
+//                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
+//                            WmUnitInfo.DateFormat.YYYY_MM_DD,
+//                            nowMillis,
+//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
+//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
+//                        )
+                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime().await()
                     Timber.tag(TAG).i("settingDateTime result=${result}")
                     ToastUtil.showToast("push date time result = $result")
                 }

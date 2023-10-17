@@ -11,35 +11,36 @@
     <!--Permission-->
     <string name="permission_explain_msg">Following permissions are required. Do you want to request for the next step?</string>
     <string name="permission_to_settings_msg">Permission request failed. Do you want to enter the System Settings to grant these permissions?</string>
-    <!--Unit-->
-    <string name="ds_unit_config">unit_config</string>
     <string name="permission_fail">permission_fail</string>
 
-
-    <string name="unit_year">年</string>
-    <string name="unit_month">月</string>
-    <string name="unit_day">日</string>
-    <string name="unit_day_count">天</string>
-    <string name="unit_day_count_param"><xliff:g id="params1">%1$d</xliff:g>天</string>
-    <string name="unit_hour">小时</string>
-    <string name="unit_minute">分钟</string>
-    <string name="unit_minute_param"><xliff:g id="params1">%1$d</xliff:g> 分钟</string>
+    <!--Unit-->
+    <string name="ds_unit_config">unit_config</string>
+    <!--Unit-->
+    <string name="unit_year">y</string>
+    <string name="unit_month">m</string>
+    <string name="unit_day">d</string>
+    <string name="unit_day_count">days</string>
+    <string name="unit_day_count_param"><xliff:g id="params1">%1$d</xliff:g> days</string>
+    <string name="unit_hour">hr</string>
+    <string name="unit_minute">min</string>
+    <string name="unit_minute_param"><xliff:g id="params1">%1$d</xliff:g> minutes</string>
     <string name="unit_mmhg">mmHg</string>
-    <string name="unit_mmhg_param"><xliff:g id="params1">%1$s</xliff:g>mmHg</string>
-    <string name="unit_bmp">次/分</string>
-    <string name="unit_bmp_unit"><xliff:g id="params1">%1$d</xliff:g>次/分</string>
-    <string name="unit_level_param"><xliff:g id="params1">%1$d</xliff:g>级</string>
-    <string name="unit_second_param"><xliff:g id="params1">%1$d</xliff:g>秒</string>
-    <string name="unit_km">千米</string>
-    <string name="unit_mi">公里</string>
-    <string name="unit_step">步</string>
-    <string name="unit_k_calories">千卡</string>
-    <string name="unit_km_param"><xliff:g id="params1">%1$s</xliff:g>千米</string>
-    <string name="unit_mi_param"><xliff:g id="params1">%1$s</xliff:g>公里</string>
-    <string name="unit_step_param"><xliff:g id="params1">%1$d</xliff:g> 步</string>
-    <string name="unit_k_calories_param"><xliff:g id="params1">%1$s</xliff:g>千卡</string>
+    <string name="unit_mmhg_param"><xliff:g id="params1">%1$s</xliff:g> mmHg</string>
+    <string name="unit_bmp">BMP</string>
+    <string name="unit_bmp_unit"><xliff:g id="params1">%1$d</xliff:g> BMP</string>
+    <string name="unit_level_param"><xliff:g id="params1">%1$d</xliff:g> Level</string>
+    <string name="unit_second_param"><xliff:g id="params1">%1$d</xliff:g> Seconds</string>
+    <string name="unit_km">km</string>
+    <string name="unit_mi">mi</string>
+    <string name="unit_step">steps</string>
+    <string name="unit_k_calories">kCal</string>
+    <string name="unit_km_param"><xliff:g id="params1">%1$s</xliff:g> km</string>
+    <string name="unit_mi_param"><xliff:g id="params1">%1$s</xliff:g> mi</string>
+    <string name="unit_step_param"><xliff:g id="params1">%1$d</xliff:g> steps</string>
+    <string name="unit_k_calories_param"><xliff:g id="params1">%1$s</xliff:g> kCal</string>
     <string name="unit_fahrenheit_param"><xliff:g id="params1">%1$s</xliff:g> ℉</string>
     <string name="unit_centigrade_param"><xliff:g id="params1">%1$s</xliff:g> ℃</string>
+
     <!--Device-->
     <string name="device_module">Device</string>
     <string name="device_bind">Bind Device</string>
@@ -87,6 +88,8 @@
     <!--Action-->
     <string name="action_loading">Loading…</string>
     <string name="action_deling">deleting…</string>
+    <string name="action_updating">updating…</string>
+    <string name="action_updating_progress">updating:</string>
     <string name="action_search">Search</string>
     <string name="action_turn_on">Turn On</string>
     <string name="action_grant">Grant</string>
@@ -355,7 +358,7 @@
     <string name="ds_camera_control">Camera Control</string>
     <string name="ds_basic_device_info">Basic device information</string>
     <!--Camera control-->
-    <string name="ds_transfer_file">ds_transfer_file</string>
+    <string name="ds_transfer_file">transfer_file</string>
     <!--Device Settings:Find Phone-->
     <string name="ds_find_phone_found">Found mobile phone</string>
     <string name="ds_find_phone_stop">Click to stop finding</string>
@@ -473,16 +476,7 @@
 
     <!--Device Settings:Dfu-->
     <string name="ds_push_start">Push</string>
-    <string name="ds_push_select_replace">Select the position to be replaced</string>
     <string name="ds_push_success">Push Success</string>
-    <string name="ds_push_fail">Push Fail(<xliff:g id="param">%1$s</xliff:g>)</string>
-    <string name="ds_dfu_downloading">Downloading&#8230;</string>
-    <string name="ds_dfu_preparing">Preparing&#8230;</string>
-    <string name="ds_dfu_pushing">Pushing&#8230;</string>
-    <string name="ds_dfu_error_insufficient_storage">Not enough storage space</string>
-    <string name="ds_dfu_error_low_battery">Low battery</string>
-    <string name="ds_dfu_error_device_not_found">No device found</string>
-    <string name="ds_dfu_tips_location_service">Location Services is disabled, and upgrade/push operations may fail</string>
 
     <string name="in_development">in development</string>
 
