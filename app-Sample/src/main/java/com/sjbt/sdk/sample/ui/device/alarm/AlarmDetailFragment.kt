@@ -214,7 +214,8 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
             }
         }
         viewBind.itemLabel.getTextView().text = getAlarmLabel()
-        viewBind.itemRepeat.getTextView().text = AlarmHelper.repeatToSimpleStr(alarm.repeatOptions)
+        viewBind.itemRepeat.getTextView().text =
+            context?.let { AlarmHelper.repeatToSimpleStr(alarm.repeatOptions, it) }
     }
 
     private fun getAlarmLabel(): String? {
@@ -243,7 +244,8 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
 
     override fun dialogSetAlarmRepeat(options: Set<AlarmRepeatOption>) {
         alarm.repeatOptions = options
-        viewBind.itemRepeat.getTextView().text = AlarmHelper.repeatToSimpleStr( alarm.repeatOptions)
+        viewBind.itemRepeat.getTextView().text =
+            context?.let { AlarmHelper.repeatToSimpleStr( alarm.repeatOptions, it) }
     }
 
 }
