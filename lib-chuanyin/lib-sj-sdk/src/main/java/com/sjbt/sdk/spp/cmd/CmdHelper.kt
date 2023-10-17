@@ -800,7 +800,7 @@ object CmdHelper {
         val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
-        if (type != FileType.OTA.type.toByte()) {
+        if (type == FileType.OTA.type.toByte()) {
             byteBuffer.putInt(-1)
         } else {
             byteBuffer.putInt(fileLen)
