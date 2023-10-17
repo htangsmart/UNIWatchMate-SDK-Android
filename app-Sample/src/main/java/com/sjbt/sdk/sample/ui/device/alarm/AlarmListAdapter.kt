@@ -47,7 +47,7 @@ class AlarmListAdapter() : RecyclerView.Adapter<AlarmListAdapter.ItemViewHolder>
             holder.viewBind.tvTime.text = FormatterUtil.hmm(hour, alarm.minute)
         }
         holder.viewBind.tvLabel.text = alarm.alarmName
-        holder.viewBind.tvRepeat.text = AlarmHelper.repeatToSimpleStr(alarm.repeatOptions)
+        holder.viewBind.tvRepeat.text = AlarmHelper.repeatToSimpleStr(alarm.repeatOptions,context)
         holder.viewBind.switchIsEnabled.setOnCheckedChangeListener(null)
         holder.viewBind.switchIsEnabled.isChecked = alarm.isOn
         holder.viewBind.switchIsEnabled.setOnCheckedChangeListener { _, isChecked -> //Copy the array, excluding the alarm to be deleted

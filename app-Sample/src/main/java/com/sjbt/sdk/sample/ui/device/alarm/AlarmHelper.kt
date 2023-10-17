@@ -39,14 +39,14 @@ object AlarmHelper {
     }
 
     fun getDefaultRepeatOption(): Set<AlarmRepeatOption> {
-        val repeatOptions = setOf<AlarmRepeatOption>()
-        repeatOptions.plus(AlarmRepeatOption.SUNDAY)
-        repeatOptions.plus(AlarmRepeatOption.MONDAY)
-        repeatOptions.plus(AlarmRepeatOption.TUESDAY)
-        repeatOptions.plus(AlarmRepeatOption.WEDNESDAY)
-        repeatOptions.plus(AlarmRepeatOption.THURSDAY)
-        repeatOptions.plus(AlarmRepeatOption.FRIDAY)
-        repeatOptions.plus(AlarmRepeatOption.SATURDAY)
+        val repeatOptions = mutableSetOf<AlarmRepeatOption>()
+//        repeatOptions.plus(AlarmRepeatOption.SUNDAY)
+//        repeatOptions.plus(AlarmRepeatOption.MONDAY)
+//        repeatOptions.plus(AlarmRepeatOption.TUESDAY)
+//        repeatOptions.plus(AlarmRepeatOption.WEDNESDAY)
+//        repeatOptions.plus(AlarmRepeatOption.THURSDAY)
+//        repeatOptions.plus(AlarmRepeatOption.FRIDAY)
+//        repeatOptions.plus(AlarmRepeatOption.SATURDAY)
         return repeatOptions
     }
 
@@ -65,22 +65,28 @@ object AlarmHelper {
     /**
      * Display [FcAlarm.repeat] as a readable String
      */
-    fun repeatToSimpleStr(repeats: Set<AlarmRepeatOption>): String {
+    fun repeatToSimpleStr(repeats: Set<AlarmRepeatOption>,context: Context): String {
         var text = StringBuilder()
         if (repeats.contains(AlarmRepeatOption.SUNDAY)) {
-            text.append("${dayValuesSimple[6]},")
-        } else if (repeats.contains(AlarmRepeatOption.MONDAY)) {
-            text.append("${dayValuesSimple[0]},")
-        } else if (repeats.contains(AlarmRepeatOption.TUESDAY)) {
-            text.append("${dayValuesSimple[1]},")
-        } else if (repeats.contains(AlarmRepeatOption.WEDNESDAY)) {
-            text.append("${dayValuesSimple[2]},")
-        } else if (repeats.contains(AlarmRepeatOption.THURSDAY)) {
-            text.append("${dayValuesSimple[3]},")
-        } else if (repeats.contains(AlarmRepeatOption.FRIDAY)) {
-            text.append("${dayValuesSimple[4]},")
-        } else if (repeats.contains(AlarmRepeatOption.SATURDAY)) {
-            text.append("${dayValuesSimple[5]},")
+            text.append("${context.getString(dayValuesSimple[6])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.MONDAY)) {
+            text.append("${context.getString(dayValuesSimple[0])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.TUESDAY)) {
+            text.append("${context.getString(dayValuesSimple[1])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.WEDNESDAY)) {
+            text.append("${context.getString(dayValuesSimple[2])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.THURSDAY)) {
+            text.append("${context.getString(dayValuesSimple[3])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.FRIDAY)) {
+            text.append("${context.getString(dayValuesSimple[4])},")
+        }
+        if (repeats.contains(AlarmRepeatOption.SATURDAY)) {
+            text.append("${context.getString(dayValuesSimple[5])},")
         }
         val repeatString = text.toString()
         if (!TextUtils.isEmpty(repeatString)) {
@@ -130,16 +136,16 @@ object AlarmHelper {
     }
 
     fun booleanItems2Options(checkedItems: BooleanArray): Set<AlarmRepeatOption> {
-        val setOptions = setOf<AlarmRepeatOption>()
+        val setOptions = mutableSetOf<AlarmRepeatOption>()
         for ((index, bean) in checkedItems.withIndex()) {
             if (bean) {
-                setOptions.plus(getAlarmRepeatOptionByIndex(index))
+                setOptions.add(getAlarmRepeatOptionByIndex(index))
             }
         }
         return setOptions
     }
 
-    private fun getAlarmRepeatOptionByIndex(index: Int): Any {
+    private fun getAlarmRepeatOptionByIndex(index: Int): AlarmRepeatOption {
         var state = AlarmRepeatOption.SUNDAY
         when (index) {
             0 -> {

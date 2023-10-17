@@ -256,7 +256,7 @@ internal class DeviceManagerImpl(
     private fun onConnected() {
         val userId = internalStorage.flowAuthedUserId.value
         if (userId != null) {
-//            showLoadingDialog()
+            showLoadingDialog()
             applicationScope.launchWithLog {
 //                if(abUniWatch?.wmConnect?.)
 //                if () {//This connection is in binding mode

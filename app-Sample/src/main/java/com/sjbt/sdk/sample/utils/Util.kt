@@ -40,10 +40,20 @@ import com.sjbt.sdk.sample.R
 import com.squareup.moshi.Moshi
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Action
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.io.IOException
+
 
 /**
  * All Parcelable objects passed by oneself can use this as a Key
@@ -51,7 +61,13 @@ import timber.log.Timber
 const val PARCEL_ARGS = "parcelArgs"
 const val FILE_PROVIDER_AUTHORITY = "com.topstep.fitcloud.sample2.fileprovider"
 
-fun PromptDialogHolder.showFailed(throwable: Throwable, intercept: Boolean = false, cancelable: Boolean = false, autoCancel: PromptAutoCancel = PromptAutoCancel.DEFAULT, promptId: Int = 0) {
+fun PromptDialogHolder.showFailed(
+    throwable: Throwable,
+    intercept: Boolean = false,
+    cancelable: Boolean = false,
+    autoCancel: PromptAutoCancel = PromptAutoCancel.DEFAULT,
+    promptId: Int = 0,
+) {
     val text = throwable.toReadableMessage(context)
     showFailed(text, intercept, cancelable, autoCancel, promptId)
 }
@@ -84,27 +100,51 @@ fun Throwable.toReadableMessage(context: Context): String {
 }
 
 @MainThread
-fun Fragment.promptToast(tag: String? = null): Lazy<PromptDialogHolder> = lazy(LazyThreadSafetyMode.NONE) {
-    PromptDialogHolder(requireContext(), childFragmentManager, if (tag.isNullOrEmpty()) this::class.simpleName + "toast" else tag, theme = R.style.PromptToastTheme)
-}
+fun Fragment.promptToast(tag: String? = null): Lazy<PromptDialogHolder> =
+    lazy(LazyThreadSafetyMode.NONE) {
+        PromptDialogHolder(
+            requireContext(),
+            childFragmentManager,
+            if (tag.isNullOrEmpty()) this::class.simpleName + "toast" else tag,
+            theme = R.style.PromptToastTheme
+        )
+    }
 
 @MainThread
-fun FragmentActivity.promptToast(tag: String? = null): Lazy<PromptDialogHolder> = lazy(LazyThreadSafetyMode.NONE) {
-    PromptDialogHolder(this, supportFragmentManager, if (tag.isNullOrEmpty()) this::class.simpleName + "toast" else tag, theme = R.style.PromptToastTheme)
-}
+fun FragmentActivity.promptToast(tag: String? = null): Lazy<PromptDialogHolder> =
+    lazy(LazyThreadSafetyMode.NONE) {
+        PromptDialogHolder(
+            this,
+            supportFragmentManager,
+            if (tag.isNullOrEmpty()) this::class.simpleName + "toast" else tag,
+            theme = R.style.PromptToastTheme
+        )
+    }
 
 @MainThread
-fun Fragment.promptProgress(tag: String? = null): Lazy<PromptDialogHolder> = lazy(LazyThreadSafetyMode.NONE) {
-    PromptDialogHolder(requireContext(), childFragmentManager, if (tag.isNullOrEmpty()) this::class.simpleName + "progress" else tag, theme = R.style.PromptProgressTheme)
-}
+fun Fragment.promptProgress(tag: String? = null): Lazy<PromptDialogHolder> =
+    lazy(LazyThreadSafetyMode.NONE) {
+        PromptDialogHolder(
+            requireContext(),
+            childFragmentManager,
+            if (tag.isNullOrEmpty()) this::class.simpleName + "progress" else tag,
+            theme = R.style.PromptProgressTheme
+        )
+    }
 
 @MainThread
-fun FragmentActivity.promptProgress(tag: String? = null): Lazy<PromptDialogHolder> = lazy(LazyThreadSafetyMode.NONE) {
-    PromptDialogHolder(this, supportFragmentManager, if (tag.isNullOrEmpty()) this::class.simpleName + "progress" else tag, theme = R.style.PromptProgressTheme)
-}
+fun FragmentActivity.promptProgress(tag: String? = null): Lazy<PromptDialogHolder> =
+    lazy(LazyThreadSafetyMode.NONE) {
+        PromptDialogHolder(
+            this,
+            supportFragmentManager,
+            if (tag.isNullOrEmpty()) this::class.simpleName + "progress" else tag,
+            theme = R.style.PromptProgressTheme
+        )
+    }
 
 fun Lifecycle.launchRepeatOnStarted(
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     coroutineScope.launch {
         repeatOnLifecycle(Lifecycle.State.STARTED, block)
@@ -195,7 +235,7 @@ fun ViewGroup.setAllChildEnabled(enabled: Boolean) {
         if (child is ViewGroup && child !is PreferenceItem) {
             child.setAllChildEnabled(enabled)
         }
-        if (child is ViewGroup ) {
+        if (child is ViewGroup) {
             child.setAllChildEnabled(enabled)
         }
     }
@@ -274,7 +314,12 @@ fun step2Km(step: Int, stepLength: Float): Float {
     return stepLength * step / 1000
 }
 
-fun glideShowImage(imageView: ImageView, uri: Any?, inRecyclerView: Boolean = true, placeholder: Int = R.mipmap.ic_default_image_place_holder) {
+fun glideShowImage(
+    imageView: ImageView,
+    uri: Any?,
+    inRecyclerView: Boolean = true,
+    placeholder: Int = R.mipmap.ic_default_image_place_holder,
+) {
     val builder = Glide.with(imageView.context)
         .load(uri)
         .apply(RequestOptions.placeholderOf(placeholder))
@@ -284,7 +329,13 @@ fun glideShowImage(imageView: ImageView, uri: Any?, inRecyclerView: Boolean = tr
         builder.into(imageView)
     }
 }
-fun glideShowMipmapImage(imageView: ImageView, res: Int, inRecyclerView: Boolean = true, placeholder: Int = R.mipmap.ic_default_image_place_holder) {
+
+fun glideShowMipmapImage(
+    imageView: ImageView,
+    res: Int,
+    inRecyclerView: Boolean = true,
+    placeholder: Int = R.mipmap.ic_default_image_place_holder,
+) {
     val builder = Glide.with(imageView.context)
         .load(res)
         .apply(RequestOptions.placeholderOf(placeholder))
@@ -308,7 +359,7 @@ fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
             )
             todayWeatherList.add(toDayWeather)
         }
-    }else{
+    } else {
         for (index in 0..6) {
             val wmWeatherForecast = WmWeatherForecast(
                 10,
@@ -330,7 +381,7 @@ fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
 
     val wmLocation = WmLocation("cn", "xi'an", "district", 10.12345, 10.12345)
 
-    return  WmWeather(
+    return WmWeather(
         System.currentTimeMillis(),
         wmLocation,
         weatherForecastList,
@@ -389,6 +440,15 @@ fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
 //        request.clear(target)
 //    }
 //}
+fun sendKeyCode(keyCode: Int) {
+    try {
+        val keyCommand = "input keyevent $keyCode"
+        val runtime = Runtime.getRuntime()
+        val proc = runtime.exec(keyCommand)
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+}
 
 fun getGridSpanCount(context: Context, baseSpanCount: Int = 3): Int {
     val orientation = context.resources.configuration.orientation

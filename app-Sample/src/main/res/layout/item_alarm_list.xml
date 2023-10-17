@@ -17,15 +17,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?textAppearanceCaption"
+            app:layout_constraintTop_toTopOf="@id/tv_time"
+            app:layout_constraintBottom_toBottomOf="@id/tv_time"
             android:textColor="?android:textColorPrimary"
-            app:layout_constraintBaseline_toBaselineOf="@+id/tv_time"
             app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
             android:id="@+id/tv_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_5"
             android:textAppearance="?textAppearanceHeadline5"
+            android:layout_marginRight="@dimen/dp_5"
             android:textColor="?android:textColorPrimary"
             app:layout_constraintEnd_toStartOf="@+id/tv_label"
             app:layout_constraintStart_toEndOf="@+id/tv_am_pm"
@@ -38,10 +41,10 @@
             android:layout_marginStart="4dp"
             android:textAppearance="?textAppearanceCaption"
             android:textColor="?android:textColorSecondary"
-            app:layout_constraintBaseline_toBaselineOf="@+id/tv_time"
             app:layout_constraintEnd_toStartOf="@+id/switch_is_enabled"
             app:layout_constraintStart_toEndOf="@+id/tv_time"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="@id/tv_time"
+            app:layout_constraintBottom_toBottomOf="@id/tv_time"/>
 
         <TextView
             android:id="@+id/tv_repeat"
