@@ -284,10 +284,9 @@ object CmdHelper {
             val payload = ByteArray(1)
             payload[0] = 1
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
-            //LogUtils.logBlueTooth("发送握手消息:")
             return constructCmd(
-                HEAD_VERIFY,
-                CMD_ID_8001.toShort(),
+                HEAD_NODE_TYPE,
+                CMD_ID_8004,
                 DIVIDE_N_2,
                 0,
                 0,
@@ -1311,6 +1310,15 @@ object CmdHelper {
     }
 
     /**
+     * 获取设备上体育目标配置
+     */
+    fun getDevicePersonalInfoCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_2, URN_2), ByteArray(0))
+        return payloadPackage
+    }
+
+    /**
      * 获取设置健康信息的命令
      */
     fun getUpdatePersonalInfoAllCmd(
@@ -1327,7 +1335,7 @@ object CmdHelper {
         bbSport.putShort(personalInfo.birthDate.year)
         bbSport.put(personalInfo.birthDate.month)
         bbSport.put(personalInfo.birthDate.day)
-        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+        payloadPackage.putData(getUrnId(URN_2, URN_2), bbSport.array())
 //        } else {
 //            if (personalInfo.steps != 0) {
 //                payloadPackage.putData(

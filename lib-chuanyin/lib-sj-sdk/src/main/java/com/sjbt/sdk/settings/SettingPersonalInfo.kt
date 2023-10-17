@@ -11,71 +11,73 @@ import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
 
-class SettingPersonalInfo(sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalInfo>() {
+class SettingPersonalInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalInfo>() {
     private var observeEmitter: ObservableEmitter<WmPersonalInfo>? = null
     private var setEmitter: SingleEmitter<WmPersonalInfo>? = null
     private var getEmitter: SingleEmitter<WmPersonalInfo>? = null
 
-    private val sjUniWatch = sjUniWatch
-
+    private var personalInfo: WmPersonalInfo? = null
     override fun isSupport(): Boolean {
         return true
     }
 
     override fun observeChange(): Observable<WmPersonalInfo> {
-        return Observable.create(object : ObservableOnSubscribe<WmPersonalInfo> {
-            override fun subscribe(emitter: ObservableEmitter<WmPersonalInfo>) {
-                observeEmitter = emitter
-            }
-        })
+        return Observable.create { emitter -> observeEmitter = emitter }
     }
 
     override fun set(obj: WmPersonalInfo): Single<WmPersonalInfo> {
-        return Single.create(object : SingleOnSubscribe<WmPersonalInfo> {
-            override fun subscribe(emitter: SingleEmitter<WmPersonalInfo>) {
-                setEmitter = emitter
-
-                sjUniWatch.sendWriteNodeCmdList(CmdHelper.getUpdatePersonalInfoAllCmd(obj))
-            }
-        })
+        personalInfo = obj
+        return Single.create { emitter ->
+            setEmitter = emitter
+            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getUpdatePersonalInfoAllCmd(obj))
+        }
     }
 
     override fun get(): Single<WmPersonalInfo> {
-        return Single.create(object : SingleOnSubscribe<WmPersonalInfo> {
-            override fun subscribe(emitter: SingleEmitter<WmPersonalInfo>) {
-                getEmitter = emitter
-            }
-        })
+        return Single.create { emitter ->
+            getEmitter = emitter
+            sjUniWatch.sendReadNodeCmdList(CmdHelper.getDevicePersonalInfoCmd())
+        }
     }
 
     fun personalInfoBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {
 
-                val byteBuffer =
-                    ByteBuffer.wrap(it.data)
-                val height = byteBuffer.getShort()
-                val weight = byteBuffer.getShort()
-                val gender = byteBuffer.get()
+                if (it.data.size <= 1) {
+                    personalInfo?.let {
+                        setEmitter?.onSuccess(it)
+                    }
 
-                val year = byteBuffer.getShort()
-                val month = byteBuffer.get()
-                val day = byteBuffer.get()
+                } else {
+                    val byteBuffer =
+                        ByteBuffer.wrap(it.data)
+                    val height = byteBuffer.getShort()
+                    val weight = byteBuffer.getShort()
+                    val gender = byteBuffer.get()
 
-                val personalInfo = WmPersonalInfo(
-                    height,
-                    weight,
-                    if (gender.toInt() == 1) {
-                        WmPersonalInfo.Gender.MALE
-                    } else {
-                        WmPersonalInfo.Gender.FEMALE
-                    },
-                    WmPersonalInfo.BirthDate(year, month, day)
-                )
+                    val year = byteBuffer.getShort()
+                    val month = byteBuffer.get()
+                    val day = byteBuffer.get()
 
-                getEmitter?.onSuccess(personalInfo)
-                observeEmitter?.onNext(personalInfo)
+                    personalInfo = WmPersonalInfo(
+                        height,
+                        weight,
+                        if (gender.toInt() == 1) {
+                            WmPersonalInfo.Gender.MALE
+                        } else {
+                            WmPersonalInfo.Gender.FEMALE
+                        },
+                        WmPersonalInfo.BirthDate(year, month, day)
+                    )
+
+                    getEmitter?.onSuccess(personalInfo)
+                    observeEmitter?.onNext(personalInfo)
+                }
+
             }
+
+
         }
     }
 
