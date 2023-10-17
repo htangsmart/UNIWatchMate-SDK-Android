@@ -198,7 +198,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                             TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
                             TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
                         )
-                    val result = UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
+                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(wmDateTime).await()
                     Timber.tag(TAG).i("settingDateTime result=${result}")
                     ToastUtil.showToast("push date time result = $result")
                 }

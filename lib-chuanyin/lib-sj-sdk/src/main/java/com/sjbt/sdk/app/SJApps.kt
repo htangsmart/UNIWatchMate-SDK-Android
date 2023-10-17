@@ -24,4 +24,6 @@ class SJApps(val sjUniWatch: SJUniWatch) : AbWmApps() {
     override var appLanguage: AbAppLanguage = AppLanguage(sjUniWatch)
 
     override val appMusicControl = AppMusicControl(sjUniWatch)
+
+    override val appDateTime: AbAppDateTime = AppDateTime(sjUniWatch)
 }

@@ -86,9 +86,6 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             override fun subscribe(emitter: ObservableEmitter<WmTransferState>) {
                 observableTransferEmitter = emitter
 
-                sjUniWatch.wmLog.logD(TAG,"发射器001:"+emitter)
-                sjUniWatch.wmLog.logD(TAG,"发射器002:"+emitter)
-
                 var fileLen: Long = 0
 
                 files.forEach {
@@ -123,7 +120,6 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                         it.state = State.TRANSFERRING
                         observableTransferEmitter?.onNext(transferState)
 
-                        sjUniWatch.wmLog.logD(TAG, "发射器01:" + observableTransferEmitter)
                     }
 
                     mSendingFile?.let { file ->
@@ -227,7 +223,6 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                             it.progress = 100
                             it.index = mSendFileCount
 
-                            sjUniWatch.wmLog.logD(TAG, "发射器04:" + observableTransferEmitter)
                             observableTransferEmitter?.onNext(it)
                             observableTransferEmitter?.onComplete()
 
@@ -329,7 +324,6 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     it.index = mSendFileCount + 1
                     it.state = State.TRANSFERRING
                     observableTransferEmitter?.onNext(it)
-                    sjUniWatch.wmLog.logD(TAG, "发射器processing:" + observableTransferEmitter)
                 }
 
                 Thread.sleep(MSG_INTERVAL.toLong())
