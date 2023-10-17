@@ -3,6 +3,7 @@ package com.sjbt.sdk.spp.cmd
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.FileType
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
@@ -67,47 +68,6 @@ object CmdHelper {
         override fun toString(): String {
             return "DivideInfo(divideType=$divideType, value=$value)"
         }
-    }
-
-    /**
-     * 组包公用方法
-     */
-    fun constructCmdOld(
-        head: Byte,
-        cmd_id: Short,
-        divideType: Byte,
-        dividePayloadTotalLen: Short = 0,
-        offset: Int,
-        crc: Int,
-        payload: ByteArray?
-    ): ByteArray {
-        val payLoadLength = payload?.size ?: 0
-        val byteBuffer = ByteBuffer.allocate(16 + payLoadLength)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN) //采用小端
-
-        //TYPE
-        byteBuffer.put(head)
-        byteBuffer.put(CMD_ORDER_ARRAY[command_index % CMD_ORDER_ARRAY.size])
-        byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
-
-        //Length
-        byteBuffer.put(divideType)
-        byteBuffer.put(0)
-        byteBuffer.putShort(payLoadLength.toShort())
-
-        //Offset
-        byteBuffer.putInt(offset)
-
-        //CRC
-        byteBuffer.putInt(crc)
-
-        //Payload
-        if (payload != null) {
-            byteBuffer.put(payload)
-        }
-        byteBuffer.flip()
-        command_index++
-        return byteBuffer.array()
     }
 
     /**
@@ -183,7 +143,11 @@ object CmdHelper {
             cmdId[0] = 0x00
             msgBean.cmdId = BtUtils.byte2short(cmdId).toInt()
             //            LogUtils.logBlueTooth("返回命令cmdId:" + msgBean.cmdId);
-            val divideType = byteBuffer[4]
+            val divideArray = ByteArray(2)
+            divideArray[0] = byteBuffer[4]
+            divideArray[1] = byteBuffer[5]
+
+            val divideType = readShortFromBytes(divideArray).divideType
             msgBean.divideType = divideType
 
 //            byte[] len = new byte[2];
@@ -297,6 +261,28 @@ object CmdHelper {
     val biuShakeHandsCmd: ByteArray
         get() {
             val payload = BtUtils.hexStringToByteArray(getRandomNumber(61))
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
+            //LogUtils.logBlueTooth("发送握手消息:")
+            return constructCmd(
+                HEAD_VERIFY,
+                CMD_ID_8001.toShort(),
+                DIVIDE_N_2,
+                0,
+                0,
+                crc,
+                payload
+            )
+        }
+
+    /**
+     * 新协议 获取通讯层协议
+     *
+     * @return 组装好的握手命令
+     */
+    val communityMsg: ByteArray
+        get() {
+            val payload = ByteArray(1)
+            payload[0] = 1
             val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
             //LogUtils.logBlueTooth("发送握手消息:")
             return constructCmd(
@@ -814,7 +800,12 @@ object CmdHelper {
         val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
-        byteBuffer.putInt(fileLen)
+        if (type != FileType.OTA.type.toByte()) {
+            byteBuffer.putInt(-1)
+        } else {
+            byteBuffer.putInt(fileLen)
+        }
+
         byteBuffer.put(fileCount.toByte())
         byteBuffer.flip()
         val payload = byteBuffer.array()

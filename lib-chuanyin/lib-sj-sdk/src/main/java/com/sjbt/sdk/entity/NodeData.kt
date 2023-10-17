@@ -87,14 +87,10 @@ enum class RequestType(val type: Int) {
     REQ_TYPE_READ(1),
     REQ_TYPE_WRITE(2),
     REQ_TYPE_EXECUTE(3),
-
-    RESP_TYPE_EACH(100),
-    RESP_TYPE_ALL_OK(101),
-    RESP_TYPE_ALL_FAIL(102)
 }
 
 enum class ResponseResultType(val type: Int) {
     RESPONSE_EACH(100),
-    RESPONSE_ALL_OK(1),
-    RESPONSE_ALL_FAIL(2),
+    RESPONSE_ALL_OK(101),
+    RESPONSE_ALL_FAIL(102),
 }
