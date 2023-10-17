@@ -14,7 +14,7 @@ class AppDateTime(val sjUniWatch: SJUniWatch) : AbAppDateTime() {
         return true
     }
 
-    override fun setDateTime(): Single<Boolean> {
+    override fun setDateTime(dateTime: WmDateTime?): Single<Boolean> {
         return Single.create { emitter ->
             setEmitter = emitter
             sjUniWatch.sendNormalMsg(CmdHelper.syncTimeCmd)

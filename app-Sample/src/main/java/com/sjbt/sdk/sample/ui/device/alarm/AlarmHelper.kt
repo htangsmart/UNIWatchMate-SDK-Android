@@ -91,6 +91,8 @@ object AlarmHelper {
         val repeatString = text.toString()
         if (!TextUtils.isEmpty(repeatString)) {
             return repeatString.substring(0, repeatString.length - 1)
+        }else{
+            return context.getString(R.string.alarm_no_repetition)
         }
 
         return repeatString

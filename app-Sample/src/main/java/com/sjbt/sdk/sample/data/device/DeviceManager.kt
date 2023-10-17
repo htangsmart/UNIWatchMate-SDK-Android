@@ -226,12 +226,11 @@ internal class DeviceManagerImpl(
         val userId = internalStorage.flowAuthedUserId.value
         if (userId != null) {
             applicationScope.launchWithLog {
-//                if(abUniWatch?.wmConnect?.)
-//                if () {//This connection is in binding mode
-//                    //Clear the Step data of the day
-//                    runCatchingWithLog {
-////                        syncDataRepository.saveTodayStep(userId, null)
-//                    }
+                if (CacheDataHelper.getSynchronizingData()) {
+                    return@launchWithLog
+                }
+                CacheDataHelper.setSynchronizingData(true)
+//                showLoadingDialog()
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
                     UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())
@@ -242,51 +241,39 @@ internal class DeviceManagerImpl(
                 }
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime")
-//                    val nowMillis = System.currentTimeMillis()
-//                    val wmDateTime =
-//                        WmDateTime(
-//                            TimeZone.getDefault().id,
-//                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
-//                            WmUnitInfo.DateFormat.YYYY_MM_DD,
-//                            nowMillis,
-//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
-//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
-//                        )
-                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime().await()
+                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(null).await()
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime wmDateTime=${result}")
                 }
                 runCatchingWithLog {//first check has data,if not ,get from watch
-//                    sportGoalRepository.flowCurrent.value?.let {
-//                        if (flowConnectorState.value == WmConnectState.VERIFIED) {
-//                            UNIWatchMate.wmLog.logI(TAG, "setExerciseGoal")
-//                            applicationScope.launchWithLog {
-//                                UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
-//                            }
-//                        }
-//                    }
+                    sportGoalRepository.flowCurrent.value?.let {
+                        if (flowConnectorState.value == WmConnectState.VERIFIED) {
+                            UNIWatchMate.wmLog.logI(TAG, "setExerciseGoal")
+                            applicationScope.launchWithLog {
+                                UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
+                            }
+                        }
+                    }
                 }
                 runCatchingWithLog {
                     userInfoRepository.flowCurrent.value?.let {
-//                        val birthDate = WmPersonalInfo.BirthDate(
-//                            it.birthYear.toShort(),
-//                            it.birthMonth.toByte(),
-//                            it.birthDay.toByte()
-//                        )
-//                        val wmPersonalInfo = WmPersonalInfo(
-//                            it.height.toShort(),
-//                            it.weight.toShort(),
-//                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
-//                            birthDate
-//                        )
-//                        UNIWatchMate.wmLog.logI(TAG, "setUserInfo")
-//                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
+                        val birthDate = WmPersonalInfo.BirthDate(
+                            it.birthYear.toShort(),
+                            it.birthMonth.toByte(),
+                            it.birthDay.toByte()
+                        )
+                        val wmPersonalInfo = WmPersonalInfo(
+                            it.height.toShort(),
+                            it.weight.toShort(),
+                            if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
+                            birthDate
+                        )
+                        UNIWatchMate.wmLog.logI(TAG, "setUserInfo")
+                        UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }
-
-                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                    syncData()
-                }
                 UNIWatchMate.wmLog.logI(TAG, "onConnected over")
+                hideLoadingDialog()
+                CacheDataHelper.setSynchronizingData(false)
             }
         } else {
             UNIWatchMate.wmLog.logW(TAG, "onConnected error because no authed user")
@@ -336,12 +323,12 @@ internal class DeviceManagerImpl(
         }
     }
 
-override fun cancelBind() {
-    val device = deviceFromMemory.value
-    if (device != null && device.isTryingBind) {
-        deviceFromMemory.value = null
+    override fun cancelBind() {
+        val device = deviceFromMemory.value
+        if (device != null && device.isTryingBind) {
+            deviceFromMemory.value = null
+        }
     }
-}
 
     override suspend fun delDevice() {
         clearDevice()
