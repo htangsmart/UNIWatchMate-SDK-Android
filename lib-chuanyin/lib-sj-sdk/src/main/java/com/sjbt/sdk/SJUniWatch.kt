@@ -966,7 +966,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             sendNormalMsg(cmdArray)
         }
 
-        parseNodePayload(false, null, payloadPackage)
+//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**

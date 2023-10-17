@@ -90,7 +90,7 @@ class MyApplication : Application() {
                             }"
                         )
                     } else if (it.wmWeatherTime == WmWeatherTime.TODAY) {
-                        val result = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
                             getTestWeatherdata(WmWeatherTime.TODAY),
                             WmUnitInfo.TemperatureUnit.CELSIUS
                         )?.await()

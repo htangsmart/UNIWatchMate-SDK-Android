@@ -4,14 +4,13 @@ package com.base.sdk.entity.apps
  * AlarmData structure 闹钟数据结构
  */
 class WmAlarm(
-    var alarmId: Int,//闹钟Id
     var alarmName: String,//限制最长20
     var hour: Int,
     var minute: Int,
     var repeatOptions: Set<AlarmRepeatOption>//重复模式
 ) {
+    var alarmId: Int = 0  //闹钟Id
     var isOn: Boolean = false
-
     override fun toString(): String {
         return "WmAlarm(alarmId=$alarmId, alarmName='$alarmName', hour=$hour, minute=$minute, repeatOptions=$repeatOptions, isOn=$isOn)"
     }

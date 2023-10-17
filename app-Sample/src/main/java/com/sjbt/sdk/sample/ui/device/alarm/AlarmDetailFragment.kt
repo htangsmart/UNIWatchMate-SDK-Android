@@ -65,7 +65,6 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
         } else {
             //Add Mode
             alarm = WmAlarm(
-                AlarmHelper.findNewAlarmId(alarms),
                 getString(R.string.ds_alarm_label_default),
                 calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),

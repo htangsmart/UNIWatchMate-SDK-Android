@@ -133,13 +133,13 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
                         val wmAlarm =
                             WmAlarm(
-                                id.toInt(),
                                 name,
                                 hour.toInt(),
                                 minute.toInt(),
                                 AlarmRepeatOption.fromValue(repeatOptions.toInt())
                             )
                         wmAlarm.isOn = isEnable.toInt() == 1
+                        wmAlarm.alarmId = id.toInt()
                         alarmList.add(wmAlarm)
                     }
                 }
