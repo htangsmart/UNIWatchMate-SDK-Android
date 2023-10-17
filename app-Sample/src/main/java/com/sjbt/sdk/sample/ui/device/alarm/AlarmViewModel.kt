@@ -47,6 +47,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
             state.copy(requestAlarms = Loading()).newState()
             runCatchingWithLog {
                 UNIWatchMate.wmApps.appAlarm.syncAlarmList.awaitSingle()
+//                mutableListOf<WmAlarm>()
             }.onSuccess {
                 state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
             }.onFailure {

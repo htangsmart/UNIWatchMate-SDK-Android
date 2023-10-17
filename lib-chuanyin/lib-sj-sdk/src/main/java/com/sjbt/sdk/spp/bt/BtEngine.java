@@ -1,8 +1,10 @@
 package com.sjbt.sdk.spp.bt;
 
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.BT_MSG_BASE_LEN;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8001;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8002;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8003;
+import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_8004;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_800D;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_800F;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.CMD_ID_802E;
@@ -377,6 +379,8 @@ public class BtEngine {
                 || (type == HEAD_CAMERA_PREVIEW && cmdId == CMD_ID_8002)//相机预览
                 || (type == HEAD_COMMON && cmdId == CMD_ID_802E)//绑定
                 || (type == HEAD_NODE_TYPE && cmdId == CMD_ID_8002)//节点消息
+                || (type == HEAD_NODE_TYPE && cmdId == CMD_ID_8001)//节点消息
+                || (type == HEAD_NODE_TYPE && cmdId == CMD_ID_8004)//节点消息
                 ;
     }
 
