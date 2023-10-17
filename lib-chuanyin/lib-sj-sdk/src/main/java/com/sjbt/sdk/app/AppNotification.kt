@@ -12,6 +12,45 @@ class AppNotification(sjUniWatch: SJUniWatch) : AbAppNotification() {
     val sjUniWatch = sjUniWatch
     var sendNotificationEmitter: SingleEmitter<Boolean>? = null
 
+    val sms_package_name = "com.android.sms"
+    val others_package_name = "com.android.others"
+    // 所有的应用的包名列表(除了短信和others)
+    val appPackageList = listOf(
+        "com.facebook.katana",
+        "com.google.android.gm",
+        "com.instagram.android",
+        "jp.naver.line.android",
+        "com.linkedin.android",
+        "com.facebook.orca",
+        "com.microsoft.office.outlook",
+        "com.tencent.mobileqq",
+        "com.skype.raider",
+        "com.snapchat.android",
+        "org.telegram.messenger",
+        "com.twitter.android",
+        "com.tencent.mm",
+        "com.whatsapp",
+        "com.whatsapp.w4b"
+    )
+    // 所有短信的包名列表
+    val smsPackageList = listOf(
+        "com.android.mms",
+        "com.google.android.apps.messaging",
+        "com.samsung.android.messaging",
+        "com.lge.message",
+        "com.htc.sense.mms",
+        "com.motorola.messaging",
+        "com.sonyericsson.conversations",
+        "com.miui.mms",
+        "com.huawei.message",
+        "com.oppo.mms",
+        "com.vivo.mms",
+        "net.oneplus.mms",
+        "com.meizu.mms",
+        "com.oppo.mms"
+    )
+
+
     override fun isSupport(): Boolean {
         return true
     }
@@ -20,6 +59,13 @@ class AppNotification(sjUniWatch: SJUniWatch) : AbAppNotification() {
         return Single.create(object : SingleOnSubscribe<Boolean> {
             override fun subscribe(emitter: SingleEmitter<Boolean>) {
                 sendNotificationEmitter = emitter
+
+                // 短信应用包名统一，其它应用包名统一
+                if (smsPackageList.indexOf(notification.packageName) != -1) {
+                    notification.packageName = sms_package_name
+                } else if (appPackageList.indexOf(notification.packageName) == -1) {
+                    notification.packageName = others_package_name
+                }
 
                 sjUniWatch.sendNormalMsg(CmdHelper.getNotificationCmd(notification))
             }
