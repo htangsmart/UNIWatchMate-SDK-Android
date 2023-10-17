@@ -59,9 +59,10 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                 deviceManager.reset()
             }
         }
+
         viewBind.itemLocalOta.clickTrigger {
             viewLifecycleScope.launch {
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
                     // Access to all files
                     val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
                     val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
@@ -86,9 +87,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
     private fun showFileChooserDialog() {
         //choose a file
-        //choose a file
         activity?.let { ctx ->
-
             val chooserDialog = ChooserDialog(ctx, R.style.FileChooserStyle)
             chooserDialog
                 .withResources(
@@ -96,7 +95,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                     R.string.title_choose, R.string.dialog_cancel
                 )
                 .disableTitle(false)
-                .withFilter(false, false, BTConfig.UP, BTConfig.UP_EX, BTConfig.JPG)
+                .withFilter(false, false, BTConfig.UP, BTConfig.UP_EX)
                 .enableOptions(false)
                 .titleFollowsDir(false)
                 .cancelOnTouchOutside(false)

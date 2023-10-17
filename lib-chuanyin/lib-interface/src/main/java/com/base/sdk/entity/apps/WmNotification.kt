@@ -5,9 +5,9 @@ package com.base.sdk.entity.apps
  */
 class WmNotification(
     /**
-     * Notification type(通知类型)
+     * packageName(包名)
      */
-    var notificationType: WmNotificationType = WmNotificationType.WHATSAPP,
+    var packageName: String,
     /**
      * Notification title(通知标题)
      */
@@ -22,6 +22,6 @@ class WmNotification(
     var subContent: String?,
 ) {
     override fun toString(): String {
-        return "WmNotification(notificationType=$notificationType, title='$title', content='$content', subContent='$subContent')"
+        return "WmNotification(packageName=$packageName, title='$title', content='$content', subContent='$subContent')"
     }
 }
