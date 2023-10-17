@@ -51,11 +51,6 @@ interface DeviceManager {
     val flowConnectorState: StateFlow<WmConnectState>// connectorState
 
     val flowBattery: StateFlow<WmBatteryInfo?>
-    /**
-     * Sync data state of [FcSyncState].
-     * Null for current no any sync state
-     */
-//    val flowSyncState: StateFlow<Int?>
 
     /**
      * [SyncEvent]
@@ -63,21 +58,11 @@ interface DeviceManager {
     val flowSyncEvent: Flow<Int>
 
     /**
-     * Does need weather
-     */
-//    fun flowWeatherRequire(): Flow<Boolean>
-
-    /**
      * Trying bind a new device.
      * If bind success, the device info will be automatically saved to storage
      */
     fun bind(address: String, name: String)
 
-    /**
-     * Rebind current device
-     * If bind success, the device info will be automatically saved to storage
-     */
-    fun rebind()
 
     /**
      * Cancel if [bind] or [rebind] is in progress
@@ -98,20 +83,6 @@ interface DeviceManager {
     /**
      * When state is [ConnectorState.PRE_CONNECTING], get the number of seconds to retry the connection next time
      */
-//    fun getNextRetrySeconds(): Int
-
-    /**
-     * When state is [ConnectorState.DISCONNECTED], get the reason
-     */
-//    fun getDisconnectedReason(): FcDisconnectedReason
-
-
-    fun disconnect()
-
-    fun reconnect()
-
-//  fun newDfuManager(): FcDfuManager
-
     fun syncData()
 
     @IntDef(
@@ -157,7 +128,7 @@ internal class DeviceManagerImpl(
 
     /**
      * Manually control the current device
-     * 用户点击连接设备时更新 ConnectorDevice
+     *  ConnectorDevice
      */
     private val deviceFromMemory: MutableStateFlow<ConnectorDevice?> = MutableStateFlow(null)
 
@@ -190,7 +161,6 @@ internal class DeviceManagerImpl(
         }.stateIn(applicationScope, SharingStarted.Eagerly, null)
 
 
-//    override val flowDevice: StateFlow<WmDeviceInfo?>? =  UNIWatchMate.mWmSyncs?.syncDeviceInfoData?.observeSyncData?.asFlow()?.stateIn(applicationScope, SharingStarted.Eagerly, null)
     /**
      * Connector state combine adapter state and current device
      */
@@ -217,7 +187,6 @@ internal class DeviceManagerImpl(
     init {
         applicationScope.launch {
             //Connect or disconnect when device changed
-            //当登录设备或用户变化时，把个人资料更新到设备
             deviceFromStorage.collect { device ->
                 UNIWatchMate.wmLog.logE(TAG, "it.device == $device")
                 if (deviceFromMemory.value == null) {
@@ -267,23 +236,23 @@ internal class DeviceManagerImpl(
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
                     UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())
                         ?.toObservable()?.asFlow()?.collect {
-                        UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$it")
-                        CacheDataHelper.setCurrentDeviceInfo(it)
-                    }
+                            UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$it")
+                            CacheDataHelper.setCurrentDeviceInfo(it)
+                        }
                 }
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime")
-                    val nowMillis = System.currentTimeMillis()
-                    val wmDateTime =
-                        WmDateTime(
-                            TimeZone.getDefault().id,
-                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
-                            WmUnitInfo.DateFormat.YYYY_MM_DD,
-                            nowMillis,
-                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
-                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
-                        )
-                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(wmDateTime).await()
+//                    val nowMillis = System.currentTimeMillis()
+//                    val wmDateTime =
+//                        WmDateTime(
+//                            TimeZone.getDefault().id,
+//                            WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR,
+//                            WmUnitInfo.DateFormat.YYYY_MM_DD,
+//                            nowMillis,
+//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
+//                            TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
+//                        )
+                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime().await()
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime wmDateTime=${result}")
                 }
                 runCatchingWithLog {//first check has data,if not ,get from watch
@@ -355,24 +324,6 @@ internal class DeviceManagerImpl(
         }
         .stateIn(applicationScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L), null)
 
-//    override fun flowWeatherRequire(): Flow<Boolean> {
-//        return flowDevice.flatMapLatest {
-//            if (it == null || it.isTryingBind) {
-//                flowOf(false)
-//            } else {
-//                connector.configFeature().observerAnyChanged().filter { type ->
-//                    type == FcConfigFeature.TYPE_DEVICE_INFO || type == FcConfigFeature.TYPE_FUNCTION_CONFIG
-//                }.debounce(1000, TimeUnit.MILLISECONDS).startWithItem(0).asFlow()
-//                    .map {
-//                        val deviceInfo = connector.configFeature().getDeviceInfo()
-//                        val functionConfig = connector.configFeature().getFunctionConfig()
-//                        deviceInfo.isSupportFeature(FcDeviceInfo.Feature.WEATHER) &&
-//                                functionConfig.isFlagEnabled(FcFunctionConfig.Flag.WEATHER_DISPLAY)
-//                    }
-//            }
-//        }
-//    }
-
     override fun bind(address: String, name: String) {
         val userId = internalStorage.flowAuthedUserId.value
         if (userId == null) {
@@ -385,29 +336,14 @@ internal class DeviceManagerImpl(
         }
     }
 
-    override fun rebind() {
-//        val device = flowDevice.value
-//        if (device == null) {
-//            Timber.w("rebind error because no device")
-//            return
-//        }
-//        bind(device.address, device.name)
+override fun cancelBind() {
+    val device = deviceFromMemory.value
+    if (device != null && device.isTryingBind) {
+        deviceFromMemory.value = null
     }
-
-    override fun cancelBind() {
-        val device = deviceFromMemory.value
-        if (device != null && device.isTryingBind) {
-            deviceFromMemory.value = null
-        }
-    }
+}
 
     override suspend fun delDevice() {
-//        UNIWatchMate.disconnect()
-//        connector.settingsFeature().unbindUser()
-//            .ignoreElement().onErrorComplete()
-//            .andThen(
-//                connector.settingsFeature().unbindAudioDevice().onErrorComplete()
-//            ).await()
         clearDevice()
     }
 
@@ -416,9 +352,7 @@ internal class DeviceManagerImpl(
         UNIWatchMate.reset().onErrorReturn {
             Completable.create { emitter -> emitter.onComplete() }
         }.awaitSingleOrNull()
-        clearDevice()
     }
-
 
     /**
      * Save device with current user
@@ -457,17 +391,6 @@ internal class DeviceManagerImpl(
 //        return connector.getDisconnectedReason()
 //    }
 
-    override fun disconnect() {
-
-        UNIWatchMate.disconnect()
-    }
-
-    override fun reconnect() {
-//        abUniWatch?.let {
-//            it.wmConnect?.disconnect()
-//        }
-//        connector.reconnect()
-    }
 
 //    override fun newDfuManager(): FcDfuManager {
 //        return connector.newDfuManager(true)
@@ -477,101 +400,6 @@ internal class DeviceManagerImpl(
 //        if (connector.dataFeature().isSyncing()) {
 //            return
 //        }
-//        applicationScope.launch {
-//            connector.dataFeature().syncData().asFlow()
-//                .onStart {
-//                    Timber.i("syncData onStart")
-//                    _flowSyncEvent.send(DeviceManager.SyncEvent.SYNCING)
-//                }
-//                .onCompletion {
-//                    Timber.i(it, "syncData onCompletion")
-//                    when (it) {
-//                        null -> {
-//                            _flowSyncEvent.send(DeviceManager.SyncEvent.SUCCESS)
-//                            val userId = internalStorage.flowAuthedUserId.value
-//                            if (userId != null) {
-//                                //Clear all gpsId every time synchronization is completed
-//                                //Because if the synchronization is all successful, then GpsData and SportData should have all returned successfully.
-////                                syncDataRepository.clearSportGpsId(userId)
-//                            }
-//                        }
-////                        is BleDisconnectedException -> {
-////                            _flowSyncEvent.send(DeviceManager.SyncEvent.FAIL_DISCONNECT)
-////                        }
-////                        !is FcSyncBusyException -> {
-////                            _flowSyncEvent.send(DeviceManager.SyncEvent.FAIL)
-////                        }
-//                    }
-//                }
-//                .catch {
-//                }
-//                .collect {
-////                    saveSyncData(it)
-//                }
-//            Timber.i("syncData finish")
-//        }
-    }
-
-    //    private suspend fun saveSyncData(data: FcSyncData) {
-//        Timber.i("saveSyncData:%d", data.type)
-//        val userId = internalStorage.flowAuthedUserId.value ?: return
-//
-//        when (data.type) {
-//            FcSyncDataType.STEP -> {
-//                syncDataRepository.saveStep(userId, data.toStep(), data.deviceInfo.isSupportFeature(FcDeviceInfo.Feature.STEP_EXTRA))
-//            }
-//
-//            FcSyncDataType.SLEEP -> syncDataRepository.saveSleep(userId, data.toSleep())
-//
-//            FcSyncDataType.HEART_RATE -> syncDataRepository.saveHeartRate(userId, data.toHeartRate())
-//            FcSyncDataType.HEART_RATE_MEASURE -> syncDataRepository.saveHeartRate(userId, data.toHeartRateMeasure())
-//
-//            FcSyncDataType.OXYGEN -> syncDataRepository.saveOxygen(userId, data.toOxygen())
-//            FcSyncDataType.OXYGEN_MEASURE -> syncDataRepository.saveOxygen(userId, data.toOxygenMeasure())
-//
-//            FcSyncDataType.BLOOD_PRESSURE -> syncDataRepository.saveBloodPressure(userId, data.toBloodPressure())
-//            FcSyncDataType.BLOOD_PRESSURE_MEASURE -> syncDataRepository.saveBloodPressureMeasure(userId, data.toBloodPressureMeasure())
-//
-//            FcSyncDataType.TEMPERATURE -> syncDataRepository.saveTemperature(userId, data.toTemperature())
-//            FcSyncDataType.TEMPERATURE_MEASURE -> syncDataRepository.saveTemperature(userId, data.toTemperatureMeasure())
-//
-//            FcSyncDataType.PRESSURE -> syncDataRepository.savePressure(userId, data.toPressure())
-//            FcSyncDataType.PRESSURE_MEASURE -> syncDataRepository.savePressure(userId, data.toPressureMeasure())
-//
-//            FcSyncDataType.ECG -> {
-//                syncDataRepository.saveEcg(userId, data.toEcg(), data.deviceInfo.isSupportFeature(FcDeviceInfo.Feature.TI_ECG))
-//            }
-//
-//            FcSyncDataType.GAME -> syncDataRepository.saveGame(userId, data.toGame())
-//
-//            FcSyncDataType.SPORT -> syncDataRepository.saveSport(userId, data.toSport())
-//            FcSyncDataType.GPS -> syncDataRepository.saveGps(userId, data.toGps())
-//
-//            FcSyncDataType.TODAY_TOTAL_DATA -> syncDataRepository.saveTodayStep(userId, data.toTodayTotal())
-//        }
-//    }
-//    fun parseScanQr(qrString: String): WmScanDevice {
-//        val wmScanDevice = WmScanDevice(WmDeviceModel.SJ_WATCH)
-//        val params = UrlParse.getUrlParams(qrString)
-//        if (!params.isEmpty()) {
-//            val schemeMacAddress = params["mac"]
-//            val schemeDeviceName = params["projectname"]
-//            val random = params["random"]
-//
-//            wmScanDevice.randomCode = random
-//
-//            wmScanDevice.address = schemeMacAddress
-//            wmScanDevice.isRecognized =
-//                !TextUtils.isEmpty(schemeMacAddress) &&
-//                        !TextUtils.isEmpty(schemeDeviceName) &&
-//                        !TextUtils.isEmpty(random) &&
-//                        isLegalMacAddress(schemeMacAddress)
-//        }
-//        return wmScanDevice
-//    }
-
-    private fun isLegalMacAddress(address: String?): Boolean {
-        return !TextUtils.isEmpty(address)
     }
 
     companion object {
@@ -583,32 +411,3 @@ internal class DeviceManagerImpl(
         val device: ConnectorDevice?,
     )
 }
-
-//private fun simpleState(state: WmConnectState): ConnectorState {
-//    return when {
-//        state == WmConnectState.DISCONNECTED -> ConnectorState.DISCONNECTED
-////        state == WmConnectState.PRE_CONNECTING -> ConnectorState.PRE_CONNECTING
-//        state <= WmConnectState.CONNECTING -> {
-//            ConnectorState.CONNECTING
-//        }
-//
-//        else -> {
-//            ConnectorState.CONNECTED
-//        }
-//    }
-//}
-
-//private fun combineState(
-//    device: ConnectorDevice?,
-//    isAdapterEnabled: Boolean,
-//    connectorState: ConnectorState,
-//): ConnectorState {
-//    return if (device == null) {
-//        ConnectorState.NO_DEVICE
-//    } else if (!isAdapterEnabled) {
-//        ConnectorState.BT_DISABLED
-//    } else {
-//        connectorState
-//    }
-//}
-

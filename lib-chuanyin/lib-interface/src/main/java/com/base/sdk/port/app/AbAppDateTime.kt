@@ -12,6 +12,6 @@ abstract class AbAppDateTime : IWmSupport {
     /**
      * 设置时间
      */
-    abstract fun setDateTime(dateTime: WmDateTime?): Single<Boolean>
+    abstract fun setDateTime(): Single<Boolean>
 
 }

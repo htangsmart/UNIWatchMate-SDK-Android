@@ -218,7 +218,7 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
             context?.let { AlarmHelper.repeatToSimpleStr(alarm.repeatOptions, it) }
     }
 
-    private fun getAlarmLabel(): String? {
+    private fun getAlarmLabel(): String {
         return if (alarm.alarmName.isNullOrEmpty()) {
             getString(R.string.ds_alarm_label_default)
         } else {

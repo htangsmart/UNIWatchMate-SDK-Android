@@ -11,8 +11,10 @@ import android.view.View
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.FileType
+import com.base.sdk.port.State
+import com.base.sdk.port.WmTransferState
 import com.blankj.utilcode.util.FileUtils
-import com.github.kilnn.tool.storage.FileUtil
+import com.blankj.utilcode.util.NumberUtils
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.obsez.android.lib.filechooser.ChooserDialog
 import com.sjbt.sdk.sample.BuildConfig
@@ -28,6 +30,7 @@ import com.sjbt.sdk.sample.utils.ToastUtil.showToast
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import java.io.File
@@ -39,6 +42,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     private val deviceManager = Injector.getDeviceManager()
     private var isLocalUpdate = false
     private var otaFile: File? = null
+    private var isSending = false
     private val applicationScope = Injector.getApplicationScope()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -80,7 +84,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
             if (it) {
                 showFileChooserDialog();
             } else {
-                ToastUtil.showToast(getString(R.string.permission_fail));
+                showToast(getString(R.string.permission_fail));
             }
         }
     }
@@ -103,12 +107,6 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                 .enableDpad(true)
 
             chooserDialog.withNegativeButtonListener { dialog, which ->
-                startLocalUpdate(
-                    File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                            .absolutePath + "/w20.up"
-                    )
-                )
             }
 
             chooserDialog.withChosenListener { dir, dirFile ->
@@ -158,12 +156,56 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     private fun startOta() {
         applicationScope.launchWithLog {
             val fileList = mutableListOf<File>()
-            otaFile?.let {
-                fileList.add(it)
-                UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
-                    .collect {
+            otaFile?.let { otaFile ->
+                promptProgress.showProgress(getString(R.string.action_updating))
+                fileList.add(otaFile)
+                val extension: String = FileUtils.getFileExtension(otaFile)
+                if (extension == BTConfig.UP) {
+                    UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
+                        .catch {
+                            promptProgress.dismiss()
+                            showToast(it.message,true)
+                        }
+                        .collect {
+                            otaFileResult(it)
+                        }
+                } else if (extension == BTConfig.UP_EX) {
+                    UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList).asFlow()
+                        .catch {
+                            promptProgress.dismiss()
+                            showToast(it.message,true)
+                        }
+                        .collect {
+                            otaFileResult(it)
+                        }
+                }
 
-                    }
+
+            }
+        }
+    }
+
+    private fun otaFileResult(it: WmTransferState) {
+        when (it.state) {
+            State.PRE_TRANSFER -> {
+            }
+
+            State.TRANSFERRING -> {
+                isSending = true
+                if (isLocalUpdate) {
+                    promptProgress.showProgress(
+                        getString(R.string.action_updating_progress) + NumberUtils.format(
+                            it.progress.toDouble(),
+                            2
+                        ) + "%"
+                    )
+                }
+            }
+
+            else -> {//finish
+                promptProgress.dismiss()
+                isSending = false
+                showToast(getString(R.string.tip_success))
             }
         }
     }
