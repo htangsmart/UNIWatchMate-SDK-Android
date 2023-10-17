@@ -595,7 +595,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8002 -> {//响应
                                     //
-//                                    sendCommunityResponse()
+                                    sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payloadLen)
@@ -667,15 +667,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      */
     private fun sendCommunityResponse() {
         sendNormalMsg(
-            CmdHelper.constructCmd(
-                HEAD_NODE_TYPE,
-                CMD_ID_8004,
-                DIVIDE_N_2,
-                0,
-                0,
-                0,
-                null
-            )
+            CmdHelper.communityMsg
         )
     }
 
@@ -1060,17 +1052,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     ) {
 
         if (response) {
-            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
-                if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
-                    wmLog.logD(TAG, "结果全部OK")
-                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
-                    wmLog.logD(TAG, "结果全部Fail")
-                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
-                    parseResponseEachNode(payloadPackage, msgBean)
-                }
-            } else {
-                wmLog.logE(TAG, "设备回复错误消息！！！")
+//            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
+            if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
+                wmLog.logD(TAG, "结果全部OK")
+            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
+                wmLog.logD(TAG, "结果全部Fail")
+            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
+                wmLog.logD(TAG, "返回所有节点消息")
+                parseResponseEachNode(payloadPackage, msgBean)
             }
+//            } else {
+//                wmLog.logE(TAG, "设备回复错误消息！！！")
+//            }
 
         } else {
             parseResponseEachNode(payloadPackage, msgBean)
@@ -1155,7 +1148,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_CONTACT -> {
-                            appContact.contactBusiness(it, msgBean)
+                            appContact.contactBusiness(payloadPackage, it, msgBean)
                         }
 
                         URN_APP_WEATHER -> {

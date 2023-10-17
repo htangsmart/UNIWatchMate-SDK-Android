@@ -30,6 +30,7 @@ import java.util.Date
 class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
     DatePickerDialogFragment.Listener {
 
+    private val TAG = "EditUserInfoFragment"
     private val viewBind: FragmentEditUserInfoBinding by viewBinding()
     private val userInfoRepository = Injector.getUserInfoRepository()
     private val authedUserId = Injector.requireAuthedUserId()
@@ -42,6 +43,11 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        UNIWatchMate.wmSettings.settingPersonalInfo.get().subscribe{info->
+            UNIWatchMate.wmLog.logE(TAG,"个人信息："+info)
+        }
+
         viewLifecycleScope.launchWhenStarted {
             info = userInfoRepository.getUserInfo(authedUserId)
             if (info == null) {
@@ -75,6 +81,7 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
                 ).show(childFragmentManager, userBirthday)
             }
         }
+
     }
 
     private fun save() {

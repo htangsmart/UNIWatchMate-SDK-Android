@@ -3,6 +3,7 @@ package com.sjbt.sdk.spp.cmd
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.FileType
 import com.google.gson.Gson
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
@@ -67,47 +68,6 @@ object CmdHelper {
         override fun toString(): String {
             return "DivideInfo(divideType=$divideType, value=$value)"
         }
-    }
-
-    /**
-     * 组包公用方法
-     */
-    fun constructCmdOld(
-        head: Byte,
-        cmd_id: Short,
-        divideType: Byte,
-        dividePayloadTotalLen: Short = 0,
-        offset: Int,
-        crc: Int,
-        payload: ByteArray?
-    ): ByteArray {
-        val payLoadLength = payload?.size ?: 0
-        val byteBuffer = ByteBuffer.allocate(16 + payLoadLength)
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN) //采用小端
-
-        //TYPE
-        byteBuffer.put(head)
-        byteBuffer.put(CMD_ORDER_ARRAY[command_index % CMD_ORDER_ARRAY.size])
-        byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
-
-        //Length
-        byteBuffer.put(divideType)
-        byteBuffer.put(0)
-        byteBuffer.putShort(payLoadLength.toShort())
-
-        //Offset
-        byteBuffer.putInt(offset)
-
-        //CRC
-        byteBuffer.putInt(crc)
-
-        //Payload
-        if (payload != null) {
-            byteBuffer.put(payload)
-        }
-        byteBuffer.flip()
-        command_index++
-        return byteBuffer.array()
     }
 
     /**
@@ -183,7 +143,11 @@ object CmdHelper {
             cmdId[0] = 0x00
             msgBean.cmdId = BtUtils.byte2short(cmdId).toInt()
             //            LogUtils.logBlueTooth("返回命令cmdId:" + msgBean.cmdId);
-            val divideType = byteBuffer[4]
+            val divideArray = ByteArray(2)
+            divideArray[0] = byteBuffer[4]
+            divideArray[1] = byteBuffer[5]
+
+            val divideType = readShortFromBytes(divideArray.reversedArray()).divideType
             msgBean.divideType = divideType
 
 //            byte[] len = new byte[2];
@@ -302,6 +266,27 @@ object CmdHelper {
             return constructCmd(
                 HEAD_VERIFY,
                 CMD_ID_8001.toShort(),
+                DIVIDE_N_2,
+                0,
+                0,
+                crc,
+                payload
+            )
+        }
+
+    /**
+     * 新协议 获取通讯层协议
+     *
+     * @return 组装好的握手命令
+     */
+    val communityMsg: ByteArray
+        get() {
+            val payload = ByteArray(1)
+            payload[0] = 1
+            val crc = BtUtils.getCrc(HEX_FFFF, payload, payload.size)
+            return constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8004,
                 DIVIDE_N_2,
                 0,
                 0,
@@ -814,7 +799,12 @@ object CmdHelper {
         val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
-        byteBuffer.putInt(fileLen)
+        if (type == FileType.OTA.type.toByte()) {
+            byteBuffer.putInt(-1)
+        } else {
+            byteBuffer.putInt(fileLen)
+        }
+
         byteBuffer.put(fileCount.toByte())
         byteBuffer.flip()
         val payload = byteBuffer.array()
@@ -1320,6 +1310,15 @@ object CmdHelper {
     }
 
     /**
+     * 获取设备上体育目标配置
+     */
+    fun getDevicePersonalInfoCmd(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        payloadPackage.putData(getUrnId(URN_2, URN_2), ByteArray(0))
+        return payloadPackage
+    }
+
+    /**
      * 获取设置健康信息的命令
      */
     fun getUpdatePersonalInfoAllCmd(
@@ -1336,7 +1335,7 @@ object CmdHelper {
         bbSport.putShort(personalInfo.birthDate.year)
         bbSport.put(personalInfo.birthDate.month)
         bbSport.put(personalInfo.birthDate.day)
-        payloadPackage.putData(getUrnId(URN_2, URN_1), bbSport.array())
+        payloadPackage.putData(getUrnId(URN_2, URN_2), bbSport.array())
 //        } else {
 //            if (personalInfo.steps != 0) {
 //                payloadPackage.putData(
@@ -1404,8 +1403,8 @@ object CmdHelper {
     fun getReadLanguageListCmd(): PayloadPackage {
 
         val payloadPackage = PayloadPackage()
-        val bbSport: ByteBuffer = ByteBuffer.allocate(0)
-        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_1), bbSport.array())
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_1), byteBuffer.array())
 
         return payloadPackage
     }
