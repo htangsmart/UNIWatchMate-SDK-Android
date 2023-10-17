@@ -311,6 +311,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     appNotification.sendNotificationEmitter?.onSuccess(msg[16].toInt() == 1)
                                 }
 
+                                CMD_ID_8007 -> {//同步时间
+                                    settingDateTime.setEmitter?.onSuccess(null)
+                                }
+
                                 CMD_ID_8008 -> {//获取AppView List
 
                                     val appViewBean =

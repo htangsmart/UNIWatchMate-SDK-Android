@@ -19,29 +19,21 @@ class SettingDateTime(val sjUniWatch: SJUniWatch) : AbWmSetting<WmDateTime>() {
     }
 
     override fun observeChange(): Observable<WmDateTime> {
-        return Observable.create(object : ObservableOnSubscribe<WmDateTime> {
-            override fun subscribe(emitter: ObservableEmitter<WmDateTime>) {
-                observeEmitter = emitter
-            }
-        })
+        return Observable.create { emitter -> observeEmitter = emitter }
     }
 
     override fun set(obj: WmDateTime): Single<WmDateTime> {
-        return Single.create(object : SingleOnSubscribe<WmDateTime> {
-            override fun subscribe(emitter: SingleEmitter<WmDateTime>) {
-                setEmitter = emitter
-                sjUniWatch.sendNormalMsg(CmdHelper.syncTimeCmd)
-            }
-        })
+        return Single.create { emitter ->
+            setEmitter = emitter
+            sjUniWatch.sendNormalMsg(CmdHelper.syncTimeCmd)
+        }
     }
 
     override fun get(): Single<WmDateTime> {
-        return Single.create(object : SingleOnSubscribe<WmDateTime> {
-            override fun subscribe(emitter: SingleEmitter<WmDateTime>) {
-                getEmitter = emitter
-                getEmitter?.onError(RuntimeException("time not support get!"))
-            }
-        })
+        return Single.create { emitter ->
+            getEmitter = emitter
+            getEmitter?.onError(RuntimeException("time not support get!"))
+        }
     }
 
 }
