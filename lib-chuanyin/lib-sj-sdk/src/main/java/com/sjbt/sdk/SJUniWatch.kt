@@ -1052,7 +1052,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     ) {
 
         if (response) {
-            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
+//            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
                 if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
                     wmLog.logD(TAG, "结果全部OK")
                 } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
@@ -1061,9 +1061,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     wmLog.logD(TAG, "返回所有节点消息")
                     parseResponseEachNode(payloadPackage, msgBean)
                 }
-            } else {
-                wmLog.logE(TAG, "设备回复错误消息！！！")
-            }
+//            } else {
+//                wmLog.logE(TAG, "设备回复错误消息！！！")
+//            }
 
         } else {
             parseResponseEachNode(payloadPackage, msgBean)

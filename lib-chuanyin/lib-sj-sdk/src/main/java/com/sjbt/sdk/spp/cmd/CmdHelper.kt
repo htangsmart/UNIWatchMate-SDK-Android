@@ -147,7 +147,7 @@ object CmdHelper {
             divideArray[0] = byteBuffer[4]
             divideArray[1] = byteBuffer[5]
 
-            val divideType = readShortFromBytes(divideArray).divideType
+            val divideType = readShortFromBytes(divideArray.reversedArray()).divideType
             msgBean.divideType = divideType
 
 //            byte[] len = new byte[2];
