@@ -283,7 +283,7 @@ internal class DeviceManagerImpl(
                             TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultHMSFormat()),
                             TimeUtils.millis2String(nowMillis, TimeUtils.getDefaultYMDFormat())
                         )
-                    val result = UNIWatchMate?.wmSettings?.settingDateTime?.set(wmDateTime).await()
+                    val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(wmDateTime).await()
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime wmDateTime=${result}")
                 }
                 runCatchingWithLog {//first check has data,if not ,get from watch

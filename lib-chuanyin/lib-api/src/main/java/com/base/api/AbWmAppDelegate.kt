@@ -33,4 +33,6 @@ internal class AbWmAppDelegate(
         get() = watchObservable.value!!.wmApps.appLanguage
     override val appMusicControl: AbAppMusicControl
         get() = watchObservable.value!!.wmApps.appMusicControl
+    override val appDateTime: AbAppDateTime
+        get() = watchObservable.value!!.wmApps.appDateTime
 }

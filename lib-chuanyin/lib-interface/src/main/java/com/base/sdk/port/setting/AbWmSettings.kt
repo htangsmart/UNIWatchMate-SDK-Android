@@ -9,11 +9,6 @@ abstract class AbWmSettings {
     abstract val settingSportGoal: AbWmSetting<WmSportGoal>
 
     /**
-     * dateTimeSetting 日期时间设置
-     */
-    abstract val settingDateTime: AbWmSetting<WmDateTime>
-
-    /**
      * personalInfoSetting 个人信息设置
      */
     abstract val settingPersonalInfo: AbWmSetting<WmPersonalInfo>

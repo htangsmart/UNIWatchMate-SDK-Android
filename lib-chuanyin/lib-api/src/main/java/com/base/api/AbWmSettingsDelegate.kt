@@ -12,9 +12,6 @@ internal class AbWmSettingsDelegate(
     override var settingSportGoal: AbWmSetting<WmSportGoal>
         get() = watchObservable.value!!.wmSettings?.settingSportGoal
         set(value) {}
-    override var settingDateTime: AbWmSetting<WmDateTime>
-        get() = watchObservable.value!!.wmSettings?.settingDateTime
-        set(value) {}
     override var settingPersonalInfo: AbWmSetting<WmPersonalInfo>
         get() = watchObservable.value!!.wmSettings?.settingPersonalInfo
         set(value) {}

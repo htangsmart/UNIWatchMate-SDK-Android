@@ -11,8 +11,6 @@ class FcSettings(
 
     override val settingSportGoal: AbWmSetting<WmSportGoal> = SettingSportGoal(connector)
 
-    override val settingDateTime: AbWmSetting<WmDateTime>
-        get() = TODO("Not yet implemented")
     override val settingPersonalInfo: AbWmSetting<WmPersonalInfo>
         get() = TODO("Not yet implemented")
     override val settingSedentaryReminder: AbWmSetting<WmSedentaryReminder>

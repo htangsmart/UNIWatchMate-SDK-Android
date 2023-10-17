@@ -54,4 +54,9 @@ abstract class AbWmApps {
      */
     abstract val appMusicControl: AbAppMusicControl
 
+    /**
+     * 时间设置
+     */
+    abstract val appDateTime: AbAppDateTime
+
 }

@@ -89,6 +89,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val syncTodayTotalData = wmSync.syncTodayInfoData as SyncTodayTotalData
 
     //应用
+    private val appDateTime = wmApps.appDateTime as AppDateTime
     private val appCamera = wmApps.appCamera as AppCamera
     private val appAlarm = wmApps.appAlarm as AppAlarm
     private val appContact = wmApps.appContact as AppContact
@@ -102,7 +103,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     //设置
     private val settingAppView = wmSettings.settingAppView as SettingAppView
-    private val settingDateTime = wmSettings.settingDateTime as SettingDateTime
     private val settingHeartRateAlerts = wmSettings.settingHeartRate as SettingHeartRateAlerts
     private val settingPersonalInfo = wmSettings.settingPersonalInfo as SettingPersonalInfo
     private val settingSedentaryReminder =
@@ -238,7 +238,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     val msg = obj as ByteArray
                     val msgBean: MsgBean = CmdHelper.getPayLoadJson(msg)
 
-                    wmLog.logD(TAG, "收到msg:" + msgBean.toString())
+//                    wmLog.logD(TAG, "收到msg:" + msgBean.toString())
 
                     when (msgBean.head) {
                         HEAD_VERIFY -> {
@@ -312,7 +312,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8007 -> {//同步时间
-                                    settingDateTime.setEmitter?.onSuccess(null)
+                                    appDateTime.setEmitter?.onSuccess(true)
                                 }
 
                                 CMD_ID_8008 -> {//获取AppView List
@@ -595,7 +595,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8002 -> {//响应
                                     //
-                                    sendCommunityResponse()
+//                                    sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
                                         wmLog.logI(TAG, "应用层消息：" + msgBean.payloadLen)
@@ -726,7 +726,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     CMD_STR_8005_TIME_OUT -> {}
                     CMD_STR_8006_TIME_OUT -> {}
                     CMD_STR_8007_TIME_OUT -> {
-                        settingDateTime.getEmitter?.onError(RuntimeException("get sync time timeout!"))
+                        appDateTime.setEmitter?.onSuccess(false)
                     }
 
                     CMD_STR_8008_TIME_OUT -> {
@@ -737,9 +737,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                     CMD_STR_800A_TIME_OUT -> {}
                     CMD_STR_800B_TIME_OUT -> {}
-                    CMD_STR_800C_TIME_OUT -> {
-                        settingDateTime.getEmitter?.onError(RuntimeException("get sync time timeout!"))
-                    }
+                    CMD_STR_800C_TIME_OUT -> {}
                     CMD_STR_800D_TIME_OUT -> {}
                     CMD_STR_800E_TIME_OUT -> {}
                     CMD_STR_800F_TIME_OUT -> {
