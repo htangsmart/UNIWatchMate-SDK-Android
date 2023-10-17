@@ -8,5 +8,6 @@
 /.idea
 .DS_Store
 /build
+/schemas
 /captures
 .externalNativeBuild
