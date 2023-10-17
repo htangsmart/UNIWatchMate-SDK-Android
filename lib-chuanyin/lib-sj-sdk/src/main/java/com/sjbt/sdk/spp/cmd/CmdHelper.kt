@@ -1699,12 +1699,13 @@ object CmdHelper {
      * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
      */
     fun getWriteTodayWeatherCmd(
+        totalLen:Int,
         temperatureUnit: WmUnitInfo.TemperatureUnit,
         wmWeather: WmWeather
     ): PayloadPackage {
         val payloadPackage = PayloadPackage()
 
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen)
 
         //时间
         val calendar = Calendar.getInstance()
@@ -1764,12 +1765,12 @@ object CmdHelper {
      * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
      */
     fun getWriteSevenTodayWeatherCmd(
+        totalLen:Int,
         temperatureUnit: WmUnitInfo.TemperatureUnit,
         wmWeather: WmWeather
     ): PayloadPackage {
         val payloadPackage = PayloadPackage()
-
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen)
 
         //时间
         val calendar = Calendar.getInstance()

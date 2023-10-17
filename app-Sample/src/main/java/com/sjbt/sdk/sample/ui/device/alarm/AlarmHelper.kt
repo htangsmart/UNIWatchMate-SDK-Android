@@ -52,7 +52,6 @@ object AlarmHelper {
 
     fun newAlarm(wmAlarm: WmAlarm): WmAlarm {
         val alarm = WmAlarm(
-            wmAlarm.alarmId,
             wmAlarm.alarmName,
             wmAlarm.hour,
             wmAlarm.minute,
