@@ -1403,8 +1403,8 @@ object CmdHelper {
     fun getReadLanguageListCmd(): PayloadPackage {
 
         val payloadPackage = PayloadPackage()
-        val bbSport: ByteBuffer = ByteBuffer.allocate(0)
-        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_1), bbSport.array())
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_2, URN_4, URN_1), byteBuffer.array())
 
         return payloadPackage
     }

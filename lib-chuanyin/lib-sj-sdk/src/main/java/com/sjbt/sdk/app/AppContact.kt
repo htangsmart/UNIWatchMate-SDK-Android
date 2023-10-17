@@ -6,6 +6,7 @@ import com.base.sdk.port.app.AbAppContact
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
+import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
@@ -83,6 +84,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     }
 
     fun contactBusiness(
+        payload: PayloadPackage,
         it: NodeData,
         msgBean: MsgBean?
     ) {
@@ -93,32 +95,35 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
             }
 
             URN_APP_CONTACT_LIST -> {
-                msgBean?.let {
-                    if (it.divideType == DIVIDE_Y_F_2) {
-                        mContacts.clear()
-                    }
+
+                if (payload.packageSeq == 0) {
+                    mContacts.clear()
                 }
 
                 val byteArray =
                     ByteBuffer.wrap(it.data).array()
 
                 val chunkSize = 52
-                var i = 0
-                while (i < byteArray.size) {
-                    val nameBytes = byteArray.copyOfRange(i, i + 32)
-                    val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
-                    val name = String(nameBytes).trim()
-                    val num = String(numBytes).trim()
-                    val contact = WmContact.create(name, num)
-                    contact?.let {
-                        mContacts.add(it)
+
+                if (it.dataLen.toInt() > chunkSize) {
+                    var i = 0
+                    while (i < byteArray.size) {
+                        val nameBytes = byteArray.copyOfRange(i, i + 32)
+                        val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
+                        val name = String(nameBytes).trim()
+                        val num = String(numBytes).trim()
+                        val contact = WmContact.create(name, num)
+                        contact?.let {
+                            mContacts.add(it)
+                        }
+                        i += chunkSize
                     }
-                    i += chunkSize
                 }
 
                 msgBean?.let {
-                    if (it.divideType == DIVIDE_Y_E_2) {
+                    if (!payload.hasNext()) {
                         contactListEmitter?.onNext(mContacts)
+                        contactListEmitter?.onComplete()
                     }
                 }
             }

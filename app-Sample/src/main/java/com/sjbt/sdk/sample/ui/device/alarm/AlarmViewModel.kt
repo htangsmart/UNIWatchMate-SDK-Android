@@ -13,6 +13,8 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitFirst
 import kotlinx.coroutines.rx3.awaitSingle
 
 data class AlarmState(
@@ -46,7 +48,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
         viewModelScope.launch {
             state.copy(requestAlarms = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appAlarm.syncAlarmList.awaitSingle()
+                UNIWatchMate.wmApps.appAlarm.syncAlarmList.awaitFirst()
 //                mutableListOf<WmAlarm>()
             }.onSuccess {
                 state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
@@ -141,13 +143,13 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
             setAlarm?.let {
                 when (alarmAction) {
                     AlarmAction.ADD -> {
-                        UNIWatchMate.wmApps.appAlarm.addAlarm(it)
+                        UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
                     }
                     AlarmAction.UPDATE -> {
-                        UNIWatchMate.wmApps.appAlarm.updateAlarm(it)
+                        UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
                     }
                     AlarmAction.DELETE -> {
-                        UNIWatchMate.wmApps.appAlarm.deleteAlarm(it)
+                        UNIWatchMate.wmApps.appAlarm.deleteAlarm(it).await()
                     }
                     else -> {
 

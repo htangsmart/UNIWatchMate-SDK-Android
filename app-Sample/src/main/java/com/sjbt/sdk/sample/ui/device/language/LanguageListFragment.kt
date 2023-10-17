@@ -7,6 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.base.api.UNIWatchMate
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
@@ -46,6 +47,11 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
             viewModel.requestLanguages()
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
+
+        UNIWatchMate.wmApps.appLanguage.syncLanguageList.subscribe { lang->
+            UNIWatchMate.wmLog.logE("TAG","language list: $lang")
+
+        }
 
 
         viewLifecycle.launchRepeatOnStarted {

@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import com.base.sdk.entity.apps.AlarmRepeatOption
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.port.app.AbAppAlarm
 import com.sjbt.sdk.SJUniWatch
@@ -9,6 +10,8 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
@@ -19,6 +22,8 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
     private var updateAlarmEmitter: SingleEmitter<WmAlarm>? = null
 
     private var mAlarm: WmAlarm? = null
+
+    private val TAG = "AppAlarm"
 
     override fun isSupport(): Boolean {
         return _isSupport
@@ -99,7 +104,9 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         when (it.urn[2]) {
 
             URN_APP_ALARM_ADD -> {
-                addSuccess(it.data[0].toInt() == 1)
+                val result = it.data[0].toInt() == 1
+                sjUniWatch.wmLog.logD(TAG, "add alarm result:$result")
+                addSuccess(result)
             }
 
             URN_APP_ALARM_DELETE -> {
@@ -108,6 +115,35 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
             URN_APP_ALARM_LIST -> {
                 val alarmList = mutableListOf<WmAlarm>()
+                val count = it.dataLen / 25
+                sjUniWatch.wmLog.logD(TAG, "闹钟消息长度：" + count)
+
+                if (count > 0) {
+                    val byteBuffer = ByteBuffer.wrap(it.data)
+                    for (i in 0..count) {
+                        val id = byteBuffer.get()
+                        val nameArray = ByteArray(20)
+                        byteBuffer.get(nameArray, 1, 20)
+                        val name = String(nameArray, StandardCharsets.UTF_8)
+
+                        val hour = byteBuffer.get()
+                        val minute = byteBuffer.get()
+                        val repeatOptions = byteBuffer.get()
+                        val isEnable = byteBuffer.get()
+
+                        val wmAlarm =
+                            WmAlarm(
+                                id.toInt(),
+                                name,
+                                hour.toInt(),
+                                minute.toInt(),
+                                AlarmRepeatOption.fromValue(repeatOptions.toInt())
+                            )
+                        wmAlarm.isOn = isEnable.toInt() == 1
+                        alarmList.add(wmAlarm)
+                    }
+                }
+
                 syncAlarmListSuccess(alarmList)
             }
 
