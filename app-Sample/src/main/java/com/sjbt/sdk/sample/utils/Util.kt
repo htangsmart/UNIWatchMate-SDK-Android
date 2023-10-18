@@ -181,15 +181,6 @@ inline fun <T, R> T.runCatchingWithLog(block: T.() -> R): Result<R> {
     }
 }
 
-inline fun <reified T> Moshi.toJsonObject(str: String?): T? {
-    return runCatchingWithLog {
-        if (str.isNullOrEmpty()) {
-            null
-        } else {
-            this.adapter(T::class.java).fromJson(str)
-        }
-    }.getOrNull()
-}
 
 fun flowBluetoothAdapterState(context: Context) = callbackFlow {
     val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager

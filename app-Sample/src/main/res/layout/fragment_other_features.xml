@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:divider="?dividerVertical"
         android:orientation="vertical"
-        android:showDividers="middle">
+        android:showDividers="middle|end">
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_find_device"

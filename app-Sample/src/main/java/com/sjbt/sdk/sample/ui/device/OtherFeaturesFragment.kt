@@ -25,9 +25,9 @@ import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
 import com.sjbt.sdk.sample.utils.PermissionHelper
-import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.ToastUtil.showToast
 import com.sjbt.sdk.sample.utils.launchWithLog
+import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.flow.catch
@@ -37,14 +37,12 @@ import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
 import java.io.File
 
-
 class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
     private val viewBind: FragmentOtherFeaturesBinding by viewBinding()
     private val deviceManager = Injector.getDeviceManager()
     private var isLocalUpdate = false
     private var otaFile: File? = null
-    private var isSending = false
     private val applicationScope = Injector.getApplicationScope()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -122,7 +120,6 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
             }
 
             chooserDialog.withOnBackPressedListener { dialog -> chooserDialog.goBack() }
-
             chooserDialog.show()
         }
     }
@@ -157,57 +154,68 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
     private fun startOta() {
         applicationScope.launchWithLog {
-            val fileList = mutableListOf<File>()
-            otaFile?.let { otaFile ->
-                promptProgress.showProgress(getString(R.string.action_updating))
-                fileList.add(otaFile)
-                val extension: String = FileUtils.getFileExtension(otaFile)
-                if (extension == BTConfig.UP) {
-                    UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
-                        .catch {
-                            promptProgress.dismiss()
-                            showToast(it.message,true)
-                        }
-                        .collect {
-                            otaFileResult(it)
-                        }
-                } else if (extension == BTConfig.UP_EX) {
-                    UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList).asFlow()
-                        .catch {
-                            promptProgress.dismiss()
-                            showToast(it.message,true)
-                        }
-                        .collect {
-                            otaFileResult(it)
-                        }
+            runCatchingWithLog {
+                val fileList = mutableListOf<File>()
+                otaFile?.let { otaFile ->
+                    promptProgress.showProgress(getString(R.string.action_updating))
+                    fileList.add(otaFile)
+                    val extension: String = FileUtils.getFileExtension(otaFile)
+                    if (extension == BTConfig.UP) {
+                        UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
+                            .catch {
+                                promptProgress.dismiss()
+                                showToast(it.message, true)
+                            }
+                            .collect {
+                                otaFileResult(it)
+                            }
+                    } else if (extension == BTConfig.UP_EX) {
+                        UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList)
+                            .asFlow()
+                            .catch {
+                                promptProgress.dismiss()
+                                showToast(it.message, true)
+                            }
+                            .collect {
+                                otaFileResult(it)
+                            }
+                    }
+
                 }
-
-
             }
         }
     }
 
     private fun otaFileResult(it: WmTransferState) {
+        UNIWatchMate.wmLog.logI("OtherFeaturesFragment", "WmTransferState = ${it}")
         when (it.state) {
             State.PRE_TRANSFER -> {
             }
 
             State.TRANSFERRING -> {
-                isSending = true
+//                UNIWatchMate.wmLog.logI(
+//                    "OtherFeaturesFragment",
+//                    getString(R.string.action_updating_progress) + NumberUtils.format(
+//                        it.progress.toDouble(),
+//                        2
+//                    ) + "%"
+//                )
                 if (isLocalUpdate) {
-                    promptProgress.showProgress(
-                        getString(R.string.action_updating_progress) + NumberUtils.format(
-                            it.progress.toDouble(),
-                            2
-                        ) + "%"
-                    )
+                    promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
+                        it.progress.toDouble(),
+                        2
+                    ) + "%")
                 }
             }
 
-            else -> {//finish
+            State.FINISH -> {
                 promptProgress.dismiss()
-                isSending = false
                 showToast(getString(R.string.tip_success))
+//                applicationScope.launchWithLog {
+//                    runCatchingWithLog {
+//                        deviceManager.delDevice()
+//                    }
+//                }
             }
         }
     }

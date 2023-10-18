@@ -305,6 +305,7 @@
     <!--Alarms-->
     <string name="ds_test_send_notification">测试发送通知</string>
     <string name="ds_no_data">没有数据</string>
+    <string name="alarm_no_repetition">不重复</string>
     <string name="ds_alarm">手表闹钟</string>
     <string name="ds_alarm_no_data">暂无闹钟</string>
     <string name="ds_alarm_limit_count">最多只能添加10个闹钟</string>
@@ -467,7 +468,7 @@
 <!--    <string name="sport_ui_type_115">马拉松</string>-->
 
     <!--Device Settings:Dfu-->
-    <string name="ds_push_start">开始推送(<xliff:g id="param">%1$s</xliff:g>)</string>
+    <string name="ds_push_start">开始推送</string>
     <string name="ds_push_success">推送成功</string>
 
     <!--Device Settings:Third part app-->
@@ -505,7 +506,7 @@
     <string name="ds_device_shutdown">关机</string>
     <string name="ds_device_reset">恢复出厂设置</string>
 
-    <string name="device_state_verified">已验证</string>
+    <string name="device_state_verified">验证通过</string>
     <string name="device_state_other">其他</string>
     <string name="app_view_gridding">网格</string>
     <string name="app_view_list">列表</string>
