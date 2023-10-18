@@ -1136,7 +1136,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         URN_APP_RATE -> {
 
                         }
+                    }
+                }
 
+                URN_APP_CONTROL -> {
+                    when (it.urn[1]) {
                         URN_APP_FIND_PHONE, URN_APP_FIND_DEVICE -> {
                             appFind.appFindBusiness(it)
                         }
