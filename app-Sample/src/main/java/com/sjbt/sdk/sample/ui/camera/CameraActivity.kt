@@ -147,6 +147,7 @@ class CameraActivity : BaseActivity() {
                         checkCameraPreview()
                     } else {
 //                    showCameraBusDialog(CameraBusDialog.TIP_TYPE_OPEN_CAMERA)
+                        finish()
                     }
                 }
 

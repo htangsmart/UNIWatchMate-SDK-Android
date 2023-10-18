@@ -102,7 +102,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         )
         UNIWatchMate.connect(
             address,
-            WmBindInfo("124", "124324", BindType.DISCOVERY ,WmDeviceModel.SJ_WATCH)
+            WmBindInfo("124", "124324", BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
         )
 
         DeviceConnectDialogFragment().show(childFragmentManager, null)
@@ -136,7 +136,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private fun tryingBind(scanResult: ScanResult) {
         this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
 
-        val userInfo = WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
+        val userInfo = WmBindInfo("124", "124324", BindType.SCAN_QR, WmDeviceModel.SJ_WATCH)
         val wmScanDevice = parseScanQr(scanResult.getContent())
 
         wmScanDevice?.let {
@@ -154,7 +154,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     userInfo
                 )
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
-            }else{
+            } else {
                 ToastUtil.showToast(getString(R.string.device_scan_tips_error))
             }
         }
@@ -243,12 +243,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         /**
                          * Show bind success, and exit in [onPromptCancel]
                          */
-                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
+                        promptToast.showSuccess(
+                            R.string.device_bind_success,
+                            intercept = true,
+                            promptId = promptBindSuccessId
+                        )
                         toggleBluetoothAlert(false)
-                    }
-                    else if (it == WmConnectState.BT_DISABLE) {
+                    } else if (it == WmConnectState.BT_DISABLE) {
                         toggleBluetoothAlert(true)
-                    }else{
+                    } else {
                         toggleBluetoothAlert(false)
                     }
                 }
@@ -288,9 +291,9 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
                     this::class.simpleName?.let { tag ->
-                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                        UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
                     }
-                    ToastUtil.showToast(it.message,true)
+                    ToastUtil.showToast(it.message, true)
                 }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)

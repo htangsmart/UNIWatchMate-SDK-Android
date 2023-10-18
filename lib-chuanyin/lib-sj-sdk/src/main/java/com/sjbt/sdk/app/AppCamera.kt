@@ -1,4 +1,5 @@
 package com.sjbt.sdk.app
+
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -13,11 +14,12 @@ import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.*
+import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+
 class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
-    private var cameraObserveStateEmitter: ObservableEmitter<Boolean>? = null
     var cameraSingleOpenEmitter: SingleEmitter<Boolean>? = null
     var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>? = null
     var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>? = null
@@ -26,7 +28,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     var cameraFlashSwitchEmitter: ObservableEmitter<WMCameraFlashMode>? = null
     var cameraPreviewReadyEmitter: SingleEmitter<Boolean>? = null
 
-    private var cameraStateObserver: Observable<Boolean>? = null
+    private val cameraStateObserver: PublishSubject<Boolean> = PublishSubject.create()
 
     private val TAG = "AppCamera"//相机预览相关
     private var mCameraFrameInfo: WmCameraFrameInfo? = null
@@ -58,7 +60,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     fun observeDeviceCamera(open: Boolean) {
-        cameraObserveStateEmitter?.onNext(open)
+        cameraStateObserver?.onNext(open)
     }
 
     fun openCameraResult(result: Boolean) {
@@ -112,18 +114,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         }
     }
 
-    private fun getObservableCameraState(): Observable<Boolean> {
-
-        Log.e(TAG, "getObservableCameraState:"+cameraStateObserver+" cameraObserveStateEmitter:"+cameraObserveStateEmitter)
-
-        if (cameraStateObserver == null || cameraObserveStateEmitter == null || cameraObserveStateEmitter!!.isDisposed) {
-            cameraStateObserver =
-                Observable.create { emitter -> cameraObserveStateEmitter = emitter }
-        }
-        return cameraStateObserver!!
-    }
-
-    override var observeCameraOpenState: Observable<Boolean> = getObservableCameraState()
+    override var observeCameraOpenState: Observable<Boolean> = cameraStateObserver
 
     override var observeCameraTakePhoto: Observable<Boolean> =
         Observable.create { emitter -> cameraObserveTakePhotoEmitter = emitter }

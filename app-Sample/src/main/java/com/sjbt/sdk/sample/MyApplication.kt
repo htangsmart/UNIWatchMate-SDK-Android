@@ -8,6 +8,7 @@ import android.os.Looper
 import android.view.KeyEvent
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmUnitInfo
@@ -73,6 +74,28 @@ class MyApplication : Application() {
     }
 
     private fun observeState() {
+
+        UNIWatchMate.observeConnectState.subscribe {
+
+            UNIWatchMate.wmLog.logE(TAG, it.name)
+
+            when (it) {
+                WmConnectState.BT_DISABLE -> {
+
+                }
+
+                WmConnectState.VERIFIED -> {
+                    UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe {
+                        UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
+                    }
+                }
+
+                WmConnectState.CONNECTED -> {
+
+                }
+            }
+        }
+
         applicationScope.launch {
             launchWithLog {
 //                UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {

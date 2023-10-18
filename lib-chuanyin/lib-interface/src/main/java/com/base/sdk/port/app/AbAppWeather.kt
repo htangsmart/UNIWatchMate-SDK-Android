@@ -31,6 +31,6 @@ abstract class AbAppWeather : IWmSupport {
     /**
      * observeWeather 监听设备端天气请求
      */
-    abstract var observeWeather: Observable<WmWeatherRequest>
+    abstract val observeWeather: Observable<WmWeatherRequest>
 
 }

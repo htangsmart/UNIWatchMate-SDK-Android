@@ -14,7 +14,7 @@ abstract class AbAppFind : IWmSupport {
      * find mobile(查找手机)
      * @return 0:连续响 其它：响铃次数
      */
-    abstract var observeFindMobile : Observable<WmFind>
+    abstract val observeFindMobile : Observable<WmFind>
 
     /**
      * stop find mobile(停止查找手机)
