@@ -668,7 +668,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     CMD_STR_8001_TIME_OUT, CMD_STR_8002_TIME_OUT -> {
                         mBtEngine.clearStateMap()
                         mBtEngine.clearMsgQueue()
-
+                        ClsUtils.removeBond(BluetoothDevice::class.java, mCurrDevice)
 //                        disconnect()
 //                        btStateChange(WmConnectState.DISCONNECTED)
                     }
@@ -1295,7 +1295,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     override fun disconnect() {
-        mBtEngine.closeSocket("user", true)
+        mBtEngine.closeSocket("app", true)
     }
 
 
