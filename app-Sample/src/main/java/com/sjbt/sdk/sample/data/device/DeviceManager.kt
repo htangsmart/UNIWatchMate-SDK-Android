@@ -248,7 +248,7 @@ internal class DeviceManagerImpl(
                             if (it.activityDuration == 0.toShort() || it.calories == 0 || it.steps == 0) {
                                 val sportGoal = UNIWatchMate.wmSettings.settingSportGoal.get().await()
                                 sportGoalRepository.modify(userId,sportGoal)
-                                UNIWatchMate.wmLog.logI(TAG, "modify sportGoal= $")
+                                UNIWatchMate.wmLog.logI(TAG, "modify sportGoal= $sportGoal")
                             } else {
                                 val result =
                                     UNIWatchMate.wmSettings.settingSportGoal.set(it).await()
@@ -342,6 +342,7 @@ internal class DeviceManagerImpl(
         UNIWatchMate.reset().onErrorReturn {
             Completable.create { emitter -> emitter.onComplete() }
         }.awaitSingleOrNull()
+        clearDevice()
     }
 
     /**

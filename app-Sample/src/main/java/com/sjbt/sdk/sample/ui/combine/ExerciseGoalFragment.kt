@@ -62,14 +62,13 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launchWhenStarted {
-            launch {
                 exerciseGoal = exerciseGoalRepository.flowCurrent.value
-                UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
-                    UNIWatchMate.wmLog.logE("体育消息",""+it)
-                    exerciseGoal = it
-                }
+//                UNIWatchMate.wmLog.logE("体育消息","exerciseGoal=$exerciseGoal")
+//                UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
+//                    UNIWatchMate.wmLog.logE("体育消息",""+it)
+//                    exerciseGoal = it
+//                }
                 updateUI()
-            }
         }
         viewBind.itemStep.setOnClickListener(blockClick)
         viewBind.itemCalories.setOnClickListener(blockClick)
@@ -87,6 +86,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
     private fun WmSportGoal.saveConfig() {
         applicationScope.launchWithLog {
             if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
+                UNIWatchMate.wmLog.logI("ExerciseGoalFragment","${this@saveConfig}")
                 UNIWatchMate.wmSettings.settingSportGoal.set(this@saveConfig).await()
             }
         }

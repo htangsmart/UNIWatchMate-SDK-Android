@@ -56,23 +56,17 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         wmHeartRateAlerts = WmHeartRateAlerts(21)
 
         lifecycleScope.launchWhenStarted {
-            launch {
-                deviceManager.flowStateConnected().collect {
-                    viewBind.layoutContent.setAllChildEnabled(it)
-                }
+            deviceManager.flowStateConnected().collect {
+                viewBind.layoutContent.setAllChildEnabled(it)
+            }
 
-                launch {
-                    UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
-                        wmHeartRateAlerts = it
-                        updateUi()
-                    }
-                }
-                launch {
-                    UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
-                        wmHeartRateAlerts = it
-                        updateUi()
-                    }
-                }
+            UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
+                wmHeartRateAlerts = it
+                updateUi()
+            }
+            UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
+                wmHeartRateAlerts = it
+                updateUi()
             }
         }
 
