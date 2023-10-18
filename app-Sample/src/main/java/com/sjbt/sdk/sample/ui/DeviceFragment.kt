@@ -7,12 +7,9 @@ import androidx.navigation.fragment.findNavController
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmNotification
-import com.base.sdk.entity.apps.WmNotificationType
 import com.base.sdk.entity.apps.WmWeatherTime
-import com.base.sdk.entity.settings.WmDateTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.TimeUtils
-import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
@@ -27,7 +24,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import timber.log.Timber
-import java.util.TimeZone
 
 @StringRes
 fun WmConnectState.toStringRes(): Int {
@@ -207,7 +203,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                             )
                         }"
                     )
-                    val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                    val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenDaysWeather(
                         getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
