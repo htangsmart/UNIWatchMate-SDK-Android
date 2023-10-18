@@ -27,11 +27,11 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-      viewBind.itemNotification.setOnClickListener(blockClick)
+        viewBind.itemNotification.setOnClickListener(blockClick)
         viewBind.itemUnitConfig.setOnClickListener(blockClick)
         viewBind.itemSedentary.setOnClickListener(blockClick)
         viewBind.itemDrinkWater.setOnClickListener(blockClick)
-        viewBind.itemTurnWristLighting.setOnClickListener( blockClick)
+        viewBind.itemTurnWristLighting.setOnClickListener(blockClick)
         viewBind.itemSleep.setOnClickListener(blockClick)
         viewBind.itemSoundTouchFeedback.setOnClickListener(blockClick)
         viewBind.itemAppView.setOnClickListener(blockClick)
@@ -62,15 +62,19 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewBind.itemUnitConfig -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toUnitConfig())
             }
+
             viewBind.itemSoundTouchFeedback -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toSoundTouchFeedback())
             }
+
             viewBind.itemAppView -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toAppView())
             }
+
             viewBind.itemTurnWristLighting -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toTurnWristLightingConfig())
             }
+
             viewBind.itemLanguage -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toLanguage())
             }
@@ -78,15 +82,19 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
             viewBind.itemSedentary -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toSedentary())
             }
+
             viewBind.itemDrinkWater -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toDrinkWaterConfig())
             }
+
             viewBind.itemHeartRate -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toHeartRate())
             }
+
             viewBind.itemNotification -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toNotificationConfig())
             }
+
             viewBind.itemSleep -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toSleepConfig())
             }

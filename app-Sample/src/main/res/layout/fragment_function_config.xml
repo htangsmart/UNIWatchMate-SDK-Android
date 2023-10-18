@@ -36,7 +36,7 @@
             app:preferenceTitle="@string/ds_time_format_12_hour"/>
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_length_unit_imperial"
+            android:id="@+id/item_distance_unit_imperial"
             style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

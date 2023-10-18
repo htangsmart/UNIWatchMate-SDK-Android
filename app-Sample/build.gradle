@@ -96,9 +96,7 @@ android {
         targetCompatibility JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+
 }
 
 //当前时间

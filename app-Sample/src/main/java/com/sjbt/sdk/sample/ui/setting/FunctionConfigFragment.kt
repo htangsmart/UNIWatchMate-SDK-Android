@@ -34,7 +34,7 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
 
     private val viewBind: FragmentFunctionConfigBinding by viewBinding()
 
-    //    private val deviceManager = Injector.getDeviceManager()
+//  private val deviceManager = Injector.getDeviceManager()
     private val applicationScope = Injector.getApplicationScope()
 
     private var config: WmUnitInfo? = null
@@ -62,14 +62,9 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
             }
         }
 
-//        viewBind.itemWearRightHand.getSwitchCompat().setOnCheckedChangeListener(this)
-//        viewBind.itemEnhancedMeasurement.getSwitchCompat().setOnCheckedChangeListener(this)
         viewBind.itemTimeFormat12Hour.getSwitchView().setOnCheckedChangeListener(this)
-        viewBind.itemLengthUnitImperial.getSwitchView().setOnCheckedChangeListener(this)
+        viewBind.itemDistanceUnitImperial.getSwitchView().setOnCheckedChangeListener(this)
         viewBind.itemTemperatureUnitFahrenheit.getSwitchView().setOnCheckedChangeListener(this)
-//        viewBind.itemDisplayWeather.getSwitchCompat().setOnCheckedChangeListener(this)
-//        viewBind.itemDisconnectReminder.getSwitchCompat().setOnCheckedChangeListener(this)
-//        viewBind.itemDisplayExerciseGoal.getSwitchCompat().setOnCheckedChangeListener(this)
     }
 
     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -81,7 +76,7 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
                             if (isChecked) WmUnitInfo.TimeFormat.TWELVE_HOUR else WmUnitInfo.TimeFormat.TWENTY_FOUR_HOUR
                     }
                 }
-                viewBind.itemLengthUnitImperial.getSwitchView() -> {
+                viewBind.itemDistanceUnitImperial.getSwitchView() -> {
                     config?.let {
                         it.distanceUnit =
                             if (isChecked) WmUnitInfo.DistanceUnit.KM else WmUnitInfo.DistanceUnit.MILE
@@ -115,7 +110,7 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
         config?.let {
             viewBind.itemTimeFormat12Hour.getSwitchView().isChecked =
                 it.timeFormat == WmUnitInfo.TimeFormat.TWELVE_HOUR
-            viewBind.itemLengthUnitImperial.getSwitchView().isChecked =
+            viewBind.itemDistanceUnitImperial.getSwitchView().isChecked =
                 it.distanceUnit == WmUnitInfo.DistanceUnit.KM
             viewBind.itemTemperatureUnitFahrenheit.getSwitchView().isChecked =
                 it.temperatureUnit == WmUnitInfo.TemperatureUnit.CELSIUS

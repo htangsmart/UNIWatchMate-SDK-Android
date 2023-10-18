@@ -191,18 +191,18 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
             }
 
             State.TRANSFERRING -> {
-//                UNIWatchMate.wmLog.logI(
-//                    "OtherFeaturesFragment",
-//                    getString(R.string.action_updating_progress) + NumberUtils.format(
-//                        it.progress.toDouble(),
-//                        2
-//                    ) + "%"
-//                )
-                if (isLocalUpdate) {
-                    promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
+                UNIWatchMate.wmLog.logI(
+                    "OtherFeaturesFragment",
+                    getString(R.string.action_updating_progress) + NumberUtils.format(
                         it.progress.toDouble(),
                         2
-                    ) + "%")
+                    ) + "%"
+                )
+                if (isLocalUpdate) {
+//                    promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
+//                        it.progress.toDouble(),
+//                        2
+//                    ) + "%")
                 }
             }
 
