@@ -107,6 +107,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 }
             }
         }
+
+        UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
+            UNIWatchMate.wmLog.logE(TAG, "设备相机状态3：$aBoolean")
+        }
+
     }
 
     private val blockClick: (View) -> Unit = { view ->
@@ -180,14 +185,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                 findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
             }
 
-            viewBind.itemCamera -> {
-                PermissionHelper.requestAppCameraAndStoreage(this@DeviceFragment) {
-                    if (it) {
-                        CameraActivity.launchActivity(activity)
-                    }
-                }
-            }
-
             viewBind.itemPushDateTime -> {
                 applicationScope.launchWithLog {
                     val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(null).await()
@@ -224,6 +221,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                     )
                 }
             }
+
         }
     }
 

@@ -111,24 +111,10 @@ class MyApplication : Application() {
             launchWithLog {
                 UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
                     if (it) {//
-//                        if not front
-//                        if (!isFront) {
-//                            btSppWrapper.sendNormalMsg(
-//                                CmdHelper.getCameraRespondCmd(
-//                                    CMD_ID_8029,
-//                                    0.toByte()
-//                                )
-//                            )
-//                            return
-//                        }
                         if (ActivityUtils.getTopActivity() != null) {
-                            UNIWatchMate.wmLog.logE(
-                                TAG,
-                                "CameraActivity.launchActivity"
-                            )
+                            UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
                             CameraActivity.launchActivity(ActivityUtils.getTopActivity())
                             UNIWatchMate.wmApps.appCamera.startCameraPreview()
-//                          btSppWrapper.sendNormalMsg(getCameraRespondCmd(CMD_ID_8029, 1.toByte()))
                         }
                     } else if (ActivityUtils.getTopActivity() is CameraActivity) {
                         ActivityUtils.getTopActivity().finish()

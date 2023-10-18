@@ -139,7 +139,7 @@ class CameraActivity : BaseActivity() {
 
             UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
                 isCameraOpened = aBoolean
-                UNIWatchMate.wmLog.logD(TAG, "设备相机状态：$isCameraOpened")
+                UNIWatchMate.wmLog.logE(TAG, "设备相机状态2：$isCameraOpened")
                 if (isCameraOpened) {
                     checkCameraPreview()
                 } else {
