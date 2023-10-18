@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.*
@@ -56,7 +57,7 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
             URN_0 -> {
                 if (it.dataLen.toInt() == 1) {
 
-                    if (it.data[0].toInt() == 0) {
+                    if (it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal) {
                         setEmitter?.onSuccess(wmSportGoal)
                     } else {
                         setEmitter?.onError(RuntimeException("set fail"))

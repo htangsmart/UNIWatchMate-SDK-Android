@@ -4,6 +4,7 @@ import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
 import com.base.sdk.port.app.AbAppContact
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.PayloadPackage
@@ -91,7 +92,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         when (it.urn[2]) {
 
             URN_APP_CONTACT_COUNT -> {
-                contactCountSetEmitter?.onSuccess(it.data[0].toInt() == 1)
+                contactCountSetEmitter?.onSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_CONTACT_LIST -> {
@@ -129,17 +130,17 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
             }
 
             URN_APP_CONTACT_UPDATE -> {
-                updateContactListBack(it.data[0].toInt() == 1)
+                updateContactListBack(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_CONTACT_SET_EMERGENCY -> {
-                updateEmergencyContactBack(it.data[0].toInt() == 1)
+                updateEmergencyContactBack(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_CONTACT_GET_EMERGENCY -> {
 
                 val emergencyByteArray = it.data
-                val enable = it.data[0].toInt() == 1
+                val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                 val name = String(
                     emergencyByteArray.copyOf(32),
                     StandardCharsets.UTF_8

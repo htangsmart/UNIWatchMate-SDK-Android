@@ -3,8 +3,8 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.app.AbAppFind
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.NodeData
-import com.sjbt.sdk.entity.ResponseResultType
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.Observable
@@ -24,8 +24,8 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
     private val findMobile = PublishSubject.create<WmFind>()
     private val stopFindMobile = PublishSubject.create<Boolean>()
-
     override val observeFindMobile: PublishSubject<WmFind> = findMobile
+
     override fun stopFindMobile(): Observable<Boolean> {
        return stopFindMobile
     }
@@ -48,23 +48,13 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
         when (it.urn[2]) {
 
             URN_APP_FIND_DEVICE_START -> {
-                when (it.data[0].toInt()) {
-                    ResponseResultType.RESPONSE_EACH.type -> {
-                        startFindWatchEmitter?.onSuccess(true)
-                    }
-
-                    ResponseResultType.RESPONSE_ALL_OK.type -> {
-                        startFindWatchEmitter?.onSuccess(true)
-                    }
-
-                    ResponseResultType.RESPONSE_ALL_FAIL.type -> {
-                        startFindWatchEmitter?.onSuccess(false)
-                    }
-                }
+                val startResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
+                startFindWatchEmitter?.onSuccess(startResult)
             }
 
             URN_APP_FIND_DEVICE_STOP -> {
-                stopFindWatchEmitter?.onSuccess(true)
+                val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
+                stopFindWatchEmitter?.onSuccess(stopResult)
             }
 
             URN_APP_FIND_PHONE_START -> {
@@ -78,9 +68,9 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             }
 
             URN_APP_FIND_PHONE_STOP -> {
-                stopFindMobile.onNext(true)
+                val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
+                stopFindMobile.onNext(stopResult)
             }
-
         }
     }
 }

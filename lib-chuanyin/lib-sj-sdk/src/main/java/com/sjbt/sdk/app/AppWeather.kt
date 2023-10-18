@@ -7,6 +7,7 @@ import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.app.AbAppWeather
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SIX_DAYS
@@ -116,7 +117,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         when (it.urn[3]) {
             URN_APP_WEATHER_PUSH_TODAY -> {
                 if (it.dataLen.toInt() == 1) {
-                    val result = it.data[0].toInt() == 1
+                    val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                     sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
                     pushWeatherEmitter?.onSuccess(result)
                 } else {
@@ -127,7 +128,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
 
             URN_APP_WEATHER_PUSH_SIX_DAYS -> {
                 if (it.dataLen.toInt() == 1) {
-                    val result = it.data[0].toInt() == 1
+                    val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                     sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
                     pushWeatherEmitter?.onSuccess(result)
                 } else {
