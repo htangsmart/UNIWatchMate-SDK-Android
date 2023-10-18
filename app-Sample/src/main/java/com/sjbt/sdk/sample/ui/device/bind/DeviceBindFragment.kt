@@ -1,7 +1,9 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
 import android.app.Dialog
-import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +28,7 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -54,18 +57,23 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private /*const*/ val promptBindSuccessId = 1
 
     private val viewBind: FragmentDeviceBindBinding by viewBinding()
+    private val applicationScope = Injector.getApplicationScope()
+    private val userInfoRepository = Injector.getUserInfoRepository()
+    private val bluetoothManager by lazy(LazyThreadSafetyMode.NONE) {
+        requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    }
 
     /**
      * Avoid repeated requests for permissions at the same time
      */
     private var isRequestingPermission: Boolean = false
 
-    private val deviceManager: DeviceManager = Injector.getDeviceManager()
+    private val deviceManager = Injector.getDeviceManager()
 
     private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
         listener = object : OtherDevicesAdapter.Listener {
-            override fun onItemClick(device: WmDevice) {
-                tryingBind(device.address ?: "", device.name)
+            override fun onItemClick(device: ScanDevice) {
+                tryingBind(device.address, device.name)
             }
         }
     }
@@ -93,26 +101,30 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private fun tryingBind(address: String, name: String?) {
         this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
-        deviceManager.bind(
-            address, if (name.isNullOrEmpty()) {
-                UNKNOWN_DEVICE_NAME
-            } else {
-                name
-            }
-        )
-        UNIWatchMate.connect(
-            address,
-            WmBindInfo("124", "124324", BindType.DISCOVERY ,WmDeviceModel.SJ_WATCH)
-        )
+        val userInfo = userInfoRepository.flowCurrent.value
+        userInfo?.let {
+            deviceManager.bind(
+                address, if (name.isNullOrEmpty()) {
+                    UNKNOWN_DEVICE_NAME
+                } else {
+                    name
+                }
+            )
+            val mDevice = UNIWatchMate.connect(
+                address,
+                WmBindInfo(it.id.toString(),it.name , BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
+            )
+            DeviceConnectDialogFragment().show(childFragmentManager, null)
+        }
 
-        DeviceConnectDialogFragment().show(childFragmentManager, null)
     }
 
-    fun parseScanQr(qrString: String): WmDevice {
-        val wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
+    fun parseSjScanQr(qrString: String): WmDevice? {
+        var wmScanDevice: WmDevice? = null
 
         val params = UrlParse.getUrlParams(qrString)
         if (!params.isEmpty()) {
+            wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
             val schemeMacAddress = params["mac"]
             val schemeDeviceName = params["projectname"]
             val random = params["random"]
@@ -134,28 +146,32 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     private fun tryingBind(scanResult: ScanResult) {
-        this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
+        applicationScope.launchWithLog {
+            runCatchingWithLog {
+                this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
 
-        val userInfo = WmBindInfo("124", "124324",BindType.SCAN_QR,WmDeviceModel.SJ_WATCH)
-        val wmScanDevice = parseScanQr(scanResult.getContent())
-
-        wmScanDevice?.let {
-
-            if (wmScanDevice.address != null) {
-                deviceManager.bind(
-                    wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
-                        UNKNOWN_DEVICE_NAME
+                val userInfo = WmBindInfo("124", "124324", BindType.SCAN_QR, WmDeviceModel.SJ_WATCH)
+                val wmScanDevice = parseSjScanQr(scanResult.getContent())
+                if (wmScanDevice == null) {
+                    ToastUtil.showToast(getString(R.string.device_scan_tips_error))
+                } else {
+                    if (wmScanDevice.address != null) {
+                        deviceManager.bind(
+                            wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
+                                UNKNOWN_DEVICE_NAME
+                            } else {
+                                wmScanDevice.name!!
+                            }
+                        )
+                        UNIWatchMate.connectScanQr(
+                            scanResult.getContent(),
+                            userInfo
+                        )
+                        DeviceConnectDialogFragment().show(childFragmentManager, null)
                     } else {
-                        wmScanDevice.name!!
+                        ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                     }
-                )
-                UNIWatchMate.connectScanQr(
-                    scanResult.getContent(),
-                    userInfo
-                )
-                DeviceConnectDialogFragment().show(childFragmentManager, null)
-            }else{
-                ToastUtil.showToast(getString(R.string.device_scan_tips_error))
+                }
             }
         }
     }
@@ -243,12 +259,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         /**
                          * Show bind success, and exit in [onPromptCancel]
                          */
-                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
+                        promptToast.showSuccess(
+                            R.string.device_bind_success,
+                            intercept = true,
+                            promptId = promptBindSuccessId
+                        )
                         toggleBluetoothAlert(false)
-                    }
-                    else if (it == WmConnectState.BT_DISABLE) {
+                    } else if (it == WmConnectState.BT_DISABLE) {
                         toggleBluetoothAlert(true)
-                    }else{
+                    } else {
                         toggleBluetoothAlert(false)
                     }
                 }
@@ -288,9 +307,9 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
                     this::class.simpleName?.let { tag ->
-                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                        UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
                     }
-                    ToastUtil.showToast(it.message,true)
+                    ToastUtil.showToast(it.message, true)
                 }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
@@ -305,12 +324,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         }
         PermissionHelper.requestBle(this) { granted ->
             if (granted) {
-//                otherDevicesAdapter.bonded =
-//                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
-//                otherDevicesAdapter.connected =
-//                    OtherDevicesAdapter.devices(bluetoothManager.getConnectedDevices(
-//                        BluetoothProfile.GATT_SERVER))
-//                otherDevicesAdapter.notifyDataSetChanged()
+                otherDevicesAdapter.bonded =
+                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
+                otherDevicesAdapter.connected =
+                    OtherDevicesAdapter.devices(
+                        bluetoothManager.getConnectedDevices(
+                            BluetoothProfile.GATT_SERVER
+                        )
+                    )
+                otherDevicesAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -357,7 +379,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     override fun navToConnectHelp() {
-//                findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
+//        findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
 
     }
 

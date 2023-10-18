@@ -44,14 +44,11 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        UNIWatchMate.wmSettings.settingPersonalInfo.get().subscribe{info->
-            UNIWatchMate.wmLog.logE(TAG,"个人信息："+info)
-        }
-
         viewLifecycleScope.launchWhenStarted {
             info = userInfoRepository.getUserInfo(authedUserId)
             if (info == null) {
-                info = UserInfo(0, 175, 75, true, 1995, 1, 1)
+                UNIWatchMate.wmLog.logD(TAG, "user info is null")
+                return@launchWhenStarted
             }
             valueDate = Date(info!!.birthYear - 1900, info!!.birthMonth - 1, info!!.birthDay)
             viewBind.editHeight.setText(info!!.height.toString())
@@ -102,7 +99,7 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
 //            promptToast.showInfo(R.string.account_age_error)
 //            return
 //        }
-        applicationScope.launchWithLog {
+        lifecycleScope.launchWhenStarted {
             info?.let { it ->
                 it.birthYear = valueDate!!.year + 1900
                 it.birthMonth = valueDate!!.month + 1
@@ -114,9 +111,11 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
                     it
                 )
                 if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
-                    UNIWatchMate.wmSettings.settingPersonalInfo.set(it.toSdkUser()).doOnError {
-                        ToastUtil.showToast(it.message)
-                    }.await()
+                    val userInfo =
+                        UNIWatchMate.wmSettings.settingPersonalInfo.set(it.toSdkUser()).doOnError {
+                            ToastUtil.showToast(it.message)
+                        }.await()
+                    UNIWatchMate.wmLog.logI(TAG, "userInfo save $userInfo")
                 }
 //                viewLifecycle.launchRepeatOnStarted {
 //                    promptProgress.dismiss()

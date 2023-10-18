@@ -46,13 +46,11 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 //
 //            }
         viewLifecycle.launchRepeatOnStarted {
-            viewLifecycle.launchRepeatOnStarted {
                 launch {
                     UNIWatchMate.observeConnectState.asFlow().collect {
                         viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
                     }
                 }
-            }
         }
     }
 

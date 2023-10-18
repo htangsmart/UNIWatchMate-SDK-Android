@@ -39,6 +39,7 @@ enum class AlarmAction {
 class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState()) {
     var setAlarm: WmAlarm? = null
     var alarmAction: AlarmAction? = null
+
     //    private val deviceManager = Injector.getDeviceManager()
     init {
         requestAlarms()
@@ -81,8 +82,8 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 val addPosition = findAlarmAddPosition(alarm, alarms)
                 alarms.add(addPosition, alarm)
                 AlarmEvent.AlarmInserted(addPosition).newEvent()
-                setAlarm=alarm
-                alarmAction=AlarmAction.ADD
+                setAlarm = alarm
+                alarmAction = AlarmAction.ADD
                 setAlarmsAction.execute()
             }
         }
@@ -95,11 +96,11 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
         viewModelScope.launch {
             val alarms = state.requestAlarms()
             if (alarms != null && position < alarms.size) {
-               val alarm= alarms.removeAt(position)
-                AlarmEvent.AlarmRemoved(position).newEvent()
-                setAlarm=alarm
-                alarmAction=AlarmAction.DELETE
+                val alarm = alarms.removeAt(position)
+                setAlarm = alarm
+                alarmAction = AlarmAction.DELETE
                 setAlarmsAction.execute()
+                AlarmEvent.AlarmRemoved(position).newEvent()
             }
         }
     }
@@ -119,8 +120,8 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 val addPosition = findAlarmAddPosition(alarmModified, alarms)
                 alarms.add(addPosition, alarmModified)
                 AlarmEvent.AlarmMoved(position, addPosition).newEvent()
-                setAlarm=alarmModified
-                alarmAction=AlarmAction.UPDATE
+                setAlarm = alarmModified
+                alarmAction = AlarmAction.UPDATE
                 setAlarmsAction.execute()
             }
         }
@@ -145,12 +146,15 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                     AlarmAction.ADD -> {
                         UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
                     }
+
                     AlarmAction.UPDATE -> {
                         UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
                     }
+
                     AlarmAction.DELETE -> {
                         UNIWatchMate.wmApps.appAlarm.deleteAlarm(it).await()
                     }
+
                     else -> {
 
                     }

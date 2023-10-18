@@ -13,6 +13,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
 
 class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
 
@@ -23,43 +24,20 @@ class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycle.launchRepeatOnStarted {
-
             launch {
-                UNIWatchMate?.wmSync?.syncDeviceInfoData?.observeSyncData?.asFlow()?.collect{
-                    viewBind.itemDeviceInfo.text = "syncDeviceInfoData\nmac=${it.macAddress}\nbluetoothName=${it.bluetoothName}\n" +
-                            "deviceName=${it.deviceName}\n" +
-                            "deviceId=${it.deviceId}\n" +
-                            "version=${it.version}\n"+
-                            "cw=${it.cw}\n"+
-                            "ch=${it.ch}\n"+
-                            "lang=${it.lang}\n"+
-                            "screen=${it.screen}\n"+
-                            "dialAbility=${it.dialAbility}\n"+
-                            "model=${it.model}"
-                }
+                val it=  UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.await()
+                viewBind.itemDeviceInfo.text = "mac=${it.macAddress}\nbluetoothName=${it.bluetoothName}\n" +
+                        "deviceName=${it.deviceName}\n" +
+                        "deviceId=${it.deviceId}\n" +
+                        "version=${it.version}\n"+
+                        "cw=${it.cw}\n"+
+                        "ch=${it.ch}\n"+
+                        "lang=${it.lang}\n"+
+                        "screen=${it.screen}\n"+
+                        "dialAbility=${it.dialAbility}\n"+
+                        "model=${it.model}"
             }
 
-            launch {
-                UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.toObservable()?.asFlow()?.collect{
-                    viewBind.itemDeviceInfo.text = "syncData\nmac=${it.macAddress}\nbluetoothName=${it.bluetoothName}\n" +
-                            "deviceName=${it.deviceName}\n" +
-                            "deviceId=${it.deviceId}\n" +
-                            "version=${it.version}\n"+
-                            "cw=${it.cw}\n"+
-                            "ch=${it.ch}\n"+
-                            "lang=${it.lang}\n"+
-                            "screen=${it.screen}\n"+
-                            "dialAbility=${it.dialAbility}\n"+
-                            "model=${it.model}"
-                }
-            }
-//            launch {
-//                UNIWatchMate?.wmApps?.appDial?.syncDialList()?.asFlow()?.collect{
-//                    for (bean in it) {
-//                        viewBind.itemDeviceInfo.text="${viewBind.itemDeviceInfo.text}\n${bean}"
-//                    }
-//                }
-//            }
         }
     }
 

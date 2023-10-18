@@ -25,6 +25,7 @@ import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
 import com.sjbt.sdk.sample.utils.PermissionHelper
+import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.ToastUtil.showToast
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
@@ -47,25 +48,27 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBind.itemFindDevice.clickTrigger {
-            viewLifecycleScope.launch {
-                UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
+            viewLifecycleScope.launchWhenStarted {
+              val appFind =  UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
+                ToastUtil.showToast("appFind $appFind")
             }
         }
 
         viewBind.itemStopFindDevice.clickTrigger {
-            viewLifecycleScope.launch {
-                UNIWatchMate.wmApps.appFind.stopFindMobile().awaitFirst()
+            viewLifecycleScope.launchWhenStarted {
+                val stopFind=   UNIWatchMate.wmApps.appFind.stopFindMobile().awaitFirst()
+                ToastUtil.showToast("stopFind $stopFind")
             }
         }
 
         viewBind.itemDeviceReset.clickTrigger {
-            viewLifecycleScope.launch {
+            viewLifecycleScope.launchWhenStarted {
                 deviceManager.reset()
             }
         }
 
         viewBind.itemLocalOta.clickTrigger {
-            viewLifecycleScope.launch {
+            viewLifecycleScope.launchWhenStarted {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
                     // Access to all files
                     val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)

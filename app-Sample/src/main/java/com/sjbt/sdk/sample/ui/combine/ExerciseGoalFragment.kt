@@ -133,7 +133,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
 
     override fun onDialogSelectInt(tag: String?, selectValue: Int) {
         if (DIALOG_EXERCISE_STEP == tag) {
-            exerciseGoal = exerciseGoal?.copy(selectValue)
+            exerciseGoal = exerciseGoal?.copy(steps = selectValue)
             updateStep()
             exerciseGoal?.let {
                 exerciseGoalRepository.modify(authedUserId, it)

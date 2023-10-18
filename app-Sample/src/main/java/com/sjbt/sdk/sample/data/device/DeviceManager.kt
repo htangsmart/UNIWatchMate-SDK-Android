@@ -230,26 +230,29 @@ internal class DeviceManagerImpl(
                     return@launchWithLog
                 }
                 CacheDataHelper.setSynchronizingData(true)
-//                showLoadingDialog()
+//              showLoadingDialog()
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
-                    UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())
-                        ?.toObservable()?.asFlow()?.collect {
-                            UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$it")
-                            CacheDataHelper.setCurrentDeviceInfo(it)
-                        }
+                    val deviceInfo=   UNIWatchMate.wmSync.syncDeviceInfoData.syncData(System.currentTimeMillis()).await()
+                    UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$deviceInfo")
+                    CacheDataHelper.setCurrentDeviceInfo(deviceInfo)
                 }
                 runCatchingWithLog {
-                    UNIWatchMate.wmLog.logI(TAG, "settingDateTime")
                     val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(null).await()
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime wmDateTime=${result}")
                 }
-                runCatchingWithLog {//first check has data,if not ,get from watch
+                runCatchingWithLog {
+                    //first check has data,if not ,get from watch
                     sportGoalRepository.flowCurrent.value?.let {
                         if (flowConnectorState.value == WmConnectState.VERIFIED) {
-                            UNIWatchMate.wmLog.logI(TAG, "setExerciseGoal")
-                            applicationScope.launchWithLog {
-                                UNIWatchMate?.wmSettings?.settingSportGoal?.set(it)?.await()
+                            if (it.activityDuration == 0.toShort() || it.calories == 0 || it.steps == 0) {
+                                val sportGoal = UNIWatchMate.wmSettings.settingSportGoal.get().await()
+                                sportGoalRepository.modify(userId,sportGoal)
+                                UNIWatchMate.wmLog.logI(TAG, "modify sportGoal= $")
+                            } else {
+                                val result =
+                                    UNIWatchMate.wmSettings.settingSportGoal.set(it).await()
+                                UNIWatchMate.wmLog.logI(TAG, "setExerciseGoal $result")
                             }
                         }
                     }
@@ -267,7 +270,7 @@ internal class DeviceManagerImpl(
                             if (it.sex) WmPersonalInfo.Gender.MALE else WmPersonalInfo.Gender.FEMALE,
                             birthDate
                         )
-                        UNIWatchMate.wmLog.logI(TAG, "setUserInfo")
+                        UNIWatchMate.wmLog.logI(TAG, "setUserInfo $wmPersonalInfo")
                         UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
                 }

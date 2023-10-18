@@ -1,26 +1,26 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
+import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.recyclerview.widget.RecyclerView
-import com.base.sdk.entity.WmDevice
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.databinding.ItemOtherDeviceDataBinding
 
 class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var bondedInfo = SizeCount()
-    var bonded: List<WmDevice>? = null
+    var bonded: List<ScanDevice>? = null
         set(value) {
             field = value
             bondedInfo.upgrade(value)
         }
 
     private var connectedInfo = SizeCount()
-    var connected: List<WmDevice>? = null
+    var connected: List<ScanDevice>? = null
         set(value) {
             field = value
             connectedInfo.upgrade(value)
@@ -89,7 +89,7 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     interface Listener {
-        fun onItemClick(device: WmDevice)
+        fun onItemClick(device: ScanDevice)
     }
 
     private class TitleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -101,7 +101,7 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private class NoneViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     private class DataViewHolder(val viewBind: ItemOtherDeviceDataBinding) : RecyclerView.ViewHolder(viewBind.root) {
-        fun bind(device: WmDevice) {
+        fun bind(device: ScanDevice) {
             viewBind.tvName.text = if (device.name.isNullOrEmpty()) {
                 DeviceBindFragment.UNKNOWN_DEVICE_NAME
             } else {
@@ -131,13 +131,13 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private const val ITEM_TYPE_TITLE = 0
         private const val ITEM_TYPE_NONE = 1
         private const val ITEM_TYPE_DATA = 2
-//        fun devices(devices: Collection<WmDiscoverDevice>?): List<WmDevice>? {
-//            if (devices.isNullOrEmpty()) return null
-//            val list = ArrayList<WmDiscoverDevice>()
-//            for (device in devices) {
-////                WmDeviceModel(device.address, device.name, 0)
-//            }
-//            return list
-//        }
+        fun devices(devices: Collection<BluetoothDevice>?): List<ScanDevice>? {
+            if (devices.isNullOrEmpty()) return null
+            val list = ArrayList<ScanDevice>()
+            for (device in devices) {
+                list.add(ScanDevice(device.address, device.name,0))
+            }
+            return list
+        }
     }
 }
