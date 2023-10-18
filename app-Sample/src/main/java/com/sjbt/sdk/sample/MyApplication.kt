@@ -183,27 +183,32 @@ class MyApplication : Application() {
         when (musicType) {
             WmMusicControlType.PREV_SONG -> {
                 keyCode = KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                ToastUtil.showToast("PREV_SONG")
             }
 
             WmMusicControlType.NEXT_SONG -> {
                 keyCode = KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                ToastUtil.showToast("NEXT_SONG")
             }
 
             WmMusicControlType.PLAY -> {
                 keyCode = KeyEvent.KEYCODE_MEDIA_PLAY
+                ToastUtil.showToast("PLAY")
             }
 
             WmMusicControlType.PAUSE -> {
                 keyCode = KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
-
+                ToastUtil.showToast("PAUSE")
             }
 
             WmMusicControlType.VOLUME_UP -> {
                 keyCode = KeyEvent.KEYCODE_VOLUME_UP
+                ToastUtil.showToast("VOLUME_UP")
             }
 
             WmMusicControlType.VOLUME_DOWN -> {
                 keyCode = KeyEvent.KEYCODE_VOLUME_DOWN
+                ToastUtil.showToast("VOLUME_DOWN")
             }
         }
         sendKeyCode(keyCode)

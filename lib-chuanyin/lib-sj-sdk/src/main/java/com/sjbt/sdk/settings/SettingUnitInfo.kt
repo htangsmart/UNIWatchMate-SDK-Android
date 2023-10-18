@@ -51,8 +51,8 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
                     ByteBuffer.wrap(it.data)
 
                 val timeUnit = byteBuffer.get()
-                val distanceUnit = byteBuffer.get()
                 val temperatureUnit = byteBuffer.get()
+                val distanceUnit = byteBuffer.get()
 //                val weightUnit = byteBuffer.get()
 
                 val wmSportGoal = WmUnitInfo(
