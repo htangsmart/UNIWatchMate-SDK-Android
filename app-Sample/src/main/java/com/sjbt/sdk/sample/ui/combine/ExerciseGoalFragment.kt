@@ -64,6 +64,10 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
         lifecycleScope.launchWhenStarted {
             launch {
                 exerciseGoal = exerciseGoalRepository.flowCurrent.value
+                UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
+                    UNIWatchMate.wmLog.logE("体育消息",""+it)
+                    exerciseGoal = it
+                }
                 updateUI()
             }
         }
@@ -71,9 +75,6 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
         viewBind.itemCalories.setOnClickListener(blockClick)
         viewBind.itemActivityDuration.setOnClickListener(blockClick)
 
-        UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
-            UNIWatchMate.wmLog.logE("体育消息",""+it)
-        }
     }
 
     private fun updateStep() {
