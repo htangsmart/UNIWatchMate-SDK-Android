@@ -4,6 +4,7 @@ import com.base.sdk.entity.apps.AlarmRepeatOption
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.port.app.AbAppAlarm
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Observable
@@ -104,13 +105,13 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         when (it.urn[2]) {
 
             URN_APP_ALARM_ADD -> {
-                val result = it.data[0].toInt() == 1
+                val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                 sjUniWatch.wmLog.logD(TAG, "add alarm result:$result")
                 addSuccess(result)
             }
 
             URN_APP_ALARM_DELETE -> {
-                deleteSuccess(it.data[0].toInt() == 1)
+                deleteSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_ALARM_LIST -> {
@@ -148,7 +149,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             }
 
             URN_APP_ALARM_UPDATE -> {
-                updateSuccess(it.data[0].toInt() == 0)
+                updateSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
         }
     }
