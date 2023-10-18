@@ -1,7 +1,7 @@
 package com.sjbt.sdk.app
-
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.port.app.AbAppCamera
 import com.base.sdk.port.app.WMCameraFlashMode
@@ -15,10 +15,9 @@ import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
 class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
-    var cameraObserveOpenEmitter: ObservableEmitter<Boolean>? = null
+    private var cameraObserveStateEmitter: ObservableEmitter<Boolean>? = null
     var cameraSingleOpenEmitter: SingleEmitter<Boolean>? = null
     var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>? = null
     var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>? = null
@@ -58,6 +57,41 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         }
     }
 
+    fun observeDeviceCamera(open: Boolean) {
+        cameraObserveStateEmitter?.onNext(open)
+    }
+
+    fun openCameraResult(result: Boolean) {
+        cameraSingleOpenEmitter?.onSuccess(result)
+    }
+
+    fun observeCameraAction(action: Byte, stateOn: Byte) {
+        if (action == CHANGE_CAMERA) {
+            val front = stateOn.toInt() == 0
+            if (front) {
+                cameraObserveFrontBackEmitter?.onNext(
+                    WMCameraPosition.WMCameraPositionFront
+                )
+            } else {
+                cameraObserveFrontBackEmitter?.onNext(
+                    WMCameraPosition.WMCameraPositionRear
+                )
+            }
+
+        } else {
+            val flashOn = stateOn.toInt() == 1
+            if (flashOn) {
+                cameraObserveFlashEmitter?.onNext(
+                    WMCameraFlashMode.WMCameraFlashModeOn
+                )
+            } else {
+                cameraObserveFlashEmitter?.onNext(
+                    WMCameraFlashMode.WMCameraFlashModeOff
+                )
+            }
+        }
+    }
+
     override fun isSupport(): Boolean {
         return true
     }
@@ -79,9 +113,12 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     private fun getObservableCameraState(): Observable<Boolean> {
-        if (cameraStateObserver == null || cameraObserveOpenEmitter == null || cameraObserveOpenEmitter!!.isDisposed) {
+
+        Log.e(TAG, "getObservableCameraState:"+cameraStateObserver+" cameraObserveStateEmitter:"+cameraObserveStateEmitter)
+
+        if (cameraStateObserver == null || cameraObserveStateEmitter == null || cameraObserveStateEmitter!!.isDisposed) {
             cameraStateObserver =
-                Observable.create { emitter -> cameraObserveOpenEmitter = emitter }
+                Observable.create { emitter -> cameraObserveStateEmitter = emitter }
         }
         return cameraStateObserver!!
     }
@@ -378,3 +415,5 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         return info
     }
 }
+
+

@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
@@ -41,8 +40,6 @@ import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.*
 import io.reactivex.rxjava3.core.*
-import timber.log.Timber
-import timber.log.Timber.Forest.plant
 import java.nio.ByteBuffer
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
@@ -131,21 +128,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private var unbindEmitter: CompletableEmitter? = null
     private var unbindCompletable: Completable? = null
 
-    fun getUnbindComplete(): Completable {
+    private fun getUnbindComplete(): Completable {
         if (unbindCompletable == null || unbindEmitter == null || unbindEmitter!!.isDisposed) {
             unbindCompletable = Completable.create { emitter ->
                 unbindEmitter = emitter
-                Completable.create { emitter ->
-                    unbindEmitter = emitter
 
-                    if (mConnectState == WmConnectState.VERIFIED) {
-                        sendNormalMsg(CmdHelper.getUnBindCmd())
-                    } else {
-                        emitter.onError(RuntimeException("not VERIFIED"))
-                    }
+                if (mConnectState == WmConnectState.VERIFIED) {
+                    sendNormalMsg(CmdHelper.getUnBindCmd())
+                } else {
+                    emitter.onError(RuntimeException("not VERIFIED"))
                 }
             }
-        }else{
+        } else {
             if (mConnectState == WmConnectState.VERIFIED) {
                 sendNormalMsg(CmdHelper.getUnBindCmd())
             } else {
@@ -166,8 +160,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     init {
         mContext = context
         mMsgTimeOut = timeout
-
-        plant(Timber.DebugTree())
 
         mBtEngine.listener = this
         sharedPreferencesUtils = SharedPreferencesUtils.getInstance(mContext)
@@ -481,41 +473,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
-                                    appCamera.cameraObserveOpenEmitter?.onNext(msg[16].toInt() == 1)
+                                    appCamera.observeDeviceCamera(msg[16].toInt() == 1)
                                 }
 
-                                CMD_ID_802A -> {//
-                                    appCamera.cameraSingleOpenEmitter?.onSuccess(msg[16].toInt() == 1)
+                                CMD_ID_802A -> {//监听打开相机
+                                    appCamera.openCameraResult(msg[16].toInt() == 1)
                                 }
 
-                                CMD_ID_802B -> {
+                                CMD_ID_802B -> {//监听相机闪光灯和前后摄像头
                                     val action = msg[16]
                                     val stateOn = msg[17]
 
-                                    if (action == CHANGE_CAMERA) {
-                                        val front = stateOn.toInt() == 0
-                                        if (front) {
-                                            appCamera.cameraObserveFrontBackEmitter?.onNext(
-                                                WMCameraPosition.WMCameraPositionFront
-                                            )
-                                        } else {
-                                            appCamera.cameraObserveFrontBackEmitter?.onNext(
-                                                WMCameraPosition.WMCameraPositionRear
-                                            )
-                                        }
-
-                                    } else {
-                                        val flashOn = stateOn.toInt() == 1
-                                        if (flashOn) {
-                                            appCamera.cameraObserveFlashEmitter?.onNext(
-                                                WMCameraFlashMode.WMCameraFlashModeOn
-                                            )
-                                        } else {
-                                            appCamera.cameraObserveFlashEmitter?.onNext(
-                                                WMCameraFlashMode.WMCameraFlashModeOff
-                                            )
-                                        }
-                                    }
+                                    appCamera.observeCameraAction(action, stateOn)
 
                                     sendNormalMsg(
                                         CmdHelper.getCameraRespondCmd(

@@ -135,16 +135,21 @@ class CameraActivity : BaseActivity() {
                         image_flash!!.setImageResource(R.mipmap.biu_icon_flash_off)
                     }
                 }
+
             }
 
-            UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
-                isCameraOpened = aBoolean
-                UNIWatchMate.wmLog.logE(TAG, "设备相机状态2：$isCameraOpened")
-                if (isCameraOpened) {
-                    checkCameraPreview()
-                } else {
+            launch {
+                UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe {
+                        aBoolean: Boolean ->
+                    isCameraOpened = aBoolean
+                    UNIWatchMate.wmLog.logE(TAG, "设备相机状态2：$isCameraOpened")
+                    if (isCameraOpened) {
+                        checkCameraPreview()
+                    } else {
 //                    showCameraBusDialog(CameraBusDialog.TIP_TYPE_OPEN_CAMERA)
+                    }
                 }
+
             }
         }
     }
