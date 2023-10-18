@@ -65,80 +65,58 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     override fun openCloseCamera(open: Boolean): Single<Boolean> {
 
         if (cameraObserver == null || cameraSingleOpenEmitter == null || cameraSingleOpenEmitter!!.isDisposed) {
-            cameraObserver = Single.create(object : SingleOnSubscribe<Boolean> {
-                override fun subscribe(emitter: SingleEmitter<Boolean>) {
-                    cameraSingleOpenEmitter = emitter
-                    sjUniWatch.sendNormalMsg(
-                        CmdHelper.getAppCallDeviceCmd(
-                            if (open) {
-                                1.toByte()
-                            } else {
-                                0.toByte()
-                            }
-                        )
+            cameraObserver = Single.create { emitter ->
+                cameraSingleOpenEmitter = emitter
+                sjUniWatch.sendNormalMsg(
+                    CmdHelper.getAppCallDeviceCmd(
+                        if (open) {
+                            1.toByte()
+                        } else {
+                            0.toByte()
+                        }
                     )
-                }
-            })
+                )
+            }
         }
 
         return cameraObserver!!
     }
 
     override var observeCameraOpenState: Observable<Boolean> =
-        Observable.create(object : ObservableOnSubscribe<Boolean> {
-            override fun subscribe(emitter: ObservableEmitter<Boolean>) {
-                cameraObserveOpenEmitter = emitter
-            }
-        })
+        Observable.create { emitter -> cameraObserveOpenEmitter = emitter }
 
     override var observeCameraTakePhoto: Observable<Boolean> =
-        Observable.create(object : ObservableOnSubscribe<Boolean> {
-            override fun subscribe(emitter: ObservableEmitter<Boolean>) {
-                cameraObserveTakePhotoEmitter = emitter
-            }
-        })
+        Observable.create { emitter -> cameraObserveTakePhotoEmitter = emitter }
 
     override var observeCameraFlash: Observable<WMCameraFlashMode> =
-        Observable.create(object : ObservableOnSubscribe<WMCameraFlashMode> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraFlashMode>) {
-                cameraObserveFlashEmitter = emitter
-            }
-        })
+        Observable.create { emitter -> cameraObserveFlashEmitter = emitter }
 
     override var observeCameraFrontBack: Observable<WMCameraPosition> =
-        Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
-                cameraObserveFrontBackEmitter = emitter
-            }
-        })
+        Observable.create { emitter -> cameraObserveFrontBackEmitter = emitter }
 
     override fun cameraFlashSwitch(wmCameraFlashMode: WMCameraFlashMode): Observable<WMCameraFlashMode> {
-        return Observable.create(object : ObservableOnSubscribe<WMCameraFlashMode> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraFlashMode>) {
-                cameraFlashSwitchEmitter = emitter
+        return Observable.create { emitter ->
+            cameraFlashSwitchEmitter = emitter
 
-                sjUniWatch.sendNormalMsg(
-                    CmdHelper.getCameraStateActionCmd(
-                        1,
-                        wmCameraFlashMode.ordinal.toByte()
-                    )
+            sjUniWatch.sendNormalMsg(
+                CmdHelper.getCameraStateActionCmd(
+                    1,
+                    wmCameraFlashMode.ordinal.toByte()
                 )
-            }
-        })
+            )
+        }
     }
 
     override fun cameraBackSwitch(wmCameraPosition: WMCameraPosition): Observable<WMCameraPosition> {
-        return Observable.create(object : ObservableOnSubscribe<WMCameraPosition> {
-            override fun subscribe(emitter: ObservableEmitter<WMCameraPosition>) {
-                cameraBackSwitchEmitter = emitter
-                sjUniWatch.sendNormalMsg(
-                    CmdHelper.getCameraStateActionCmd(
-                        0,
-                        wmCameraPosition.ordinal.toByte()
-                    )
+        return Observable.create { emitter ->
+            cameraBackSwitchEmitter = emitter
+            sjUniWatch.sendNormalMsg(
+                CmdHelper.getCameraStateActionCmd(
+                    0,
+                    wmCameraPosition.ordinal.toByte()
                 )
-            }
-        })
+            )
+        }
     }
 
     override fun isCameraPreviewEnable(): Boolean {
@@ -146,16 +124,13 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     override fun startCameraPreview(): Single<Boolean> {
-        return Single.create(object : SingleOnSubscribe<Boolean> {
-            override fun subscribe(emitter: SingleEmitter<Boolean>) {
-                cameraPreviewReadyEmitter = emitter
+        return Single.create { emitter ->
+            cameraPreviewReadyEmitter = emitter
 
-                sjUniWatch.sendNormalMsg(
-                    CmdHelper.getCameraPreviewCmd01()
-                )
-
-            }
-        })
+            sjUniWatch.sendNormalMsg(
+                CmdHelper.getCameraPreviewCmd01()
+            )
+        }
     }
 
     override fun updateCameraPreview(cameraFrameInfo: WmCameraFrameInfo) {

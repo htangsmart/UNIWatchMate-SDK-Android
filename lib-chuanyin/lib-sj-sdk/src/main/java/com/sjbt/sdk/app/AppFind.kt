@@ -20,27 +20,44 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
     private var startFindWatchEmitter: SingleEmitter<Boolean>? = null
     private var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
 
+    private var observableFindPhone: Observable<WmFind>? = null
+    private var observableStopFindPhone: Observable<Boolean>? = null
+
     override fun isSupport(): Boolean {
         return true
     }
 
-    override var observeFindMobile: Observable<WmFind> = Observable.create {
-        startFindPhoneEmitter = it
-    }
-
-
-    override fun stopFindMobile(): Observable<Boolean> {
-        return Observable.create {
-            stopFindPhoneEmitter = it
+    private fun getObservableFindPhone(): Observable<WmFind> {
+        if (observableFindPhone == null || startFindPhoneEmitter == null || startFindPhoneEmitter!!.isDisposed) {
+            observableFindPhone = Observable.create {
+                startFindPhoneEmitter = it
+            }
+        } else {
+            observableFindPhone
         }
 
+        return observableFindPhone!!
     }
+
+    private fun getObservableStopFindPhone(): Observable<Boolean> {
+        if (observableStopFindPhone == null || stopFindPhoneEmitter == null || stopFindPhoneEmitter!!.isDisposed) {
+            observableStopFindPhone = Observable.create {
+                stopFindPhoneEmitter = it
+            }
+        } else {
+            observableStopFindPhone
+        }
+
+        return observableStopFindPhone!!
+    }
+
+    override var observeFindMobile: Observable<WmFind> = getObservableFindPhone()
+    override fun stopFindMobile(): Observable<Boolean> = getObservableStopFindPhone()
 
     override fun findWatch(wmFind: WmFind): Single<Boolean> {
         return Single.create {
             startFindWatchEmitter = it
             sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStartFindDevice(wmFind))
-
         }
     }
 
@@ -71,7 +88,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             }
 
             URN_APP_FIND_DEVICE_STOP -> {
-
+                stopFindWatchEmitter?.onSuccess(true)
             }
         }
     }

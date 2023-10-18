@@ -128,9 +128,36 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         sendNormalMsg(CmdHelper.getMTUCmd)
     }
 
+    private var unbindEmitter: CompletableEmitter? = null
+    private var unbindCompletable: Completable? = null
+
+    fun getUnbindComplete(): Completable {
+        if (unbindCompletable == null || unbindEmitter == null || unbindEmitter!!.isDisposed) {
+            unbindCompletable = Completable.create { emitter ->
+                unbindEmitter = emitter
+                Completable.create { emitter ->
+                    unbindEmitter = emitter
+
+                    if (mConnectState == WmConnectState.VERIFIED) {
+                        sendNormalMsg(CmdHelper.getUnBindCmd())
+                    } else {
+                        emitter.onError(RuntimeException("not VERIFIED"))
+                    }
+                }
+            }
+        }else{
+            if (mConnectState == WmConnectState.VERIFIED) {
+                sendNormalMsg(CmdHelper.getUnBindCmd())
+            } else {
+                unbindEmitter?.onError(RuntimeException("not VERIFIED"))
+            }
+        }
+
+        return unbindCompletable!!
+    }
+
     override fun setLogEnable(logEnable: Boolean) {
         this.sdkLogEnable = logEnable
-        Log.e(">>>>>>>>>", "logEnable:" + logEnable)
     }
 
     //当前消息的节点信息
@@ -301,9 +328,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     batteryBean?.let {
                                         val batteryInfo =
-                                            WmBatteryInfo(it.isIs_charging == 1, it.battery_main)
+                                            WmBatteryInfo(
+                                                it.isIs_charging == 1,
+                                                it.battery_main
+                                            )
                                         syncBatteryInfo.batteryEmitter?.onSuccess(batteryInfo)
-                                        syncBatteryInfo.observeBatteryEmitter?.onNext(batteryInfo)
+                                        syncBatteryInfo.observeBatteryEmitter?.onNext(
+                                            batteryInfo
+                                        )
                                     }
                                 }
 
@@ -318,7 +350,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8008 -> {//获取AppView List
 
                                     val appViewBean =
-                                        gson.fromJson(msgBean.payloadJson, AppViewBean::class.java)
+                                        gson.fromJson(
+                                            msgBean.payloadJson,
+                                            AppViewBean::class.java
+                                        )
 
                                     val appViews = mutableListOf<AppView>()
                                     appViewBean?.let {
@@ -394,7 +429,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     )
 
                                     settingSoundAndHaptic.getWmWistRaise(wmSoundAndHaptic)
-                                    settingSoundAndHaptic.observeWmWistRaiseChange(wmSoundAndHaptic)
+                                    settingSoundAndHaptic.observeWmWistRaiseChange(
+                                        wmSoundAndHaptic
+                                    )
 
                                 }
 
@@ -417,7 +454,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     when (ctype) {
 
                                         4 -> {
-                                            settingWistRaise.observeWmWistRaiseChange(ctype, vValue)
+                                            settingWistRaise.observeWmWistRaiseChange(
+                                                ctype,
+                                                vValue
+                                            )
                                         }
 
                                         else -> {
@@ -553,7 +593,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     val frameSuccess = msg[16]
 
                                     wmLog.logI(TAG, "发送成功：$frameSuccess")
-                                    wmLog.logI(TAG, "发送下一帧：" + appCamera.mH264FrameMap.frameCount)
+                                    wmLog.logI(
+                                        TAG,
+                                        "发送下一帧：" + appCamera.mH264FrameMap.frameCount
+                                    )
 
                                     wmLog.logI(
                                         TAG,
@@ -615,7 +658,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8003 -> {
                                     MTU =
-                                        BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
+                                        BtUtils.byte2short(msgBean.payload.reversedArray())
+                                            .toInt()
                                     mtuEmitter?.onSuccess(MTU)
                                     wmLog.logD(TAG, "MTU:$MTU")
                                 }
@@ -1341,32 +1385,24 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtEngine.closeSocket("user", true)
     }
 
-    private var unbindEmitter: CompletableEmitter? = null
-    override fun reset(): Completable {
-        return Completable.create { emitter ->
-            unbindEmitter = emitter
 
-            if (mConnectState == WmConnectState.VERIFIED) {
-                sendNormalMsg(CmdHelper.getUnBindCmd())
-            } else {
-                emitter.onError(RuntimeException("not VERIFIED"))
-            }
-        }
+    override fun reset(): Completable {
+        return getUnbindComplete()
     }
 
     private fun getObservableConnectState(): Observable<WmConnectState> {
-        if (currentConnectState == null || connectEmitter == null || connectEmitter!!.isDisposed) {
-            currentConnectState = Observable.create {
+        if (mObservableConnectState == null || connectEmitter == null || connectEmitter!!.isDisposed) {
+            mObservableConnectState = Observable.create {
                 connectEmitter = it
             }
         } else {
-            currentConnectState
+            mObservableConnectState
         }
 
-        return currentConnectState!!
+        return mObservableConnectState!!
     }
 
-    private var currentConnectState: Observable<WmConnectState>? = null
+    private var mObservableConnectState: Observable<WmConnectState>? = null
 
     override val observeConnectState: Observable<WmConnectState> = getObservableConnectState()
 

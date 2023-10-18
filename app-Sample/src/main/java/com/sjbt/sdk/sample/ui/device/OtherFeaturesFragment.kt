@@ -33,6 +33,8 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitFirst
 import java.io.File
 
 class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
@@ -46,13 +48,13 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
         super.onViewCreated(view, savedInstanceState)
         viewBind.itemFindDevice.clickTrigger {
             viewLifecycleScope.launch {
-                UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5))
+                UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
             }
         }
 
         viewBind.itemStopFindDevice.clickTrigger {
             viewLifecycleScope.launch {
-                UNIWatchMate.wmApps.appFind.stopFindMobile()
+                UNIWatchMate.wmApps.appFind.stopFindMobile().awaitFirst()
             }
         }
 
