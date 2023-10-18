@@ -207,9 +207,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
             }
 
-            override fun onDiscoveryDevice(device: BluetoothDevice) {
-                val wmDiscoverDevice = WmDiscoverDevice(device, 20)
-                discoveryObservableEmitter.onNext(wmDiscoverDevice)
+            override fun onDiscoveryDevice(device: WmDiscoverDevice) {
+                discoveryObservableEmitter.onNext(device)
             }
 
             override fun onStartDiscovery() {
@@ -1061,11 +1060,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
                         URN_SETTING_SPORT -> {//运动目标
-                            if (it.data.size <= 1) {
-                                wmLog.logD(TAG, "体育目标设置成功")
-                            } else {
-                                settingSportGoal.sportInfoBusiness(it)
-                            }
+                            settingSportGoal.sportInfoBusiness(it)
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息

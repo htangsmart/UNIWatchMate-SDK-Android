@@ -2,6 +2,8 @@ package com.sjbt.sdk.spp;
 
 import android.bluetooth.BluetoothDevice;
 
+import com.base.sdk.entity.common.WmDiscoverDevice;
+
 public interface OnBtStateListener {
     void onClassicBtDisConnect(BluetoothDevice device);
 
@@ -15,5 +17,5 @@ public interface OnBtStateListener {
 
     void onStartDiscovery();
     void onStopDiscovery();
-    void onDiscoveryDevice(BluetoothDevice device);
+    void onDiscoveryDevice(WmDiscoverDevice device);
 }

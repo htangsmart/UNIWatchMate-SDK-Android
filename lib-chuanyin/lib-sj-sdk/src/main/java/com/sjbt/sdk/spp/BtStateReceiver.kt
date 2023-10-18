@@ -7,9 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.text.TextUtils
+import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.port.log.AbWmLog
-import com.sjbt.sdk.TAG_SJ
 import java.io.IOException
+
 
 /**
  * 监听蓝牙广播-各种状态
@@ -80,9 +81,18 @@ class BtStateReceiver(
             BluetoothDevice.ACTION_FOUND -> {
                 val device =
                     intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                if (!TextUtils.isEmpty(device!!.name)) {
-                    mOnBtStateListener?.onDiscoveryDevice(device)
+                val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE)
+                    .toInt()
+
+                device?.let {
+                    rssi?.let {
+                        val discoveryDevice = WmDiscoverDevice(device, it)
+                        if (!TextUtils.isEmpty(device!!.name)) {
+                            mOnBtStateListener?.onDiscoveryDevice(discoveryDevice)
+                        }
+                    }
                 }
+
             }
 
             BluetoothDevice.ACTION_PAIRING_REQUEST -> {
