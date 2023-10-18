@@ -27,8 +27,8 @@ fun SportGoalEntity?.toModel(): WmSportGoal {
     } else {
         WmSportGoal(
             step,
-            distance,
             calorie,
+            distance,
             activityMinutes
         )
     }

@@ -177,11 +177,9 @@ class MyApplication : Application() {
                         )
                     }
                     ToastUtil.showToast(it.toString(), false)
-
                 }.collect {
                     ToastUtil.showToast(it.toString(), true)
                 }
-
             }
         }
     }
@@ -195,7 +193,7 @@ class MyApplication : Application() {
             }
 
             WmMusicControlType.NEXT_SONG -> {
-                keyCode = KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                keyCode = KeyEvent.KEYCODE_MEDIA_NEXT
                 ToastUtil.showToast("NEXT_SONG")
             }
 
@@ -205,7 +203,7 @@ class MyApplication : Application() {
             }
 
             WmMusicControlType.PAUSE -> {
-                keyCode = KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+                keyCode = KeyEvent.KEYCODE_MEDIA_PAUSE
                 ToastUtil.showToast("PAUSE")
             }
 

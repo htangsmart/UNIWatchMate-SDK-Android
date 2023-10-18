@@ -7,6 +7,7 @@ import com.base.sdk.entity.settings.WmPersonalInfo
 
 data class UserInfo(
     val id: Long,
+    val name: String,
     var height: Int,//user height(cm)
     var weight: Int,//user weight(kg)
     var sex: Boolean,//True for male, false for female
