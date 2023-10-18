@@ -21,9 +21,9 @@ import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.getTestWeatherdata
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.sendKeyCode
-import com.sjbt.sdk.spp.cmd.CmdHelper.getCameraRespondCmd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
@@ -75,38 +75,38 @@ class MyApplication : Application() {
     private fun observeState() {
         applicationScope.launch {
             launchWithLog {
-                UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
-                    if (it.wmWeatherTime == WmWeatherTime.SEVEN_DAYS) {
-                        val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
-                            getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
-                            WmUnitInfo.TemperatureUnit.CELSIUS
-                        )?.await()
-                        UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
-                        ToastUtil.showToast(
-                            "push seven_days weather test ${
-                                if (result2) getString(R.string.tip_success) else getString(
-                                    R.string.tip_failed
-                                )
-                            }"
-                        )
-                    } else if (it.wmWeatherTime == WmWeatherTime.TODAY) {
-                        val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
-                            getTestWeatherdata(WmWeatherTime.TODAY),
-                            WmUnitInfo.TemperatureUnit.CELSIUS
-                        )?.await()
-                        UNIWatchMate.wmLog.logE(
-                            TAG,
-                            "push today weather result = $result"
-                        )
-                        ToastUtil.showToast(
-                            "push today weather test ${
-                                if (result) getString(R.string.tip_success) else getString(
-                                    R.string.tip_failed
-                                )
-                            }"
-                        )
-                    }
-                }
+//                UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
+//                    if (it.wmWeatherTime == WmWeatherTime.SEVEN_DAYS) {
+//                        val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+//                            getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+//                            WmUnitInfo.TemperatureUnit.CELSIUS
+//                        )?.await()
+//                        UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
+//                        ToastUtil.showToast(
+//                            "push seven_days weather test ${
+//                                if (result2) getString(R.string.tip_success) else getString(
+//                                    R.string.tip_failed
+//                                )
+//                            }"
+//                        )
+//                    } else if (it.wmWeatherTime == WmWeatherTime.TODAY) {
+//                        val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
+//                            getTestWeatherdata(WmWeatherTime.TODAY),
+//                            WmUnitInfo.TemperatureUnit.CELSIUS
+//                        )?.await()
+//                        UNIWatchMate.wmLog.logE(
+//                            TAG,
+//                            "push today weather result = $result"
+//                        )
+//                        ToastUtil.showToast(
+//                            "push today weather test ${
+//                                if (result) getString(R.string.tip_success) else getString(
+//                                    R.string.tip_failed
+//                                )
+//                            }"
+//                        )
+//                    }
+//                }
             }
             launchWithLog {
                 UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
@@ -139,6 +139,10 @@ class MyApplication : Application() {
             launchWithLog {
                 UNIWatchMate.wmApps.appMusicControl.observableMusicControl.asFlow().collect {
                     simulateMediaButton(it)
+                    UNIWatchMate.wmLog.logE(
+                        TAG,
+                        "receive music control type= $it"
+                    )
                 }
             }
             launchWithLog {
