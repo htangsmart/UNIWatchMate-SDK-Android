@@ -21,7 +21,6 @@ import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.getTestWeatherdata
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.sendKeyCode
-import com.sjbt.sdk.spp.cmd.CmdHelper.getCameraRespondCmd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
@@ -77,7 +76,7 @@ class MyApplication : Application() {
             launchWithLog {
                 UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
                     if (it.wmWeatherTime == WmWeatherTime.SEVEN_DAYS) {
-                        val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenTodayWeather(
+                        val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenDaysWeather(
                             getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
                             WmUnitInfo.TemperatureUnit.CELSIUS
                         )?.await()

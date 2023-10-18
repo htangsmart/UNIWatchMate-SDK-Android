@@ -96,7 +96,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         mAlarm = alarm
         return Single.create {
             updateAlarmEmitter = it
-            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteAddAlarmCmd(alarm))
+            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteModifyAlarmCmd(alarm))
         }
     }
 
@@ -122,8 +122,8 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                     val byteBuffer = ByteBuffer.wrap(it.data)
                     for (i in 0..count) {
                         val id = byteBuffer.get()
-                        val nameArray = ByteArray(20)
-                        byteBuffer.get(nameArray, 1, 20)
+                        val nameArray = byteBuffer.array().copyOfRange(1,21)
+//                        byteBuffer.get(nameArray, 1, 20)
                         val name = String(nameArray, StandardCharsets.UTF_8)
 
                         val hour = byteBuffer.get()
@@ -148,7 +148,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             }
 
             URN_APP_ALARM_UPDATE -> {
-                updateSuccess(it.data[0].toInt() == 1)
+                updateSuccess(it.data[0].toInt() == 0)
             }
         }
     }

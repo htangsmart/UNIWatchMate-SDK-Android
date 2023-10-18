@@ -66,7 +66,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         }
     }
 
-    override fun pushSevenTodayWeather(
+    override fun pushSevenDaysWeather(
         weather: WmWeather,
         temperatureUnit: WmUnitInfo.TemperatureUnit
     ): Single<Boolean> {
