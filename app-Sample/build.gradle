@@ -31,8 +31,8 @@ android {
                     outputFileName = "uniwatch_sample_" + buildType.name + "_${variant.versionName}_${buildTime()}.apk"
                 }
             }
-
         }
+
         debug {
             storeFile file("uniwatchmate.jks")
             storePassword "uniwatchpwd"
@@ -51,8 +51,8 @@ android {
         applicationId "com.sjbt.sdk.sample"
         minSdk min_sdk_version
         targetSdk target_sdk_version
-        versionCode 7
-        versionName "1.0.7"
+        versionCode 8
+        versionName "1.0.8"
         signingConfig signingConfigs.release
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

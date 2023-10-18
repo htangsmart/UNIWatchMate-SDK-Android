@@ -1669,7 +1669,7 @@ object CmdHelper {
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
         byteBuffer.put(wmFind.count.toByte())
         byteBuffer.putShort(wmFind.timeSeconds.toShort())
-        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_1), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_5, URN_2, URN_1), byteBuffer.array())
         return payloadPackage
     }
 
@@ -1679,7 +1679,7 @@ object CmdHelper {
     fun getExecuteStopFindDevice(): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
-        payloadPackage.putData(getUrnId(URN_4, URN_7, URN_2), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_5, URN_2, URN_2), byteBuffer.array())
         return payloadPackage
     }
 

@@ -443,6 +443,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
                                     appCamera.observeDeviceCamera(msg[16].toInt() == 1)
+                                    sendNormalMsg(
+                                        CmdHelper.getCameraRespondCmd(
+                                            CMD_ID_8029, 1.toByte()
+                                        )
+                                    )
                                 }
 
                                 CMD_ID_802A -> {//监听打开相机

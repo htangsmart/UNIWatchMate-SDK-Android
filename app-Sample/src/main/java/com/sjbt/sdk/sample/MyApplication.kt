@@ -17,11 +17,7 @@ import com.blankj.utilcode.util.Utils
 import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
-import com.sjbt.sdk.sample.utils.FormatterUtil
-import com.sjbt.sdk.sample.utils.ToastUtil
-import com.sjbt.sdk.sample.utils.getTestWeatherdata
-import com.sjbt.sdk.sample.utils.launchWithLog
-import com.sjbt.sdk.sample.utils.sendKeyCode
+import com.sjbt.sdk.sample.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -136,12 +132,11 @@ class MyApplication : Application() {
                     if (it) {//
                         if (ActivityUtils.getTopActivity() != null) {
                             UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
+                            CacheDataHelper.cameraLaunchedByDevice = true
                             CameraActivity.launchActivity(ActivityUtils.getTopActivity())
-                            UNIWatchMate.wmApps.appCamera.startCameraPreview()
                         }
                     } else if (ActivityUtils.getTopActivity() is CameraActivity) {
                         ActivityUtils.getTopActivity().finish()
-                        UNIWatchMate.wmApps.appCamera.stopCameraPreview()
                     }
                 }
             }
