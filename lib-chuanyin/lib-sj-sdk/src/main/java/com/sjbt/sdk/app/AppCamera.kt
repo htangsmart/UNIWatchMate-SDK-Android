@@ -2,6 +2,7 @@ package com.sjbt.sdk.app
 
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.port.app.AbAppCamera
 import com.base.sdk.port.app.WMCameraFlashMode
@@ -13,12 +14,12 @@ import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.*
+import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
-    var cameraObserveOpenEmitter: ObservableEmitter<Boolean>? = null
     var cameraSingleOpenEmitter: SingleEmitter<Boolean>? = null
     var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>? = null
     var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>? = null
@@ -27,7 +28,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     var cameraFlashSwitchEmitter: ObservableEmitter<WMCameraFlashMode>? = null
     var cameraPreviewReadyEmitter: SingleEmitter<Boolean>? = null
 
-    private var cameraObserver: Single<Boolean>? = null
+    private val cameraStateObserver: PublishSubject<Boolean> = PublishSubject.create()
 
     private val TAG = "AppCamera"//相机预览相关
     private var mCameraFrameInfo: WmCameraFrameInfo? = null
@@ -58,32 +59,62 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         }
     }
 
+    fun observeDeviceCamera(open: Boolean) {
+        cameraStateObserver?.onNext(open)
+    }
+
+    fun openCameraResult(result: Boolean) {
+        cameraSingleOpenEmitter?.onSuccess(result)
+    }
+
+    fun observeCameraAction(action: Byte, stateOn: Byte) {
+        if (action == CHANGE_CAMERA) {
+            val front = stateOn.toInt() == 0
+            if (front) {
+                cameraObserveFrontBackEmitter?.onNext(
+                    WMCameraPosition.WMCameraPositionFront
+                )
+            } else {
+                cameraObserveFrontBackEmitter?.onNext(
+                    WMCameraPosition.WMCameraPositionRear
+                )
+            }
+
+        } else {
+            val flashOn = stateOn.toInt() == 1
+            if (flashOn) {
+                cameraObserveFlashEmitter?.onNext(
+                    WMCameraFlashMode.WMCameraFlashModeOn
+                )
+            } else {
+                cameraObserveFlashEmitter?.onNext(
+                    WMCameraFlashMode.WMCameraFlashModeOff
+                )
+            }
+        }
+    }
+
     override fun isSupport(): Boolean {
         return true
     }
 
     override fun openCloseCamera(open: Boolean): Single<Boolean> {
 
-        if (cameraObserver == null || cameraSingleOpenEmitter == null || cameraSingleOpenEmitter!!.isDisposed) {
-            cameraObserver = Single.create { emitter ->
-                cameraSingleOpenEmitter = emitter
-                sjUniWatch.sendNormalMsg(
-                    CmdHelper.getAppCallDeviceCmd(
-                        if (open) {
-                            1.toByte()
-                        } else {
-                            0.toByte()
-                        }
-                    )
+        return Single.create { emitter ->
+            cameraSingleOpenEmitter = emitter
+            sjUniWatch.sendNormalMsg(
+                CmdHelper.getAppCallDeviceCmd(
+                    if (open) {
+                        1.toByte()
+                    } else {
+                        0.toByte()
+                    }
                 )
-            }
+            )
         }
-
-        return cameraObserver!!
     }
 
-    override var observeCameraOpenState: Observable<Boolean> =
-        Observable.create { emitter -> cameraObserveOpenEmitter = emitter }
+    override var observeCameraOpenState: Observable<Boolean> = cameraStateObserver
 
     override var observeCameraTakePhoto: Observable<Boolean> =
         Observable.create { emitter -> cameraObserveTakePhotoEmitter = emitter }
@@ -375,3 +406,5 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
         return info
     }
 }
+
+

@@ -23,7 +23,7 @@ abstract class AbAppWeather : IWmSupport {
     /**
      * pushWeather 为设备推送7天天气信息
      */
-    abstract fun pushSevenTodayWeather(
+    abstract fun pushSevenDaysWeather(
         weather: WmWeather,
         temperatureUnit: WmUnitInfo.TemperatureUnit
     ): Single<Boolean>
@@ -31,6 +31,6 @@ abstract class AbAppWeather : IWmSupport {
     /**
      * observeWeather 监听设备端天气请求
      */
-    abstract var observeWeather: Observable<WmWeatherRequest>
+    abstract val observeWeather: Observable<WmWeatherRequest>
 
 }

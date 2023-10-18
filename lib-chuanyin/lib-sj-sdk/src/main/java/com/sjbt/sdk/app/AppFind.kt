@@ -5,54 +5,30 @@ import com.base.sdk.port.app.AbAppFind
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.ResponseResultType
-import com.sjbt.sdk.spp.cmd.CmdHelper
-import com.sjbt.sdk.spp.cmd.URN_APP_FIND_DEVICE_START
-import com.sjbt.sdk.spp.cmd.URN_APP_FIND_DEVICE_STOP
+import com.sjbt.sdk.spp.cmd.*
+import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
-
+import io.reactivex.rxjava3.subjects.PublishSubject
+import java.nio.ByteBuffer
 class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
-    private var startFindPhoneEmitter: ObservableEmitter<WmFind>? = null
-    private var stopFindPhoneEmitter: ObservableEmitter<Boolean>? = null
     private var startFindWatchEmitter: SingleEmitter<Boolean>? = null
     private var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
-
-    private var observableFindPhone: Observable<WmFind>? = null
-    private var observableStopFindPhone: Observable<Boolean>? = null
+    private val TAG = "AppFind"
 
     override fun isSupport(): Boolean {
         return true
     }
 
-    private fun getObservableFindPhone(): Observable<WmFind> {
-        if (observableFindPhone == null || startFindPhoneEmitter == null || startFindPhoneEmitter!!.isDisposed) {
-            observableFindPhone = Observable.create {
-                startFindPhoneEmitter = it
-            }
-        } else {
-            observableFindPhone
-        }
+    private val findMobile = PublishSubject.create<WmFind>()
+    private val stopFindMobile = PublishSubject.create<Boolean>()
 
-        return observableFindPhone!!
+    override val observeFindMobile: PublishSubject<WmFind> = findMobile
+    override fun stopFindMobile(): Observable<Boolean> {
+       return stopFindMobile
     }
-
-    private fun getObservableStopFindPhone(): Observable<Boolean> {
-        if (observableStopFindPhone == null || stopFindPhoneEmitter == null || stopFindPhoneEmitter!!.isDisposed) {
-            observableStopFindPhone = Observable.create {
-                stopFindPhoneEmitter = it
-            }
-        } else {
-            observableStopFindPhone
-        }
-
-        return observableStopFindPhone!!
-    }
-
-    override var observeFindMobile: Observable<WmFind> = getObservableFindPhone()
-    override fun stopFindMobile(): Observable<Boolean> = getObservableStopFindPhone()
 
     override fun findWatch(wmFind: WmFind): Single<Boolean> {
         return Single.create {
@@ -90,6 +66,22 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             URN_APP_FIND_DEVICE_STOP -> {
                 stopFindWatchEmitter?.onSuccess(true)
             }
+
+            URN_APP_FIND_PHONE_START -> {
+                val byteBuffer =
+                    ByteBuffer.wrap(it.data)
+                val count = byteBuffer.get().toInt()
+                val timeSeconds = BtUtils.byte2short(it.data.copyOfRange(1, 3)).toInt()
+                val wmFind = WmFind(count, timeSeconds)
+                sjUniWatch.wmLog.logD(TAG, "findMobile: $wmFind")
+                observeFindMobile.onNext(wmFind)
+            }
+
+            URN_APP_FIND_PHONE_STOP -> {
+                stopFindMobile.onNext(true)
+            }
+
         }
     }
 }
+

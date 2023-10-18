@@ -68,7 +68,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
      */
     private var isRequestingPermission: Boolean = false
 
-    private val deviceManager = Injector.getDeviceManager()
+    private val deviceManager: DeviceManager = Injector.getDeviceManager()
 
     private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
         listener = object : OtherDevicesAdapter.Listener {
@@ -259,15 +259,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         /**
                          * Show bind success, and exit in [onPromptCancel]
                          */
-                        promptToast.showSuccess(
-                            R.string.device_bind_success,
-                            intercept = true,
-                            promptId = promptBindSuccessId
-                        )
+                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
                         toggleBluetoothAlert(false)
-                    } else if (it == WmConnectState.BT_DISABLE) {
+                    }
+                    else if (it == WmConnectState.BT_DISABLE) {
                         toggleBluetoothAlert(true)
-                    } else {
+                    }else{
                         toggleBluetoothAlert(false)
                     }
                 }
@@ -307,9 +304,9 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
                     this::class.simpleName?.let { tag ->
-                        UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
                     }
-                    ToastUtil.showToast(it.message, true)
+                    ToastUtil.showToast(it.message,true)
                 }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
@@ -324,15 +321,12 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         }
         PermissionHelper.requestBle(this) { granted ->
             if (granted) {
-                otherDevicesAdapter.bonded =
-                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
-                otherDevicesAdapter.connected =
-                    OtherDevicesAdapter.devices(
-                        bluetoothManager.getConnectedDevices(
-                            BluetoothProfile.GATT_SERVER
-                        )
-                    )
-                otherDevicesAdapter.notifyDataSetChanged()
+//                otherDevicesAdapter.bonded =
+//                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
+//                otherDevicesAdapter.connected =
+//                    OtherDevicesAdapter.devices(bluetoothManager.getConnectedDevices(
+//                        BluetoothProfile.GATT_SERVER))
+//                otherDevicesAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -379,7 +373,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     override fun navToConnectHelp() {
-//        findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
+//                findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
 
     }
 

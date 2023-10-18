@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherRequest
 import com.base.sdk.entity.apps.WmWeatherTime
@@ -14,10 +15,10 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
+import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.charset.StandardCharsets
 
 class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
-    private var weatherRequestEmitter: ObservableEmitter<WmWeatherRequest>? = null
     private var pushWeatherEmitter: SingleEmitter<Boolean>? = null
     private val TAG = "AppWeather"
 
@@ -66,7 +67,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         }
     }
 
-    override fun pushSevenTodayWeather(
+    override fun pushSevenDaysWeather(
         weather: WmWeather,
         temperatureUnit: WmUnitInfo.TemperatureUnit
     ): Single<Boolean> {
@@ -104,13 +105,12 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                 }
 
             }
-
         }
     }
 
-    override var observeWeather: Observable<WmWeatherRequest> = Observable.create {
-        weatherRequestEmitter = it
-    }
+    private val requestWeather: PublishSubject<WmWeatherRequest> = PublishSubject.create()
+
+    override val observeWeather: PublishSubject<WmWeatherRequest> = requestWeather
 
     fun weatherBusiness(it: NodeData) {
         when (it.urn[3]) {
@@ -121,19 +121,18 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                     pushWeatherEmitter?.onSuccess(result)
                 } else {
                     val bcp = String(it.data, StandardCharsets.UTF_8)
-                    weatherRequestEmitter?.onNext(WmWeatherRequest(bcp, WmWeatherTime.TODAY))
+                    observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.TODAY))
                 }
             }
 
             URN_APP_WEATHER_PUSH_SIX_DAYS -> {
-
                 if (it.dataLen.toInt() == 1) {
                     val result = it.data[0].toInt() == 1
                     sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
                     pushWeatherEmitter?.onSuccess(result)
                 } else {
                     val bcp = String(it.data, StandardCharsets.UTF_8)
-                    weatherRequestEmitter?.onNext(WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS))
+                    observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS))
                 }
             }
         }

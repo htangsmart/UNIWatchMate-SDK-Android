@@ -8,6 +8,7 @@ import android.os.Looper
 import android.view.KeyEvent
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmUnitInfo
@@ -73,6 +74,28 @@ class MyApplication : Application() {
     }
 
     private fun observeState() {
+
+        UNIWatchMate.observeConnectState.subscribe {
+
+            UNIWatchMate.wmLog.logE(TAG, it.name)
+
+            when (it) {
+                WmConnectState.BT_DISABLE -> {
+
+                }
+
+                WmConnectState.VERIFIED -> {
+                    UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe {
+                        UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
+                    }
+                }
+
+                WmConnectState.CONNECTED -> {
+
+                }
+            }
+        }
+
         applicationScope.launch {
             launchWithLog {
 //                UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
@@ -111,24 +134,10 @@ class MyApplication : Application() {
             launchWithLog {
                 UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
                     if (it) {//
-//                        if not front
-//                        if (!isFront) {
-//                            btSppWrapper.sendNormalMsg(
-//                                CmdHelper.getCameraRespondCmd(
-//                                    CMD_ID_8029,
-//                                    0.toByte()
-//                                )
-//                            )
-//                            return
-//                        }
                         if (ActivityUtils.getTopActivity() != null) {
-                            UNIWatchMate.wmLog.logE(
-                                TAG,
-                                "CameraActivity.launchActivity"
-                            )
+                            UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
                             CameraActivity.launchActivity(ActivityUtils.getTopActivity())
                             UNIWatchMate.wmApps.appCamera.startCameraPreview()
-//                          btSppWrapper.sendNormalMsg(getCameraRespondCmd(CMD_ID_8029, 1.toByte()))
                         }
                     } else if (ActivityUtils.getTopActivity() is CameraActivity) {
                         ActivityUtils.getTopActivity().finish()

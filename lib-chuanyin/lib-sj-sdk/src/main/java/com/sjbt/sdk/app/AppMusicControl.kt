@@ -6,23 +6,17 @@ import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.NodeData
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.subjects.PublishSubject
 
 class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
 
-    private var observableMusicControlEmitter: ObservableEmitter<WmMusicControlType>? = null
-    private fun observeMusicControl(musicControl: WmMusicControlType) {
-        observableMusicControlEmitter?.let {
-            it.onNext(musicControl)
-        }
-    }
+    private val musicControlSub: PublishSubject<WmMusicControlType> = PublishSubject.create()
 
     override fun isSupport(): Boolean {
         return true
     }
 
-    override var observableMusicControl: Observable<WmMusicControlType> = Observable.create {
-        observableMusicControlEmitter = it
-    }
+    override var observableMusicControl: PublishSubject<WmMusicControlType> = musicControlSub
 
     fun musicControlBusiness(it: NodeData) {
         when (it.data[0]) {
@@ -50,6 +44,10 @@ class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
                 observeMusicControl(WmMusicControlType.VOLUME_DOWN)
             }
         }
+    }
+
+    private fun observeMusicControl(musicControl: WmMusicControlType) {
+        musicControlSub.onNext(musicControl)
     }
 
 }

@@ -4,7 +4,6 @@ import android.util.Log
 import com.base.sdk.port.log.AbWmLog
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.TAG_SJ
-import timber.log.Timber
 
 class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
 

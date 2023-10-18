@@ -10,6 +10,6 @@ abstract class AbAppMusicControl : IWmSupport {
     /**
      * 监听音乐控制
      */
-    abstract var observableMusicControl: Observable<WmMusicControlType>
+    abstract val observableMusicControl: Observable<WmMusicControlType>
 
 }
