@@ -163,6 +163,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
                         )
                     )?.toObservable()?.asFlow()?.collect {
                         Timber.tag("appNotification").i("appNotification result=$it")
+                        ToastUtil.showToast("TestSendNotification $it")
                     }
                 }
             }
