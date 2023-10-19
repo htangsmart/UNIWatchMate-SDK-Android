@@ -165,19 +165,19 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     }
 
     override fun updateCameraPreview(cameraFrameInfo: WmCameraFrameInfo) {
-        sjUniWatch.wmLog.logI(TAG, "更新frame continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logSDK(TAG, "更新frame continueUpdateFrame：$continueUpdateFrame")
 
         cameraFrameInfo?.let {
             if (it.frameType === 2) {
                 mLatestIframeId = it.frameId
-                sjUniWatch.wmLog.logI(TAG, "最新的I帧：" + mLatestIframeId);
+                sjUniWatch.wmLog.logSDK(TAG, "最新的I帧：" + mLatestIframeId);
             } else {
                 mLatestPframeId = it.frameId
-                sjUniWatch.wmLog.logI(TAG, "最新的P帧：" + mLatestIframeId)
+                sjUniWatch.wmLog.logSDK(TAG, "最新的P帧：" + mLatestIframeId)
             }
             mH264FrameMap.putFrame(it)
 
-            sjUniWatch.wmLog.logI(TAG, "来新数据了:" + needNewH264Frame);
+            sjUniWatch.wmLog.logSDK(TAG, "来新数据了:" + needNewH264Frame);
             if (needNewH264Frame) {
                 mCameraFrameInfo = it
                 sendFrameDataAsync(it)
@@ -189,7 +189,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
     fun sendFrameDataAsync(frameInfo: WmCameraFrameInfo?) {
         if (frameInfo == null) {
             needNewH264Frame = true
-            sjUniWatch.wmLog.logI(TAG, "没数据了-》2")
+            sjUniWatch.wmLog.logSDK(TAG, "没数据了-》2")
             return
         }
         mCameraHandler.post { sendFrameData(frameInfo) }
@@ -222,7 +222,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
                             cameraFrameInfo,
                             i
                         )
-                        //                    sjUniWatch.wmLog.logI(TAG,"执行发送：" + info + " 分包类型：" + mDivide);
+                        //                    sjUniWatch.wmLog.logSDK(TAG,"执行发送：" + info + " 分包类型：" + mDivide);
                         sjUniWatch.sendNormalMsg(
                             CmdHelper.getCameraPreviewDataCmd02(
                                 info.payload,
@@ -260,21 +260,21 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
             ByteBuffer.wrap(lenArray).order(ByteOrder.LITTLE_ENDIAN).int
 
         mCellLength = mCellLength - 5
-        sjUniWatch.wmLog.logI(TAG, "相机预览传输包大小：${mCellLength}")
+        sjUniWatch.wmLog.logSDK(TAG, "相机预览传输包大小：${mCellLength}")
 
         continueUpdateFrame = camera_pre_allow.toInt() == 1
 
         cameraPreviewReadyEmitter?.onSuccess(continueUpdateFrame)
 
-        sjUniWatch.wmLog.logI(TAG, "是否支持相机预览 continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logSDK(TAG, "是否支持相机预览 continueUpdateFrame：$continueUpdateFrame")
 
         if (camera_pre_allow.toInt() == 1) {
-            sjUniWatch.wmLog.logI(TAG, "预发送数据：" + mH264FrameMap.frameCount)
+            sjUniWatch.wmLog.logSDK(TAG, "预发送数据：" + mH264FrameMap.frameCount)
             if (!mH264FrameMap.isEmpty()) {
-                sjUniWatch.wmLog.logI(TAG, "发送的帧ID：${mLatestIframeId}")
+                sjUniWatch.wmLog.logSDK(TAG, "发送的帧ID：${mLatestIframeId}")
                 mCameraFrameInfo =
                     mH264FrameMap.getFrame(mLatestIframeId)
-                sjUniWatch.wmLog.logI(TAG, "发送的帧信息：${mCameraFrameInfo}")
+                sjUniWatch.wmLog.logSDK(TAG, "发送的帧信息：${mCameraFrameInfo}")
                 sendFrameDataAsync(mCameraFrameInfo)
             } else {
                 needNewH264Frame = true
@@ -287,27 +287,27 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
             if (continueUpdateFrame) {
                 if (mH264FrameMap.isEmpty()) {
                     needNewH264Frame = true
-                    sjUniWatch.wmLog.logI(TAG, "没数据了-》1")
+                    sjUniWatch.wmLog.logSDK(TAG, "没数据了-》1")
                     return
                 }
 
                 if (frameSuccess.toInt() == 1) { //发送成功
                     //删除掉已经发送成功之前的帧
                     mH264FrameMap.removeOldFrames(it.frameId)
-                    sjUniWatch.wmLog.logI(TAG, "移除发送过的帧数")
+                    sjUniWatch.wmLog.logSDK(TAG, "移除发送过的帧数")
                     if (it.frameId === mLatestIframeId) {
                         mCameraFrameInfo =
                             mH264FrameMap.getFrame(mLatestPframeId)
-                        sjUniWatch.wmLog.logI(TAG, "没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                        sjUniWatch.wmLog.logSDK(TAG, "没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
                     } else {
                         if (mLatestIframeId > it.frameId) {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestIframeId)
-                            sjUniWatch.wmLog.logI(TAG, "有新的I帧,发送最新的I帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logSDK(TAG, "有新的I帧,发送最新的I帧：${mCameraFrameInfo}")
                         } else {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestPframeId)
-                            sjUniWatch.wmLog.logI(TAG, "没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logSDK(TAG, "没有新的I帧,发送最新的P帧：${mCameraFrameInfo}")
                         }
                     }
                 } else { //发送失败
@@ -315,22 +315,22 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
                         if (mLatestIframeId > it.frameId) {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestIframeId)
-                            sjUniWatch.wmLog.logI(TAG, "P发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logSDK(TAG, "P发送失败,发送最新的I帧：${mCameraFrameInfo}")
                         } else {
                             mCameraFrameInfo =
                                 mH264FrameMap.getFrame(mLatestPframeId)
-                            sjUniWatch.wmLog.logI(TAG, "P发送失败,发送最新的P帧：${mCameraFrameInfo}")
+                            sjUniWatch.wmLog.logSDK(TAG, "P发送失败,发送最新的P帧：${mCameraFrameInfo}")
                         }
                     } else {
                         mCameraFrameInfo =
                             mH264FrameMap.getFrame(mLatestIframeId)
-                        sjUniWatch.wmLog.logI(TAG, "发送失败,发送最新的I帧：${mCameraFrameInfo}")
+                        sjUniWatch.wmLog.logSDK(TAG, "发送失败,发送最新的I帧：${mCameraFrameInfo}")
                     }
                 }
 
                 sendFrameDataAsync(mCameraFrameInfo)
             } else {
-                sjUniWatch.wmLog.logI(TAG, "相机关闭，停止发送")
+                sjUniWatch.wmLog.logSDK(TAG, "相机关闭，停止发送")
                 mH264FrameMap.clear()
             }
         }
@@ -338,7 +338,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     override fun stopCameraPreview() {
         continueUpdateFrame = false
-        sjUniWatch.wmLog.logI(TAG, "停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
+        sjUniWatch.wmLog.logSDK(TAG, "停止更新frame数据continueUpdateFrame：$continueUpdateFrame")
         mH264FrameMap.clear()
     }
 
@@ -365,9 +365,9 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
                 }
             }
 
-//        sjUniWatch.wmLog.logI(TAG,"分包类型：" + mDivide);
+//        sjUniWatch.wmLog.logSDK(TAG,"分包类型：" + mDivide);
             if (i == mFramePackageCount - 1 && mDivide != DIVIDE_N_2) {
-//            sjUniWatch.wmLog.logI(TAG,"最后一包长度：" + mFrameLastLen);
+//            sjUniWatch.wmLog.logSDK(TAG,"最后一包长度：" + mFrameLastLen);
                 if (mFrameLastLen == 0) {
                     info.offSet = i * mCellLength
                     info.payload = ByteArray(mCellLength)
@@ -380,10 +380,10 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
             } else {
                 info.offSet = i * mCellLength
                 if (mDivide == DIVIDE_Y_F_2 || mDivide == DIVIDE_N_2) { //首包或者不分包的时候需要传帧大小
-                    sjUniWatch.wmLog.logI(TAG, "本帧大小:" + it.size)
-                    sjUniWatch.wmLog.logI(TAG, "帧数据长度：" + BtUtils.intToHex(it.size))
+                    sjUniWatch.wmLog.logSDK(TAG, "本帧大小:" + it.size)
+                    sjUniWatch.wmLog.logSDK(TAG, "帧数据长度：" + BtUtils.intToHex(it.size))
                     if (it.size < mCellLength) {
-                        sjUniWatch.wmLog.logI(TAG, "不分包：$mDivide")
+                        sjUniWatch.wmLog.logSDK(TAG, "不分包：$mDivide")
                         mCellLength = it.size
                     }
                     val byteBuffer =
@@ -392,10 +392,10 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
                     byteBuffer.putInt(it.size)
                     val payload = ByteArray(mCellLength)
                     System.arraycopy(it, 0, payload, 0, payload.size)
-                    sjUniWatch.wmLog.logI(TAG, "数据payload：" + payload.size)
+                    sjUniWatch.wmLog.logSDK(TAG, "数据payload：" + payload.size)
                     byteBuffer.put(payload)
                     info.payload = byteBuffer.array()
-                    sjUniWatch.wmLog.logI(TAG, "首包payload总长度：" + info.payload.size)
+                    sjUniWatch.wmLog.logSDK(TAG, "首包payload总长度：" + info.payload.size)
                 } else {
                     info.payload = ByteArray(mCellLength)
                     System.arraycopy(it, i * mCellLength, info.payload, 0, info.payload.size)

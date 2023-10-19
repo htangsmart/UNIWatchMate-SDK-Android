@@ -4,6 +4,7 @@ import android.util.Log
 import com.base.sdk.port.log.AbWmLog
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.TAG_SJ
+import com.sjbt.sdk.sdkLogEnable
 
 class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
 
@@ -31,9 +32,9 @@ class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
         }
     }
 
-    fun logSendMsg(msg: String) {
-        if (sjUniWatch.sdkLogEnable) {
-            Log.e(TAG_SJ + "MSG:", msg)
+    fun logSDK(tag: String, msg: String) {
+        if (sdkLogEnable) {
+            Log.e("$TAG_SJ$tag:", msg)
         }
     }
 

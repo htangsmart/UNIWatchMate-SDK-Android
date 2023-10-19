@@ -7,4 +7,4 @@ const val MSG_INTERVAL_FRAME: Long = 15
 const val MSG_INTERVAL_SLOW = 40
 const val BT_ADDRESS: String = "bt_mac"
 
-
+val sdkLogEnable = BuildConfig.DEBUG
