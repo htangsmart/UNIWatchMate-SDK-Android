@@ -41,7 +41,7 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
         )
         adapter = LanguageListAdapter()
         adapter.listener = object : LanguageListAdapter.Listener {
-            override fun onItemDelete(position: Int) {
+            override fun onItemSelect(position: Int) {
                 viewModel.setLanguage(position)
             }
         }

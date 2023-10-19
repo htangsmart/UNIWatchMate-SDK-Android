@@ -119,7 +119,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$material_version"
     implementation 'com.guolindev.permissionx:permissionx:1.6.4'
-    if (user_chuanyin_aar.equalsIgnoreCase("true")) {
+    if (use_chuanyin_aar.equalsIgnoreCase("true")) {
         implementation(name: 'lib-interface', ext: 'aar')
         implementation(name: 'lib-sj-sdk', ext: 'aar')
         implementation(name: 'lib-fc-sdk', ext: 'aar')
