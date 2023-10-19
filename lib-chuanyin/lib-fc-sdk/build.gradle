@@ -38,7 +38,39 @@ android {
         }
     }
 }
-
+afterEvaluate {
+    // for app test, copy the final aar to application libs
+    android.libraryVariants.all { variant ->
+        File outputFile = variant.outputs.first().outputFile
+        tasks.named("assemble${variant.name.capitalize()}").configure {
+            doLast {
+                copy {
+                    from outputFile
+                    into "../../app-Sample/libs"
+                    rename outputFile.name, "lib-fc-sdk.aar"
+                }
+            }
+        }
+        if (variant.getBuildType().isMinifyEnabled()) {
+            def path = "${projectDir}/mappings"
+            if (!isReleaseBuildType()) {
+                path = "debugMapping/"
+            } else {
+                path = "releaseMapping/"
+            }
+            //考本mapping 到目的目录
+            variant.assemble.doLast {
+                copy {
+                    from variant.mappingFile
+                    into path
+                    rename { String fileName ->
+                        "mapping_lib-fc-sdk_${buildTime()}.txt"
+                    }
+                }
+            }
+        }
+    }
+}
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(path: ':lib-chuanyin:lib-interface')

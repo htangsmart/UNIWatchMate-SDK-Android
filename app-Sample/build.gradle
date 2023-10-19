@@ -95,10 +95,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
-
-
 }
-
+repositories {
+    flatDir {
+        dirs 'libs', '/libs'
+    }
+}
 //当前时间
 def static buildTime() {
     def date = new Date()
@@ -106,7 +108,7 @@ def static buildTime() {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar','lib_*.aar'])
 
 
     testImplementation 'junit:junit:4.13.2'
@@ -117,11 +119,17 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$material_version"
     implementation 'com.guolindev.permissionx:permissionx:1.6.4'
-
-    implementation project(path: ':lib-chuanyin:lib-interface')
-    implementation project(path: ':lib-chuanyin:lib-sj-sdk')
-    implementation project(path: ':lib-chuanyin:lib-fc-sdk')
-    implementation project(path: ':lib-chuanyin:lib-api')
+    if (user_chuanyin_aar.equalsIgnoreCase("true")) {
+        implementation(name: 'lib-interface', ext: 'aar')
+        implementation(name: 'lib-sj-sdk', ext: 'aar')
+        implementation(name: 'lib-fc-sdk', ext: 'aar')
+        implementation(name: 'lib-api', ext: 'aar')
+    }else{
+        implementation project(path: ':lib-chuanyin:lib-interface')
+        implementation project(path: ':lib-chuanyin:lib-sj-sdk')
+        implementation project(path: ':lib-chuanyin:lib-fc-sdk')
+        implementation project(path: ':lib-chuanyin:lib-api')
+    }
     implementation project(path: ':zbarlibrary')
     implementation project(path: ':file-chooser-lib')
 

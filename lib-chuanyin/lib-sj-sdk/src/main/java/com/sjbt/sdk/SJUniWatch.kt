@@ -48,8 +48,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private val TAG = "SJUniWatch"
 
-    abstract var mContext: Application
-    abstract var mMsgTimeOut: Int
+     var mContext: Application
+     var mMsgTimeOut: Int
 
     var mBtStateReceiver: BtStateReceiver? = null
 

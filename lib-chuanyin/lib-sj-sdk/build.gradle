@@ -20,7 +20,7 @@ android {
 
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
@@ -58,7 +58,39 @@ android {
 
     namespace 'com.sjbt.sdk'
 }
-
+afterEvaluate {
+    // for app test, copy the final aar to application libs
+    android.libraryVariants.all { variant ->
+        File outputFile = variant.outputs.first().outputFile
+        tasks.named("assemble${variant.name.capitalize()}").configure {
+            doLast {
+                copy {
+                    from outputFile
+                    into "../../app-Sample/libs"
+                    rename outputFile.name, "lib-sj-sdk.aar"
+                }
+            }
+        }
+        if (variant.getBuildType().isMinifyEnabled()) {
+            def path = "${projectDir}/mappings"
+            if (!isReleaseBuildType()) {
+                path = "debugMapping/"
+            } else {
+                path = "releaseMapping/"
+            }
+            //考本mapping 到目的目录
+            variant.assemble.doLast {
+                copy {
+                    from variant.mappingFile
+                    into path
+                    rename { String fileName ->
+                        "mapping_lib-sj-sdk_${buildTime()}.txt"
+                    }
+                }
+            }
+        }
+    }
+}
 repositories {
     flatDir {
         dirs 'libs'
