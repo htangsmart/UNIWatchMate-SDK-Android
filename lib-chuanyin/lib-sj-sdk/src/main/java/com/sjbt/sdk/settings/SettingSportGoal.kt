@@ -79,7 +79,7 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
                         activityDuration
                     )
 
-                    sjUniWatch.wmLog.logI(TAG, "体育运动消息：" + wmSportGoal)
+                    sjUniWatch.wmLog.logD(TAG, "sport goal：$wmSportGoal")
 
                     getEmitter?.onSuccess(
                         wmSportGoal

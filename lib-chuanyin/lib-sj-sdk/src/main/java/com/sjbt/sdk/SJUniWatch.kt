@@ -68,7 +68,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
     override val wmTransferFile = SJTransferFile(this)
-    override val wmLog: AbWmLog = SJLog(this)
+    override val wmLog: SJLog = SJLog(this)
     val mBtEngine: BtEngine = BtEngine(this)
     private val mBindStateMap = HashMap<String, Boolean>()
 
@@ -200,7 +200,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         mBtEngine.clearStateMap()
                         btStateChange(WmConnectState.DISCONNECTED)
 //                        removeCallBackRunner(mConnectTimeoutRunner)
-                        wmLog.logD(TAG, "取消配对：" + device.address)
+                        wmLog.logD(TAG, "cancel pair：" + device.address)
                     }
                 }
             }
@@ -231,8 +231,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 MSG -> {
                     val msg = obj as ByteArray
                     val msgBean: MsgBean = CmdHelper.getPayLoadJson(msg)
-
-//                    wmLog.logD(TAG, "收到msg:" + msgBean.toString())
 
                     when (msgBean.head) {
                         HEAD_VERIFY -> {

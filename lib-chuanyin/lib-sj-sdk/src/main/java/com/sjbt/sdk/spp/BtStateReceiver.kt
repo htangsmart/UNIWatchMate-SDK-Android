@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.text.TextUtils
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.port.log.AbWmLog
+import com.sjbt.sdk.log.SJLog
 import java.io.IOException
 
 
@@ -18,7 +19,7 @@ import java.io.IOException
 @SuppressLint("MissingPermission")
 class BtStateReceiver(
     cxt: Context,
-    val sjLog: AbWmLog,
+    val sjLog: SJLog,
     private val mOnBtStateListener: OnBtStateListener?
 ) :
     BroadcastReceiver() {
@@ -61,21 +62,21 @@ class BtStateReceiver(
                 if (status == BluetoothAdapter.STATE_ON) {
                     mOnBtStateListener?.onClassicBtOpen()
                 } else if (status == BluetoothAdapter.STATE_OFF) {
-                    sjLog.logI(TAG, "Phone BlueTooth Enable:$status")
+                    sjLog.logSDK(TAG, "Phone BlueTooth Enable:$status")
                     mOnBtStateListener?.onClassicBtDisabled()
                 }
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
-                sjLog.logI(TAG, "Phone BlueTooth start discovery")
+                sjLog.logSDK(TAG, "Phone BlueTooth start discovery")
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
-                sjLog.logI(TAG, "Phone BlueTooth end discovery")
+                sjLog.logSDK(TAG, "Phone BlueTooth end discovery")
             }
 
             BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED, BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED, BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED -> {
-                sjLog.logI(TAG, "ACTION_CONNECTION_STATE_CHANGED")
+                sjLog.logSDK(TAG, "ACTION_CONNECTION_STATE_CHANGED")
             }
 
             BluetoothDevice.ACTION_FOUND -> {
@@ -98,7 +99,7 @@ class BtStateReceiver(
             BluetoothDevice.ACTION_PAIRING_REQUEST -> {
                 val pairing_device =
                     intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                sjLog.logI(TAG, "配请求对中...：" + pairing_device!!.name)
+                sjLog.logSDK(TAG, "配请求对中...：" + pairing_device!!.name)
             }
 
             BluetoothDevice.ACTION_BOND_STATE_CHANGED -> {
@@ -110,17 +111,17 @@ class BtStateReceiver(
                     }
 
                     BluetoothDevice.BOND_BONDING -> {
-                        sjLog.logI(TAG, "BONDING：" + bond_device.name)
+                        sjLog.logSDK(TAG, "BONDING：" + bond_device.name)
                     }
                     BluetoothDevice.BOND_BONDED -> {
-                        sjLog.logI(TAG, "BOND SUCCESS：" + bond_device.name)
+                        sjLog.logSDK(TAG, "BOND SUCCESS：" + bond_device.name)
                     }
                 }
                 mOnBtStateListener?.onBindState(bond_device, bond_device.bondState)
             }
 
             BluetoothDevice.ACTION_ACL_CONNECTED -> {
-                sjLog.logI(TAG, "ACTION_ACL_CONNECTED")
+                sjLog.logSDK(TAG, "ACTION_ACL_CONNECTED")
                 val connect_device =
                     intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
                 if (connect_device!!.type == BluetoothDevice.DEVICE_TYPE_LE) {
@@ -133,7 +134,7 @@ class BtStateReceiver(
                 val dis_connect_device =
                     intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
 
-                sjLog.logI(TAG, "ACTION_ACL_DISCONNECTED 当前的设备 address:$mCurrAddress")
+                sjLog.logSDK(TAG, "ACTION_ACL_DISCONNECTED 当前的设备 address:$mCurrAddress")
                 sjLog.logE(
                     TAG,
                     "ACTION_ACL_DISCONNECTED name:" + dis_connect_device!!.name + " address:" + dis_connect_device.address
