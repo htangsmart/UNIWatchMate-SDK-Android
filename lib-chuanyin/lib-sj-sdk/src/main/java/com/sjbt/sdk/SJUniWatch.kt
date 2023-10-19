@@ -1022,6 +1022,31 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //        parseNodePayload(false, null, payloadPackage)
     }
 
+    /**
+     * 回复device Node节点消息
+     */
+    fun sendResponseNodeCmdList(payloadPackage: PayloadPackage) {
+        payloadPackage.toResponseByteArray(requestType = ResponseResultType.RESPONSE_ALL_OK).forEach {
+            var payload: ByteArray = it
+
+            val cmdArray = CmdHelper.constructCmd(
+                HEAD_NODE_TYPE,
+                CMD_ID_8001,
+                DIVIDE_N_2,
+                0,
+                0,
+                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                payload
+            )
+
+            sendNormalMsg(cmdArray)
+        }
+
+        mPayloadPackage = payloadPackage
+
+//        parseNodePayload(false, null, payloadPackage)
+    }
+
     private fun parseNodePayload(
         response: Boolean, msgBean: MsgBean? = null, payloadPackage: PayloadPackage
     ) {
@@ -1032,9 +1057,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 wmLog.logD(TAG, "结果全部OK")
             } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
                 wmLog.logD(TAG, "结果全部Fail")
-            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
+            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type||payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type) {
                 wmLog.logD(TAG, "返回所有节点消息")
                 parseResponseEachNode(payloadPackage, msgBean)
+            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type){
+
+            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_READ.type){
+
             }
 //            } else {
 //                wmLog.logE(TAG, "设备回复错误消息！！！")
