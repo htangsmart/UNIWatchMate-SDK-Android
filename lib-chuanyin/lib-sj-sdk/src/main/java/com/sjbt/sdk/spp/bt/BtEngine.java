@@ -137,6 +137,7 @@ public class BtEngine {
         if (mSocket.isConnected()) {
             mStateMap.put(mDevice.getAddress(), STATE_CONNECTED);
             BluetoothDevice device = mSocket.getRemoteDevice();
+            clearMessageQueue();
             mSjUniWatch.getWmLog().logD(TAG, "连接成功:" + device.getAddress());
             notifyUI(Listener.CONNECTED, device);
 
@@ -329,7 +330,7 @@ public class BtEngine {
                 msgQueue.put(msgTimeCode, new Runnable() {
                     @Override
                     public void run() {
-                        mSjUniWatch.getWmLog().logD(TAG, "Biu2Us消息发送超时回调：" + msgTimeCode);
+                        mSjUniWatch.getWmLog().logD(TAG, "消息发送超时回调：" + msgTimeCode);
                         notifyUI(Listener.TIME_OUT, bytes);
                         mHandler.removeCallbacks(msgQueue.get(msgTimeCode));
                         msgQueue.remove(msgTimeCode);
@@ -640,7 +641,15 @@ public class BtEngine {
             }
             msgQueue.clear();
         }
+    }
 
+    private static void clearMessageQueue() {
+        if (msgQueue.size() > 0) {
+            for (String str : msgQueue.keySet()) {
+                mHandler.removeCallbacks(msgQueue.get(str));
+            }
+            msgQueue.clear();
+        }
     }
 
     /**

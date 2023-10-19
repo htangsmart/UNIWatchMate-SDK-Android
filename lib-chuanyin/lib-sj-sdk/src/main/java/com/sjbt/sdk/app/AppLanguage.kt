@@ -15,6 +15,7 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     private var languageSetEmitter: SingleEmitter<WmLanguage>? = null
     private val languageList = mutableListOf<WmLanguage>()
 
+    private val TAG = "AppLanguage"
     override fun isSupport(): Boolean {
         return true
     }
@@ -45,11 +46,17 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
                 }
 
                 val languageCount = it.data.size / 6
+
                 for (i in 0 until languageCount) {
-                    val bcp = String(
-                        it.data.copyOfRange(6 * i, 6 * i + 6),
-                        StandardCharsets.UTF_8
-                    )
+                    val bcpArray =
+                        it.data.copyOfRange(6 * i, 6 * i + 6).takeWhile { it > 0 }.toByteArray()
+
+//                    sjUniWatch.wmLog.logE(TAG, "language bcpArray:" + bcpArray.size)
+
+                    val bcp = bcpArray.decodeToString()
+
+//                    sjUniWatch.wmLog.logE(TAG, "language bcp:" + bcp)
+
                     val language = WmLanguage(bcp, "", i == 0)
                     languageList.add(language)
                 }
