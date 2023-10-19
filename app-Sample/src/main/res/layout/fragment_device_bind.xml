@@ -119,7 +119,6 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
     </FrameLayout>
-
     <LinearLayout
         android:id="@+id/bottom_sheet_layout"
         android:layout_width="match_parent"
@@ -130,46 +129,16 @@
         app:gestureInsetBottomIgnored="true"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/bottom_toolbar"
-            style="@style/Widget.MaterialComponents.Toolbar.Surface"
-            android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
-            android:background="@android:color/transparent"
-            app:contentInsetStartWithNavigation="0dp"
-            app:navigationIcon="@drawable/ic_baseline_expand_less_24"
-            app:title="@string/device_others"
-            app:titleTextAppearance="?textAppearanceSubtitle2"
-            app:titleTextColor="?android:textColorSecondary"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="8dp"
-            android:text="@string/device_others_des"
-            android:textAppearance="?textAppearanceCaption"/>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/other_devices_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
         android:contentDescription="@string/action_search"
-        android:src="@drawable/ic_baseline_search_24"
         app:layout_anchor="@id/bottom_sheet_layout"
+        android:layout_marginBottom="@dimen/dp_20"
+        android:src="@drawable/ic_baseline_search_24"
         app:layout_anchorGravity="center_horizontal"
         app:layout_behavior="@string/bottom_sheet_behavior"
         app:maxImageSize="32dp"

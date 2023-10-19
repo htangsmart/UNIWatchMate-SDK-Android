@@ -482,5 +482,13 @@
     <string name="in_development">in development</string>
 
     <string name="error_up_file">Firmware abnormal, please reselect</string>
-
+    <string name="connect_help">Connect Help</string>
+    <string name="connect_help_title1">If the connection fails several times, please check the following options</string>
+    <string name="connect_help_no_scan_permission">No scan permission</string>
+    <string name="connect_help_location_service_disabled">Location service disabled</string>
+    <string name="connect_help_title2">If the connection fails several times, please try the following operations</string>
+    <string name="connect_help_restart_app">Restart the app</string>
+    <string name="connect_help_restart_bluetooth">Restart the bluetooth</string>
+    <string name="connect_help_restart_device">Restart the watch</string>
+    <string name="connect_help_restart_phone">Restart the phone</string>
 </resources>

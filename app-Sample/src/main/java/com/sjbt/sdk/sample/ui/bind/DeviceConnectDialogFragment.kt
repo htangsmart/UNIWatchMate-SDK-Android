@@ -177,52 +177,6 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
         viewBind.layoutConnecting.isVisible = false
         viewBind.layoutAction.isVisible = true
 
-//        when (val reason = deviceManager.getDisconnectedReason()) {
-//            FcDisconnectedReason.INIT_STATE, FcDisconnectedReason.ACTIVE_CLOSE -> {
-//                /**
-//                 * Impossible because [ConnectorState.NO_DEVICE] state will emit before it
-//                 */
-//                viewBind.layoutAction.isVisible = false
-//                Timber.tag(TAG).w("Error reason:%s", reason)
-//            }
-//            FcDisconnectedReason.BT_DISABLED -> {
-//                /**
-//                 * Impossible because [ConnectorState.BT_DISABLED] state will emit before it
-//                 */
-//                viewBind.layoutAction.isVisible = false
-//                Timber.tag(TAG).w("Error reason:%s", reason)
-//            }
-//            FcDisconnectedReason.DISCONNECT_TEMPORARY, FcDisconnectedReason.DISCONNECT_DFU -> {
-//                viewBind.tvExtraMsg.setTextColor(extraErrorColor)
-//                viewBind.tvExtraMsg.setText(R.string.device_state_disconnected)
-//                viewBind.btnAction.setText(R.string.device_reconnect)
-//                viewBind.btnAction.setOnClickListener {
-//                    deviceManager.reconnect()
-//                }
-//            }
-//            FcDisconnectedReason.AUTH_LOGIN_FAILED, FcDisconnectedReason.AUTH_BIND_FAILED -> {
-//                viewBind.tvExtraMsg.setTextColor(extraErrorColor)
-//                if (reason == FcDisconnectedReason.AUTH_LOGIN_FAILED) {
-//                    viewBind.tvExtraMsg.setText(R.string.device_connect_auth_login_failed)
-//                } else {
-//                    viewBind.tvExtraMsg.setText(R.string.device_connect_auth_bind_failed)
-//                }
-//                viewBind.btnAction.setText(R.string.device_rebind)
-//                viewBind.btnAction.setOnClickListener {
-//                    deviceManager.rebind()
-//                }
-//            }
-//            FcDisconnectedReason.ERROR_UNKNOWN -> {
-//                /**
-//                 * Almost impossible
-//                 */
-//                viewBind.tvExtraMsg.setTextColor(extraErrorColor)
-//                viewBind.tvExtraMsg.text = "unknown error"
-//                viewBind.btnAction.text = null
-//                viewBind.btnAction.setOnClickListener(null)
-//                Timber.tag(TAG).w("Error reason:%s", reason)
-//            }
-//        }
     }
 
     private fun showConnectingTips() {
@@ -240,6 +194,7 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
         viewBind.btnAction.setOnClickListener {
             (parentFragment as? Listener)?.navToBgRunSettings()
         }
+
     }
 
     override fun onDestroyView() {

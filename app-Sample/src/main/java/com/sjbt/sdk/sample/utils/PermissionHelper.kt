@@ -23,7 +23,9 @@ object PermissionHelper {
             ), grantResult
         )
     }
-
+    fun hasBle(context: Context): Boolean {
+        return hasPermissions(context, getBle())
+    }
     fun requestAppCamera(fragment: Fragment, grantResult: ((Boolean) -> Unit)) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             grantResult.invoke(true)

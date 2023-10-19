@@ -12,55 +12,33 @@
         <action
             android:id="@+id/toDeviceBind"
             app:destination="@id/deviceBindFragment" />
-
-        <!--        <action-->
-        <!--            android:id="@+id/toConnectHelp"-->
-        <!--            app:destination="@id/connectHelpFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toBgRunSettings"-->
-        <!--            app:destination="@id/bgRunSettingsFragment"/>-->
         <action
             android:id="@+id/toDeviceConfig"
             app:destination="@id/deviceConfigFragment" />
         <action
             android:id="@+id/toDeviceInfo"
             app:destination="@id/deviceBasicInfo" />
-        <!--        <action-->
-        <!--            android:id="@+id/toQrCodes"-->
-        <!--            app:destination="@id/qrCodesFragment"/>-->
+
         <action
             android:id="@+id/toAlarm"
             app:destination="@id/alarmFragment" />
         <action
             android:id="@+id/toContacts"
             app:destination="@id/contactsFragment" />
-        <!--        <action-->
-        <!--            android:id="@+id/toPowerSaveMode"-->
-        <!--            app:destination="@id/powerSaveModeFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toGamePush"-->
-        <!--            app:destination="@id/gamePushFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toSportPush"-->
-        <!--            app:destination="@id/sportPushFragment"/>-->
+
         <action
             android:id="@+id/toDialHomePage"
             app:destination="@id/dialHomePageFragment" />
-        <!--        <action-->
-        <!--            android:id="@+id/toModifyLogo"-->
-        <!--            app:destination="@id/modifyLogoFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toEpoUpgrade"-->
-        <!--            app:destination="@id/epoUpgradeFragment"/>-->
+
         <action
             android:id="@+id/toOtherFeatures"
             app:destination="@id/otherFeaturesFragment" />
-        <!--        <action-->
-        <!--            android:id="@+id/toHardwareUpgrade"-->
-        <!--            app:destination="@id/hardwareUpgradeFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toCricket"-->
-        <!--            app:destination="@id/cricketFragment"/>-->
+        <action
+            android:id="@+id/toConnectHelp"
+            app:destination="@id/connectHelpFragment" />
+        <action
+            android:id="@+id/toBgRunSettings"
+            app:destination="@id/bgRunSettingsFragment" />
     </fragment>
 
     <fragment
@@ -199,9 +177,9 @@
         <action
             android:id="@+id/toCustomQr"
             app:destination="@id/deviceCustomQrFragment" />
-        <!--        <action-->
-        <!--            android:id="@+id/toConnectHelp"-->
-        <!--            app:destination="@id/connectHelpFragment"/>-->
+        <action
+            android:id="@+id/toConnectHelp"
+            app:destination="@id/connectHelpFragment" />
         <action
             android:id="@+id/toBgRunSettings"
             app:destination="@id/bgRunSettingsFragment" />
@@ -218,11 +196,11 @@
         android:label="@string/device_scan_bind"
         tools:layout="@layout/fragment_device_custom_qr" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/connectHelpFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.bind.ConnectHelpFragment"-->
-    <!--        android:label="@string/connect_help"-->
-    <!--        tools:layout="@layout/fragment_connect_help"/>-->
+    <fragment
+        android:id="@+id/connectHelpFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.bind.ConnectHelpFragment"
+        android:label="@string/connect_help"
+        tools:layout="@layout/fragment_connect_help" />
 
     <fragment
         android:id="@+id/bgRunSettingsFragment"
@@ -358,17 +336,6 @@
         android:label="@string/ds_sleep_config"
         tools:layout="@layout/fragment_sleep_config" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/screenVibrateConfigFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.config.ScreenVibrateConfigFragment"-->
-    <!--        android:label="@string/ds_screen_vibrate"-->
-    <!--        tools:layout="@layout/fragment_screen_vibrate_config"/>-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/qrCodesFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.qrcode.QrCodesFragment"-->
-    <!--        android:label="@string/ds_qr_codes"-->
-    <!--        tools:layout="@layout/fragment_qr_codes"/>-->
 
     <fragment
         android:id="@+id/alarmFragment"
@@ -380,11 +347,6 @@
         android:label="@string/ds_contacts"
         tools:layout="@layout/fragment_contacts" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/powerSaveModeFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.PowerSaveModeFragment"-->
-    <!--        android:label="@string/ds_power_save_mode"-->
-    <!--        tools:layout="@layout/fragment_power_save_mode"/>-->
 
     <fragment
         android:id="@+id/dialHomePageFragment"
@@ -402,15 +364,7 @@
 
     </fragment>
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/sportPushFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.sport.push.SportPushFragment"-->
-    <!--        android:label="@string/ds_sport_push"-->
-    <!--        tools:layout="@layout/fragment_sport_push"/>-->
-    <!--    <fragment-->
-    <!--        android:id="@+id/gamePushFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.game.push.GamePushFragment"-->
-    <!--        android:label="@string/ds_game_push"/>-->
+
     <fragment
         android:id="@+id/dialLibraryFragment"
         android:name="com.sjbt.sdk.sample.ui.device.dial.library.DialLibraryFragment"
@@ -423,23 +377,6 @@
         android:label="@string/ds_dial_installed"
         tools:layout="@layout/fragment_dial_installed_list" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/dialComponentFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.dial.component.DialComponentFragment"-->
-    <!--        android:label="@string/ds_dial_component"-->
-    <!--        tools:layout="@layout/fragment_dial_component"/>-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/modifyLogoFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.logo.ModifyLogoFragment"-->
-    <!--        android:label="@string/ds_modify_logo"-->
-    <!--        tools:layout="@layout/fragment_modify_logo"/>-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/epoUpgradeFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.epo.EpoUpgradeFragment"-->
-    <!--        android:label="@string/epo_upgrade_manual"-->
-    <!--        tools:layout="@layout/fragment_epo_upgrade"/>-->
 
     <fragment
         android:id="@+id/otherFeaturesFragment"
@@ -447,53 +384,12 @@
         android:label="@string/ds_other_features"
         tools:layout="@layout/fragment_other_features" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/hardwareUpgradeFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.device.HardwareUpgradeFragment"-->
-    <!--        android:label="@string/version_hardware_update"-->
-    <!--        tools:layout="@layout/fragment_hardware_upgrade">-->
-    <!--        <argument-->
-    <!--            android:name="info"-->
-    <!--            app:argType="com.topstep.fitcloud.sample2.model.version.HardwareUpgradeInfo"-->
-    <!--            app:nullable="true"/>-->
-    <!--    </fragment>-->
 
     <fragment
         android:id="@+id/editUserInfoFragment"
         android:name="com.sjbt.sdk.sample.ui.combine.EditUserInfoFragment"
         android:label="@string/account_edit_user_info"
         tools:layout="@layout/fragment_edit_user_info" />
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/whHomePageFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.combine.wh.WhHomePageFragment"-->
-    <!--        android:label="@string/wh_women_health"-->
-    <!--        tools:layout="@layout/fragment_wh_home_page">-->
-    <!--        <action-->
-    <!--            android:id="@+id/toWhSettings"-->
-    <!--            app:destination="@id/whSettingsFragment"/>-->
-    <!--    </fragment>-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/whSettingsFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.combine.wh.WhSettingsFragment"-->
-    <!--        tools:layout="@layout/fragment_wh_settings">-->
-    <!--        <argument-->
-    <!--            android:name="mode"-->
-    <!--            app:argType="integer"/>-->
-    <!--        <action-->
-    <!--            android:id="@+id/toWhDetail"-->
-    <!--            app:destination="@id/whDetailFragment"/>-->
-    <!--    </fragment>-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/whDetailFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.combine.wh.WhDetailFragment"-->
-    <!--        tools:layout="@layout/fragment_wh_detail">-->
-    <!--        <argument-->
-    <!--            android:name="mode"-->
-    <!--            app:argType="integer"/>-->
-    <!--    </fragment>-->
 
     <fragment
         android:id="@+id/exerciseGoalFragment"

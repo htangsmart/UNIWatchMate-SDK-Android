@@ -1,6 +1,7 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
 import android.app.Dialog
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.Context
@@ -55,7 +56,7 @@ import timber.log.Timber
 class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     PromptDialogFragment.OnPromptListener, DeviceConnectDialogFragment.Listener {
     private /*const*/ val promptBindSuccessId = 1
-
+    private var startScan = false
     private val viewBind: FragmentDeviceBindBinding by viewBinding()
     private val applicationScope = Injector.getApplicationScope()
     private val userInfoRepository = Injector.getUserInfoRepository()
@@ -70,25 +71,18 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private val deviceManager: DeviceManager = Injector.getDeviceManager()
 
-    private val otherDevicesAdapter: OtherDevicesAdapter = OtherDevicesAdapter().apply {
-        listener = object : OtherDevicesAdapter.Listener {
-            override fun onItemClick(device: ScanDevice) {
-                tryingBind(device.address, device.name)
-            }
-        }
-    }
-
     private val scanDevicesAdapter: ScanDevicesAdapter = ScanDevicesAdapter().apply {
         listener = object : ScanDevicesAdapter.Listener {
             override fun onItemClick(device: ScanDevice) {
                 tryingBind(device.address, device.name)
+
             }
 
             override fun onItemSizeChanged(oldSize: Int, newSize: Int) {
                 val animator = viewBind.layoutTips.animate()
                 if (oldSize == 0 && newSize > 0) {
                     animator.cancel()
-                    animator.setDuration(3000).alpha(0.1f).start()
+                    animator.setDuration(1000).alpha(0.1f).start()
                 } else if (oldSize > 0 && newSize == 0) {
                     animator.cancel()
                     animator.setDuration(500).alpha(0.5f).start()
@@ -112,11 +106,10 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             )
             val mDevice = UNIWatchMate.connect(
                 address,
-                WmBindInfo(it.id.toString(),it.name , BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
+                WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
             )
             DeviceConnectDialogFragment().show(childFragmentManager, null)
         }
-
     }
 
     fun parseSjScanQr(qrString: String): WmDevice? {
@@ -185,7 +178,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycleScope.launchWhenResumed {
+        lifecycleScope.launchWhenStarted {
             if (!isRequestingPermission) {
                 isRequestingPermission = true
                 PermissionHelper.requestBle(this@DeviceBindFragment) {
@@ -213,11 +206,10 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 //
         viewBind.refreshLayout.setOnRefreshListener {
             //Clear data when using pull to refresh. This is a different strategy than fabScan click event
-            scanDevicesAdapter.clearItems()
-//            if (!scannerHelper.start()) {
-//                viewBind.refreshLayout.isRefreshing = false
-//            }
-            startDiscover()
+            if (!startScan) {
+                scanDevicesAdapter.clearItems()
+                startDiscover()
+            }
         }
 
         viewBind.scanDevicesRecyclerView.layoutManager =
@@ -230,26 +222,11 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         )
         viewBind.scanDevicesRecyclerView.adapter = scanDevicesAdapter
 
-        viewBind.otherDevicesRecyclerView.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        viewBind.otherDevicesRecyclerView.adapter = otherDevicesAdapter
-
-        viewBind.bottomSheetLayout.getBottomSheetBehavior()
-            .addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    //refresh bonded/connected devices if bottomSheet expanded and request permission if not granted
-                    if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-                        refreshOtherDevices(false)
-                    }
-                }
-
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    //do nothing
-                }
-            })
-
         viewBind.fabScan.setOnClickListener {
-            startDiscover()
+            if (!startScan) {
+                scanDevicesAdapter.clearItems()
+                startDiscover()
+            }
         }
 
         viewLifecycle.launchRepeatOnStarted {
@@ -259,12 +236,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         /**
                          * Show bind success, and exit in [onPromptCancel]
                          */
-                        promptToast.showSuccess(R.string.device_bind_success, intercept = true, promptId = promptBindSuccessId)
+                        promptToast.showSuccess(
+                            R.string.device_bind_success,
+                            intercept = true,
+                            promptId = promptBindSuccessId
+                        )
                         toggleBluetoothAlert(false)
-                    }
-                    else if (it == WmConnectState.BT_DISABLE) {
+                    } else if (it == WmConnectState.BT_DISABLE) {
                         toggleBluetoothAlert(true)
-                    }else{
+                    } else {
                         toggleBluetoothAlert(false)
                     }
                 }
@@ -300,33 +280,18 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     private fun startDiscover() {
+        startScan=true
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
                     this::class.simpleName?.let { tag ->
-                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                        UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
                     }
-                    ToastUtil.showToast(it.message,true)
+                    ToastUtil.showToast(it.message, true)
                 }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }
-            }
-        }
-    }
-
-    private fun refreshOtherDevices(checkPermission: Boolean) {
-        if (checkPermission && !PermissionHelper.hasBlue(requireContext())) {
-            return
-        }
-        PermissionHelper.requestBle(this) { granted ->
-            if (granted) {
-//                otherDevicesAdapter.bonded =
-//                    OtherDevicesAdapter.devices(bluetoothManager.adapter.bondedDevices)
-//                otherDevicesAdapter.connected =
-//                    OtherDevicesAdapter.devices(bluetoothManager.getConnectedDevices(
-//                        BluetoothProfile.GATT_SERVER))
-//                otherDevicesAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -352,7 +317,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         snackbar.setAction(R.string.action_turn_on) {
             PermissionHelper.requestBle(this) { granted ->
                 if (granted) {
-//                    requireContext().startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                    requireContext().startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
                 }
             }
         }
@@ -364,17 +329,8 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         bluetoothSnackbar?.dismiss()
     }
 
-    private fun View.getBottomSheetBehavior(): BottomSheetBehavior<*> {
-        return if (this is CoordinatorLayout.AttachedBehavior) {
-            this.behavior as BottomSheetBehavior
-        } else {
-            (this.layoutParams as CoordinatorLayout.LayoutParams).behavior as BottomSheetBehavior
-        }
-    }
-
     override fun navToConnectHelp() {
-//                findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
-
+        findNavController().navigate(DeviceBindFragmentDirections.toConnectHelp())
     }
 
     override fun navToBgRunSettings() {
