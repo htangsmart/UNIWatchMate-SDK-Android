@@ -198,9 +198,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     if (device == mCurrDevice) {
 //                        mConnectTryCount = 0
                         mBtEngine.clearStateMap()
-
                         btStateChange(WmConnectState.DISCONNECTED)
-
 //                        removeCallBackRunner(mConnectTimeoutRunner)
                         wmLog.logD(TAG, "取消配对：" + device.address)
                     }

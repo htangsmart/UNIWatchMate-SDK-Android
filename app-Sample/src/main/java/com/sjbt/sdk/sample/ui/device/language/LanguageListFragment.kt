@@ -19,6 +19,7 @@ import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
@@ -32,7 +33,12 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
 
 
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewBind.recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        viewBind.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
+            )
+        )
         adapter = LanguageListAdapter()
         adapter.listener = object : LanguageListAdapter.Listener {
             override fun onItemDelete(position: Int) {
@@ -48,8 +54,8 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
 
-        UNIWatchMate.wmApps.appLanguage.syncLanguageList.subscribe { lang->
-            UNIWatchMate.wmLog.logE("TAG","language list: $lang")
+        UNIWatchMate.wmApps.appLanguage.syncLanguageList.subscribe { lang ->
+            UNIWatchMate.wmLog.logE("TAG", "language list: $lang")
 
         }
 
@@ -61,11 +67,14 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                         }
+
                         is Fail -> {
                             viewBind.loadingView.showError(R.string.tip_load_error)
                         }
+
                         is Success -> {
                             val wmLanguages = state.requestLanguages()
+                            UNIWatchMate.wmLog.logI("LanguageListFragment","wmLanguages $wmLanguages")
                             if (wmLanguages.isNullOrEmpty()) {
                                 viewBind.loadingView.showError(R.string.ds_no_data)
                             } else {
@@ -75,6 +84,7 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
                             adapter.notifyDataSetChanged()
 
                         }
+
                         else -> {}
                     }
                 }
@@ -85,6 +95,7 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
                         is DialEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
+
                         is DialEvent.LanguageSet -> {
                             viewBind.loadingView.visibility = View.GONE
                             adapter.notifyItemRemoved(event.position)

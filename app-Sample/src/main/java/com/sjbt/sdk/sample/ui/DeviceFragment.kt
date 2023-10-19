@@ -40,7 +40,7 @@ fun WmConnectState.toStringRes(): Int {
 }
 
 const val TAG = "DeviceFragment"
-class DeviceFragment : BaseFragment(R.layout.fragment_device) {
+class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDialogFragment.Listener{
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
 
@@ -222,17 +222,15 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) {
         }
     }
 
-//    override fun navToConnectHelp() {
-//        findNavController().navigate(DeviceFragmentDirections.toConnectHelp())
-//    }
-//
-//    override fun navToBgRunSettings() {
-//        findNavController().navigate(DeviceFragmentDirections.toBgRunSettings())
-//    }
+    override fun navToConnectHelp() {
+        findNavController().navigate(DeviceFragmentDirections.toConnectHelp())
+    }
 
-//    data class State(
-//        val asyncCheckUpgrade: Async<HardwareUpgradeInfo?> = Uninitialized
-//    )
+    override fun navToBgRunSettings() {
+        findNavController().navigate(DeviceFragmentDirections.toBgRunSettings())
+    }
+
+
 
 }
 
