@@ -205,9 +205,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
             }
 
-            override fun onDiscoveryDevice(device: BluetoothDevice) {
-                val wmDiscoverDevice = WmDiscoverDevice(device, 20)
-                discoveryObservableEmitter.onNext(wmDiscoverDevice)
+            override fun onDiscoveryDevice(device: WmDiscoverDevice) {
+                discoveryObservableEmitter.onNext(device)
             }
 
             override fun onStartDiscovery() {
@@ -441,6 +440,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
                                     appCamera.observeDeviceCamera(msg[16].toInt() == 1)
+                                    sendNormalMsg(
+                                        CmdHelper.getCameraRespondCmd(
+                                            CMD_ID_8029, 1.toByte()
+                                        )
+                                    )
                                 }
 
                                 CMD_ID_802A -> {//监听打开相机
@@ -662,7 +666,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     CMD_STR_8001_TIME_OUT, CMD_STR_8002_TIME_OUT -> {
                         mBtEngine.clearStateMap()
                         mBtEngine.clearMsgQueue()
-
+                        ClsUtils.removeBond(BluetoothDevice::class.java, mCurrDevice)
 //                        disconnect()
 //                        btStateChange(WmConnectState.DISCONNECTED)
                     }
@@ -1054,11 +1058,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_SETTING -> {//设置同步
                     when (it.urn[1]) {
                         URN_SETTING_SPORT -> {//运动目标
-                            if (it.data.size <= 1) {
-                                wmLog.logD(TAG, "体育目标设置成功")
-                            } else {
-                                settingSportGoal.sportInfoBusiness(it)
-                            }
+                            settingSportGoal.sportInfoBusiness(it)
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息
@@ -1129,7 +1129,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         URN_APP_RATE -> {
 
                         }
+                    }
+                }
 
+                URN_APP_CONTROL -> {
+                    when (it.urn[1]) {
                         URN_APP_FIND_PHONE, URN_APP_FIND_DEVICE -> {
                             appFind.appFindBusiness(it)
                         }
@@ -1289,7 +1293,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     override fun disconnect() {
-        mBtEngine.closeSocket("user", true)
+        mBtEngine.closeSocket("app", true)
     }
 
 

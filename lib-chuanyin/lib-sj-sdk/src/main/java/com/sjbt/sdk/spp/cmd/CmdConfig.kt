@@ -270,17 +270,19 @@ const val URN_APP_WEATHER_PUSH_TODAY: Byte = URN_1
 const val URN_APP_WEATHER_PUSH_SIX_DAYS: Byte = URN_2
 const val URN_APP_RATE: Byte = URN_5
 
-const val URN_APP_FIND_PHONE: Byte = URN_6
+
+const val URN_APP_CONTROL: Byte = URN_5
+const val URN_APP_FIND_PHONE: Byte = URN_1
 const val URN_APP_FIND_PHONE_START: Byte = URN_1
 const val URN_APP_FIND_PHONE_STOP: Byte = URN_2
 
-const val URN_APP_FIND_DEVICE: Byte = URN_7
+const val URN_APP_FIND_DEVICE: Byte = URN_2
 const val URN_APP_FIND_DEVICE_START: Byte = URN_1
 const val URN_APP_FIND_DEVICE_STOP: Byte = URN_2
 
-const val URN_APP_MUSIC_CONTROL: Byte = URN_B
+const val URN_APP_MUSIC_CONTROL: Byte = URN_4
 
-const val URN_SPORT: Byte = URN_5
+const val URN_SPORT: Byte = URN_6
 
 const val CHANGE_CAMERA = 0.toByte()
 const val CHANGE_FLASH = 1.toByte()
