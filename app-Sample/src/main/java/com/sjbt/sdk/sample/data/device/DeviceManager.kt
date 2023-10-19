@@ -28,7 +28,6 @@ import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.CompletableEmitter
 import io.reactivex.rxjava3.core.CompletableOnSubscribe
