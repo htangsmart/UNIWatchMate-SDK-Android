@@ -2,6 +2,7 @@ package com.sjbt.sdk.sample.ui.device.contacts
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.view.Menu
@@ -57,35 +58,56 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val viewBind: FragmentContactsBinding by viewBinding()
     private val viewModel: ContactsViewModel by viewModels()
+    private val emergencyModel: EmergecyContactViewModel by viewModels()
     private lateinit var adapter: ContactsAdapter
 
     private val pickContact =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val uri = result.data?.data
             if (result.resultCode == Activity.RESULT_OK && uri != null) {
-                val projection = arrayOf(
-                    ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
-                )
-                val cursor =
-                    requireContext().contentResolver.query(uri, projection, null, null, null)
-                if (cursor != null && cursor.moveToFirst()) {
-                    val numberIndex =
-                        cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                    val nameIndex =
-                        cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                    var number = cursor.getString(numberIndex)
-                    val name = cursor.getString(nameIndex)
-                    Timber.i("select contacts result: [$name , $number]")
-                    cursor.close()
-                    if (!name.isNullOrEmpty() && !number.isNullOrEmpty()) {
-                        number = number.replace(" ".toRegex(), "")
-                        val newContact = WmContact.create(name, number)
-                        newContact?.let { viewModel.addContacts(it) }
-                    }
-                }
+                getContact(uri, false)
             }
         }
+
+    private val pickEmergencyContact =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val uri = result.data?.data
+            if (result.resultCode == Activity.RESULT_OK && uri != null) {
+                getContact(uri, true)
+            }
+        }
+
+    private fun getContact(uri: Uri, emergency: Boolean) {
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+        )
+        val cursor =
+            requireContext().contentResolver.query(uri, projection, null, null, null)
+        if (cursor != null && cursor.moveToFirst()) {
+            val numberIndex =
+                cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+            val nameIndex =
+                cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+            var number = cursor.getString(numberIndex)
+            val name = cursor.getString(nameIndex)
+            Timber.i("select contacts result: [$name , $number]")
+            cursor.close()
+            if (!name.isNullOrEmpty() && !number.isNullOrEmpty()) {
+                number = number.replace(" ".toRegex(), "")
+                val newContact = WmContact.create(name, number)
+                newContact?.let {
+                    if (emergency) {
+                        emergencyModel.setEmergencyContact(it)
+                    } else {
+
+                    }
+                    viewModel.addContacts(it)
+                }
+            }
+
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,7 +157,21 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             viewModel.requestContacts()
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
-
+        viewBind.itemEmergencyContactSwitch.getSwitchView()
+            ?.setOnCheckedChangeListener { buttonView, isChecked ->
+                emergencyModel.setEmergencyEnbalbe(isChecked)
+            }
+        viewBind.itemEmergencyContact.setOnClickListener {
+            viewLifecycleScope.launchWhenResumed {
+                PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
+                    if (granted) {
+                        pickEmergencyContact.launch(Intent(Intent.ACTION_PICK).apply {
+                            type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
+                        })
+                    }
+                }
+            }
+        }
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
                 if ((adapter.sources?.size ?: 0) >= 10) {
@@ -177,6 +213,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             adapter.notifyDataSetChanged()
                             viewBind.fabAdd.show()
                         }
+
                         else -> {}
                     }
                 }
@@ -202,6 +239,44 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
                         is ContactsEvent.NavigateUp -> {
                             findNavController().navigateUp()
+                        }
+                    }
+                }
+            }
+
+
+            launch {
+                emergencyModel.flowState.collect { state ->
+                    when (state.requestEmergencyCall) {
+                        is Fail -> {
+                            viewBind.llEmergency.visibility = View.GONE
+                        }
+                        is Success -> {
+                            val emergencyCall = state.requestEmergencyCall()
+                            if (emergencyCall == null) {
+                            } else {
+                                viewBind.loadingView.visibility = View.GONE
+                                viewBind.llEmergency.visibility = View.VISIBLE
+                                if (emergencyCall.emergencyContacts.size > 0) {
+                                    viewBind.itemEmergencyContactSwitch.getSwitchView()?.isChecked =
+                                        emergencyCall.isEnabled
+                                    viewBind.itemEmergencyContact.getTitleView()?.text =
+                                        emergencyCall.emergencyContacts[0].name
+                                    viewBind.itemEmergencyContact.getTextView()?.text =
+                                        emergencyCall.emergencyContacts[0].number
+                                }
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+            launch {
+                emergencyModel.flowEvent.collect { event ->
+                    when (event) {
+                        is EmergencyCallEvent.RequestFail -> {
+                            promptToast.showFailed(event.throwable)
                         }
                     }
                 }

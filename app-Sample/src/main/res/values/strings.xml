@@ -299,6 +299,7 @@
 
     <!--Contacts-->
     <string name="ds_contacts">Frequent Contacts</string>
+    <string name="ds_emergency_contacts">Emergency Contacts</string>
     <string name="ds_contacts_tips1">Up to 10 favorite contacts can be added.</string>
 
     <!--Device Settings:Sport push-->

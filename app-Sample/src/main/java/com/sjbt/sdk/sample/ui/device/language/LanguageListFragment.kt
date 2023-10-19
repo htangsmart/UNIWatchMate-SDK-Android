@@ -25,12 +25,11 @@ import kotlinx.coroutines.launch
 class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
 
     private val viewBind: FragmentLanguageListBinding by viewBinding()
-    private val viewModel: LanguagelInstalledViewModel by viewModels({ requireParentFragment() })
+    private val viewModel: LanguagelInstalledViewModel by viewModels()
     private lateinit var adapter: LanguageListAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
 
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         viewBind.recyclerView.addItemDecoration(
