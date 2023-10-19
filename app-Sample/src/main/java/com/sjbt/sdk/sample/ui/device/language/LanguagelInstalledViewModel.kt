@@ -31,20 +31,21 @@ class LanguagelInstalledViewModel : StateEventViewModel<DialState, DialEvent>(Di
 
     fun requestLanguages() {
         viewModelScope.launch {
-//            state.copy(requestLanguages = Loading()).newState()
-//            runCatchingWithLog {
-//                UNIWatchMate.wmApps.appLanguage.syncLanguageList.await()
-//            }.onSuccess {
-//                if (it is MutableList) {
-//                    state.copy(requestLanguages = Success(it)).newState()
-//                } else {
-//                    state.copy(requestLanguages = Fail(Throwable("result is not a mutable list")))
-//                        .newState()
-//                }
-//            }.onFailure {
-//                state.copy(requestLanguages = Fail(it)).newState()
-//                DialEvent.RequestFail(it).newEvent()
-//            }
+            state.copy(requestLanguages = Loading()).newState()
+            runCatchingWithLog {
+                UNIWatchMate.wmApps.appLanguage.syncLanguageList.await()
+            }.onSuccess {
+                UNIWatchMate.wmLog.logE("TAG", "language list: $it")
+                if (it is MutableList) {
+                    state.copy(requestLanguages = Success(it)).newState()
+                } else {
+                    state.copy(requestLanguages = Fail(Throwable("result is not a mutable list")))
+                        .newState()
+                }
+            }.onFailure {
+                state.copy(requestLanguages = Fail(it)).newState()
+                DialEvent.RequestFail(it).newEvent()
+            }
         }
     }
 

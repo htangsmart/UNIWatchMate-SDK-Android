@@ -54,12 +54,6 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
 
-        UNIWatchMate.wmApps.appLanguage.syncLanguageList.subscribe { lang ->
-            UNIWatchMate.wmLog.logE("TAG", "language list: $lang")
-
-        }
-
-
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 viewModel.flowState.collect { state ->

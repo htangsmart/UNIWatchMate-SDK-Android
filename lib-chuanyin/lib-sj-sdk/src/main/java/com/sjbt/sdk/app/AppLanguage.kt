@@ -8,7 +8,6 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
-import java.nio.charset.StandardCharsets
 
 class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     private var languageListEmitter: SingleEmitter<List<WmLanguage>>? = null
@@ -28,7 +27,7 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     override fun setLanguage(language: WmLanguage): Single<WmLanguage> {
         return Single.create {
             languageSetEmitter = it
-            sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteLanguageCmd(language.bcp))
+            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteLanguageCmd(language.bcp))
         }
     }
 
