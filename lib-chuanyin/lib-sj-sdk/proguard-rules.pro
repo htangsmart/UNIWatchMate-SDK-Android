@@ -206,8 +206,7 @@ public static final int *;
 }
 -keep class com.sjbt.sdk.utils.**{*;}
 -keep class com.sjbt.sdk.entity.**{*;}
--keep class com.sjbt.sdk.events.**{*;}
--keep class com.sjbt.sdk.**{*;}
+-keep class com.sjbt.sdk.SJUniWatch{*;}
 
 -keep class com.shenju.uparser.model**{*;}
 -keep class com.shenju.uparser**{*;}
