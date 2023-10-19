@@ -58,6 +58,8 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             }
 
             URN_APP_FIND_PHONE_START -> {
+                sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getResponseStartFindPhone())
+
                 val byteBuffer =
                     ByteBuffer.wrap(it.data)
                 val count = byteBuffer.get().toInt()
@@ -68,6 +70,8 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             }
 
             URN_APP_FIND_PHONE_STOP -> {
+                sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getResponseStopFindPhone())
+
                 val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
                 stopFindMobile.onNext(stopResult)
             }

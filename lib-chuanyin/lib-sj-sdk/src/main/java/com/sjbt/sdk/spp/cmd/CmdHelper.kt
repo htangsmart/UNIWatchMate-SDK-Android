@@ -1552,6 +1552,9 @@ object CmdHelper {
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
         byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+
+//        Log.e(">>>>>>>>","alarm name："+String(originNameArray))
+
         byteBuffer.put(originNameArray.copyOf(20))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
@@ -1673,6 +1676,7 @@ object CmdHelper {
         return payloadPackage
     }
 
+
     /**
      * 停止查找手表
      */
@@ -1680,6 +1684,26 @@ object CmdHelper {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
         payloadPackage.putData(getUrnId(URN_5, URN_2, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 回复查找手机
+     */
+    fun getResponseStartFindPhone(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_5, URN_1, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 回复停止查找手机
+     */
+    fun getResponseStopFindPhone(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_5, URN_1, URN_2), byteBuffer.array())
         return payloadPackage
     }
 
