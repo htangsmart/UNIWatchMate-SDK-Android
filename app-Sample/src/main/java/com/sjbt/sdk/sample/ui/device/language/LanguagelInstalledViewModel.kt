@@ -35,6 +35,7 @@ class LanguagelInstalledViewModel : StateEventViewModel<DialState, DialEvent>(Di
             runCatchingWithLog {
                 UNIWatchMate.wmApps.appLanguage.syncLanguageList.await()
             }.onSuccess {
+                UNIWatchMate.wmLog.logE("TAG", "language list: $it")
                 if (it is MutableList) {
                     state.copy(requestLanguages = Success(it)).newState()
                 } else {

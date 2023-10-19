@@ -28,7 +28,7 @@ class LanguageListAdapter() :
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val wmLanguage = sources?.get(position) ?: return
 
-        holder.viewBind.itemLanguageGridding.getTitleView().text = wmLanguage.name
+        holder.viewBind.itemLanguageGridding.getTitleView().text = wmLanguage.bcp
         holder.viewBind.itemLanguageGridding.getImageView().visibility = if(wmLanguage.curr_lang) View.VISIBLE else View.GONE
         holder.viewBind.itemLanguageGridding.getImageView().setImageResource(R.drawable.ic_baseline_done_24)
         holder.viewBind.itemLanguageGridding.setOnClickListener {

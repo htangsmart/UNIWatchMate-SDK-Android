@@ -1412,7 +1412,7 @@ object CmdHelper {
     /**
      * 获取设置语言命令
      */
-    fun getExecuteLanguageCmd(bcp: String): PayloadPackage {
+    fun getWriteLanguageCmd(bcp: String): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val bbSport: ByteBuffer = ByteBuffer.allocate(6)
         if (bcp.length <= 6) {
