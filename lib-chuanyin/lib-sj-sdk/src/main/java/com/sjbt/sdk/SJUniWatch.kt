@@ -19,6 +19,7 @@ import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
+import com.base.sdk.port.log.AbWmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
@@ -67,50 +68,50 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
     override val wmTransferFile = SJTransferFile(this)
-    override val wmLog: SJLog = SJLog(this)
+    override val wmLog: AbWmLog = SJLog(this)
     val mBtEngine: BtEngine = BtEngine(this)
     private val mBindStateMap = HashMap<String, Boolean>()
 
     //同步数据
-    private val syncActivity = wmSync.syncActivityData
-    private val syncCaloriesData = wmSync.syncCaloriesData
-    private val syncDeviceInfo = wmSync.syncDeviceInfoData
-    private val syncBatteryInfo = wmSync.syncBatteryInfo
-    private val syncDistanceData = wmSync.syncDistanceData
-    private val syncHeartRateData = wmSync.syncHeartRateData
-    private val syncOxygenData = wmSync.syncOxygenData
-    private val syncRealtimeRateData = wmSync.syncRealtimeRateData
-    private val syncSleepData = wmSync.syncSleepData
-    private val syncSportSummaryData = wmSync.syncSportSummaryData
-    private val syncStepData = wmSync.syncStepData
-    private val syncTodayTotalData = wmSync.syncTodayInfoData
+    private val syncActivity = wmSync.syncActivityData as SyncActivityData
+    private val syncCaloriesData = wmSync.syncCaloriesData as SyncCaloriesData
+    private val syncDeviceInfo = wmSync.syncDeviceInfoData as SyncDeviceInfo
+    private val syncBatteryInfo = wmSync.syncBatteryInfo as SyncBatteryInfo
+    private val syncDistanceData = wmSync.syncDistanceData as SyncDistanceData
+    private val syncHeartRateData = wmSync.syncHeartRateData as SyncHeartRateData
+    private val syncOxygenData = wmSync.syncOxygenData as SyncOxygenData
+    private val syncRealtimeRateData = wmSync.syncRealtimeRateData as SyncRealtimeRateData
+    private val syncSleepData = wmSync.syncSleepData as SyncSleepData
+    private val syncSportSummaryData = wmSync.syncSportSummaryData as SyncSportSummaryData
+    private val syncStepData = wmSync.syncStepData as SyncStepData
+    private val syncTodayTotalData = wmSync.syncTodayInfoData as SyncTodayTotalData
 
     //应用
-    private val appDateTime = wmApps.appDateTime
-    private val appCamera = wmApps.appCamera
-    private val appAlarm = wmApps.appAlarm
-    private val appContact = wmApps.appContact
-    private val appDial = wmApps.appDial
-    private val appFind = wmApps.appFind
-    private val appLanguage = wmApps.appLanguage
-    private val appNotification = wmApps.appNotification
-    private val appSport = wmApps.appSport
-    private val appWeather = wmApps.appWeather
-    private val appMusicControl = wmApps.appMusicControl
+    private val appDateTime = wmApps.appDateTime as AppDateTime
+    private val appCamera = wmApps.appCamera as AppCamera
+    private val appAlarm = wmApps.appAlarm as AppAlarm
+    private val appContact = wmApps.appContact as AppContact
+    private val appDial = wmApps.appDial as AppDial
+    private val appFind = wmApps.appFind as AppFind
+    private val appLanguage = wmApps.appLanguage as AppLanguage
+    private val appNotification = wmApps.appNotification as AppNotification
+    private val appSport = wmApps.appSport as AppSport
+    private val appWeather = wmApps.appWeather as AppWeather
+    private val appMusicControl = wmApps.appMusicControl as AppMusicControl
 
     //设置
-    private val settingAppView = wmSettings.settingAppView
-    private val settingHeartRateAlerts = wmSettings.settingHeartRate
-    private val settingPersonalInfo = wmSettings.settingPersonalInfo
+    private val settingAppView = wmSettings.settingAppView as SettingAppView
+    private val settingHeartRateAlerts = wmSettings.settingHeartRate as SettingHeartRateAlerts
+    private val settingPersonalInfo = wmSettings.settingPersonalInfo as SettingPersonalInfo
     private val settingSedentaryReminder =
-        wmSettings.settingSedentaryReminder
-    private val settingSoundAndHaptic = wmSettings.settingSoundAndHaptic
-    private val settingSportGoal = wmSettings.settingSportGoal
-    private val settingUnitInfo = wmSettings.settingUnitInfo
-    private val settingWistRaise = wmSettings.settingWistRaise
-    private val settingSleepSet = wmSettings.settingSleepSettings
+        wmSettings.settingSedentaryReminder as SettingSedentaryReminder
+    private val settingSoundAndHaptic = wmSettings.settingSoundAndHaptic as SettingSoundAndHaptic
+    private val settingSportGoal = wmSettings.settingSportGoal as SettingSportGoal
+    private val settingUnitInfo = wmSettings.settingUnitInfo as SettingUnitInfo
+    private val settingWistRaise = wmSettings.settingWistRaise as SettingWistRaise
+    private val settingSleepSet = wmSettings.settingSleepSettings as SettingSleepSet
     private val settingDrinkWaterReminder =
-        wmSettings.settingDrinkWater
+        wmSettings.settingDrinkWater as SettingDrinkWaterReminder
 
     private val gson = Gson()
     private var sharedPreferencesUtils: SharedPreferencesUtils
@@ -242,7 +243,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                        wmLog.logSDK(TAG, "bindinfo:" + it)
+                                        (wmLog as SJLog).logSDK(TAG, "bindinfo:" + it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -522,12 +523,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8003 -> {
                                     val frameSuccess = msg[16]
 
-                                    wmLog.logSDK(TAG, "发送成功：$frameSuccess")
-                                    wmLog.logSDK(
+                                    (wmLog as SJLog).logSDK(TAG, "发送成功：$frameSuccess")
+                                    (wmLog as SJLog).logSDK(
                                         TAG, "发送下一帧：" + appCamera.mH264FrameMap.frameCount
                                     )
 
-                                    wmLog.logSDK(
+                                    (wmLog as SJLog).logSDK(
                                         TAG,
                                         "continueUpdateFrame 03:${appCamera.continueUpdateFrame}"
                                     )
@@ -548,7 +549,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
 //                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
                                     if (msgBean.payload.size > 10) {//设备应用层回复
-                                        wmLog.logSDK(TAG, "应用层消息：" + msgBean.payload.size)
+                                        (wmLog as SJLog).logSDK(
+                                            TAG,
+                                            "应用层消息：" + msgBean.payload.size
+                                        )
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
@@ -556,7 +560,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         parseNodePayload(true, msgBean, payloadPackage)
 
                                     } else {//设备传输层回复
-                                        wmLog.logSDK(TAG, "传输层消息：" + msgBean.payload.size)
+                                        (wmLog as SJLog).logSDK(
+                                            TAG,
+                                            "传输层消息：" + msgBean.payload.size
+                                        )
                                         mPayloadPackage?.let {
                                             it.itemList[0].data = msgBean.payload
 
@@ -570,18 +577,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
-                                        wmLog.logSDK(TAG, "应用层消息：" + msgBean.payloadLen)
+                                        (wmLog as SJLog).logSDK(TAG, "应用层消息：" + msgBean.payloadLen)
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
 
                                         parseNodePayload(true, msgBean, payloadPackage)
                                     } else {//设备传输层回复
-                                        wmLog.logSDK(TAG, "传输层消息：" + msgBean.payloadLen)
+                                        (wmLog as SJLog).logSDK(TAG, "传输层消息：" + msgBean.payloadLen)
 
                                     }
 
-                                    wmLog.logSDK(TAG, "响应消息：" + msgBean.payload.size)
+                                    (wmLog as SJLog).logSDK(TAG, "响应消息：" + msgBean.payload.size)
 
                                 }
 
@@ -589,11 +596,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     MTU =
                                         BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
                                     mtuEmitter?.onSuccess(MTU)
-                                    wmLog.logD(TAG, "MTU:$MTU")
+                                    (wmLog as SJLog).logD(TAG, "MTU:$MTU")
                                 }
 
                                 CMD_ID_8004 -> {
-                                    wmLog.logSDK(TAG, "收到通讯层消息：" + msgBean.payload.size)
+                                    (wmLog as SJLog).logSDK(TAG, "收到通讯层消息：" + msgBean.payload.size)
                                 }
                             }
                         }
@@ -871,6 +878,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
             }
         }
+    }
+
+    fun logSdk(TAG: String, msg: String) {
+        (wmLog as SJLog).logSDK(TAG, msg)
     }
 
     private fun removeDevice() {

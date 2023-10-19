@@ -8,17 +8,17 @@ import com.sjbt.sdk.SJUniWatch
 
 class SJSyncData(sjUniWatch: SJUniWatch) : AbWmSyncs() {
 
-    override var syncStepData = SyncStepData()
-    override var syncOxygenData = SyncOxygenData()
-    override var syncCaloriesData = SyncCaloriesData()
-    override var syncSleepData = SyncSleepData()
-    override var syncRealtimeRateData = SyncRealtimeRateData()
-    override var syncHeartRateData = SyncHeartRateData()
-    override var syncDistanceData = SyncDistanceData()
-    override var syncActivityData = SyncActivityData()
-    override var syncSportSummaryData = SyncSportSummaryData()
-    override var syncDeviceInfoData = SyncDeviceInfo(sjUniWatch)
-    override var syncTodayInfoData = SyncTodayTotalData()
-    override val syncBatteryInfo = SyncBatteryInfo(sjUniWatch)
+    override var syncStepData: AbSyncData<List<WmStepData>> = SyncStepData()
+    override var syncOxygenData: AbSyncData<List<WmOxygenData>> = SyncOxygenData()
+    override var syncCaloriesData: AbSyncData<List<WmCaloriesData>> = SyncCaloriesData()
+    override var syncSleepData: AbSyncData<List<WmSleepData>> = SyncSleepData()
+    override var syncRealtimeRateData: AbSyncData<List<WmRealtimeRateData>> = SyncRealtimeRateData()
+    override var syncHeartRateData: AbSyncData<List<WmHeartRateData>> = SyncHeartRateData()
+    override var syncDistanceData: AbSyncData<List<WmDistanceData>> = SyncDistanceData()
+    override var syncActivityData: AbSyncData<List<WmActivityData>> = SyncActivityData()
+    override var syncSportSummaryData: AbSyncData<List<WmSportSummaryData>> = SyncSportSummaryData()
+    override var syncDeviceInfoData: AbSyncData<WmDeviceInfo> = SyncDeviceInfo(sjUniWatch)
+    override var syncTodayInfoData: AbSyncData<WmTodayTotalData> = SyncTodayTotalData()
+    override val syncBatteryInfo: AbSyncData<WmBatteryInfo> = SyncBatteryInfo(sjUniWatch)
 
 }
