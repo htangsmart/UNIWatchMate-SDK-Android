@@ -175,8 +175,7 @@ class DeviceConnectDialogFragment : AppCompatDialogFragment() {
 
     private fun showDisconnectedReason() {
         viewBind.layoutConnecting.isVisible = false
-        viewBind.layoutAction.isVisible = true
-
+        viewBind.layoutAction.isVisible = false
     }
 
     private fun showConnectingTips() {

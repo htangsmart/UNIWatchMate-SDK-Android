@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.FileType
 import com.base.sdk.port.State
@@ -21,14 +22,18 @@ import com.sjbt.sdk.sample.BuildConfig
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BTConfig
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.ToastUtil.showToast
+import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
+import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.flow.catch
@@ -47,6 +52,17 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     private val applicationScope = Injector.getApplicationScope()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewLifecycle.launchRepeatOnStarted {
+            kotlin.run {
+                deviceManager.flowStateConnected().collect{
+                    viewBind.layoutContent.setAllChildEnabled(it)
+                    if (!it) {
+                        promptProgress.dismiss()
+                    }
+                }
+            }
+        }
+
         viewBind.itemFindDevice.clickTrigger {
             viewLifecycleScope.launchWhenStarted {
               val appFind =  UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
@@ -158,6 +174,10 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     private fun startOta() {
         applicationScope.launchWithLog {
             runCatchingWithLog {
+                if (deviceManager.flowConnectorState.value != WmConnectState.VERIFIED) {
+                    showToast(getString(R.string.device_state_disconnected))
+                    return@launchWithLog
+                }
                 val fileList = mutableListOf<File>()
                 otaFile?.let { otaFile ->
                     promptProgress.showProgress(getString(R.string.action_updating))

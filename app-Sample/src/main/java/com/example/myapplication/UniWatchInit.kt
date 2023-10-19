@@ -37,8 +37,8 @@ fun uniWatchInit(application: Application) {
     )
 }
 
-class SJUniWatchImpl(override var mContext: Application,
-                     override var mMsgTimeOut: Int
+class SJUniWatchImpl(mContext: Application,
+                     mMsgTimeOut: Int
 ) : SJUniWatch(mContext,mMsgTimeOut) {
 
 }
