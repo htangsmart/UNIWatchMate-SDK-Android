@@ -2,7 +2,6 @@ package com.sjbt.sdk.app
 
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import com.base.sdk.entity.apps.WmCameraFrameInfo
 import com.base.sdk.port.app.AbAppCamera
 import com.base.sdk.port.app.WMCameraFlashMode

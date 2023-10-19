@@ -4,8 +4,6 @@ import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.port.app.AbAppMusicControl
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.NodeData
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.subjects.PublishSubject
 
 class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
