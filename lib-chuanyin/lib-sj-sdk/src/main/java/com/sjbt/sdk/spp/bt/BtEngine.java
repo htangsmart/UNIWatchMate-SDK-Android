@@ -24,7 +24,6 @@ import android.os.Message;
 
 import com.sjbt.sdk.SJUniWatch;
 import com.sjbt.sdk.entity.MsgBean;
-import com.sjbt.sdk.log.SJLog;
 import com.sjbt.sdk.spp.cmd.CmdHelper;
 import com.sjbt.sdk.utils.BtUtils;
 
@@ -67,7 +66,7 @@ public class BtEngine {
     public static final int TRANSFER_END_TIMEOUT = 15000;
     private static int DEFAULT_MSG_TIMEOUT = 10 * 1000;
     private static int MIN_MSG_TIMEOUT = 5 * 1000;
-    private static HashMap<String, Runnable> msgQueue = new HashMap<>();
+    private static HashMap<String, Runnable> msgQueueMap = new HashMap<>();
     private static Handler mHandler = new Handler(Looper.myLooper());
     private static Handler mUIHandler = new Handler(Looper.getMainLooper());
 
@@ -196,11 +195,11 @@ public class BtEngine {
                                 msgTimeCode = sbCode.toString();
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"返回MSGCode：" + msgTimeCode);
-                                Runnable runnable = msgQueue.get(msgTimeCode);
+                                Runnable runnable = msgQueueMap.get(msgTimeCode);
 
                                 if (runnable != null) {
                                     mHandler.removeCallbacks(runnable);
-                                    msgQueue.remove(msgTimeCode);
+                                    msgQueueMap.remove(msgTimeCode);
                                 }
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"BIU APP 正常 消息队列：" + msgQueue.keySet());
@@ -327,16 +326,16 @@ public class BtEngine {
 
             if (!notSetTimeOut(type, cmdId)) {
                 String msgTimeCode = byte2Hex(bytes).substring(0, 8).toUpperCase();
-                msgQueue.put(msgTimeCode, new Runnable() {
+                msgQueueMap.put(msgTimeCode, new Runnable() {
                     @Override
                     public void run() {
                         mSjUniWatch.getWmLog().logSDK(TAG, "消息发送超时回调：" + msgTimeCode);
                         notifyUI(Listener.TIME_OUT, bytes);
-                        mHandler.removeCallbacks(msgQueue.get(msgTimeCode));
-                        msgQueue.remove(msgTimeCode);
+                        mHandler.removeCallbacks(msgQueueMap.get(msgTimeCode));
+                        msgQueueMap.remove(msgTimeCode);
                     }
                 });
-                mHandler.postDelayed(msgQueue.get(msgTimeCode), DEFAULT_MSG_TIMEOUT);
+                mHandler.postDelayed(msgQueueMap.get(msgTimeCode), DEFAULT_MSG_TIMEOUT);
             }
 
 //            mSjUniWatch.getWmLog().logSDK(TAG,"开启子线程读取.容许最大长度Receive:" + mSocket.getMaxReceivePacketSize());
@@ -586,11 +585,11 @@ public class BtEngine {
                 msgTimeCode = sbCode.toString();
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"返回MSGCode：" + msgTimeCode);
-                Runnable runnable = msgQueue.get(msgTimeCode);
+                Runnable runnable = msgQueueMap.get(msgTimeCode);
 
                 if (runnable != null) {
                     mHandler.removeCallbacks(runnable);
-                    msgQueue.remove(msgTimeCode);
+                    msgQueueMap.remove(msgTimeCode);
                 }
 
                 notifyUI(Listener.MSG, tempMsg);
@@ -635,20 +634,20 @@ public class BtEngine {
     }
 
     public void clearMsgQueue() {
-        if (msgQueue.size() > 0) {
-            for (String str : msgQueue.keySet()) {
-                mHandler.removeCallbacks(msgQueue.get(str));
+        if (msgQueueMap.size() > 0) {
+            for (String str : msgQueueMap.keySet()) {
+                mHandler.removeCallbacks(msgQueueMap.get(str));
             }
-            msgQueue.clear();
+            msgQueueMap.clear();
         }
     }
 
     private static void clearMessageQueue() {
-        if (msgQueue.size() > 0) {
-            for (String str : msgQueue.keySet()) {
-                mHandler.removeCallbacks(msgQueue.get(str));
+        if (msgQueueMap.size() > 0) {
+            for (String str : msgQueueMap.keySet()) {
+                mHandler.removeCallbacks(msgQueueMap.get(str));
             }
-            msgQueue.clear();
+            msgQueueMap.clear();
         }
     }
 
