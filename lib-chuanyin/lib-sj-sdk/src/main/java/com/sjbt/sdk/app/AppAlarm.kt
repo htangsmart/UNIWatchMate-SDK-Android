@@ -120,28 +120,30 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                 sjUniWatch.wmLog.logD(TAG, "Alarm Count：$count")
 
                 if (count > 0) {
-                    val byteBuffer = ByteBuffer.wrap(it.data)
-                    for (i in 0..count) {
-                        val id = byteBuffer.get().toInt()
-                        val nameArray =
-                            byteBuffer.array().copyOfRange(1, 21).takeWhile { it > 0 }.toByteArray()
-                        val name = String(nameArray, StandardCharsets.UTF_8)
-                        sjUniWatch.wmLog.logD(TAG, "Alarm Id:$id Name：$name")
+                    for (i in 0 until count) {
 
-                        val hour = byteBuffer.get()
-                        val minute = byteBuffer.get()
-                        val repeatOptions = byteBuffer.get()
-                        val isEnable = byteBuffer.get()
+                        val alarmArray = it.data.copyOfRange(i * 25, i * 25 + 25)
+                        val id = alarmArray[0].toInt()
+                        val nameArray = alarmArray.copyOfRange(1, 21).takeWhile { it.toInt() != 0 }.toByteArray()
+                        val name = String(nameArray, StandardCharsets.UTF_8)
+                        sjUniWatch.wmLog.logD(TAG, "name:$name")
+
+                        val hour = alarmArray[21].toInt()
+                        val minute = alarmArray[22].toInt()
+                        val repeatOptions = alarmArray[23].toInt()
+                        val isEnable = alarmArray[24].toInt()
 
                         val wmAlarm =
                             WmAlarm(
                                 name,
-                                hour.toInt(),
-                                minute.toInt(),
-                                AlarmRepeatOption.fromValue(repeatOptions.toInt())
+                                hour,
+                                minute,
+                                AlarmRepeatOption.fromValue(repeatOptions)
                             )
 
-                        wmAlarm.isOn = isEnable.toInt() == 1
+                        sjUniWatch.wmLog.logD(TAG, "Alarm INFO:$wmAlarm ")
+
+                        wmAlarm.isOn = isEnable == 1
                         wmAlarm.alarmId = id
                         if (id != 0) {
                             alarmList.add(wmAlarm)
