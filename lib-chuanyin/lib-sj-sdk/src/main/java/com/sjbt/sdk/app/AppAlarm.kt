@@ -117,15 +117,16 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             URN_APP_ALARM_LIST -> {
                 val alarmList = mutableListOf<WmAlarm>()
                 val count = it.dataLen / 25
-                sjUniWatch.wmLog.logD(TAG, "闹钟消息长度：" + count)
+                sjUniWatch.wmLog.logD(TAG, "Alarm Count：$count")
 
                 if (count > 0) {
                     val byteBuffer = ByteBuffer.wrap(it.data)
                     for (i in 0..count) {
                         val id = byteBuffer.get()
-                        val nameArray = byteBuffer.array().copyOfRange(1,21)
-//                        byteBuffer.get(nameArray, 1, 20)
+                        val nameArray =
+                            byteBuffer.array().copyOfRange(1, 21).takeWhile { it > 0 }.toByteArray()
                         val name = String(nameArray, StandardCharsets.UTF_8)
+                        sjUniWatch.wmLog.logD(TAG, "Alarm Name：$name")
 
                         val hour = byteBuffer.get()
                         val minute = byteBuffer.get()

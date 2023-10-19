@@ -8,6 +8,8 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     private var languageListEmitter: SingleEmitter<List<WmLanguage>>? = null
@@ -52,7 +54,7 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
 
 //                    sjUniWatch.wmLog.logE(TAG, "language bcpArray:" + bcpArray.size)
 
-                    val bcp = bcpArray.decodeToString()
+                    val bcp = String(bcpArray, StandardCharsets.UTF_8)
 
 //                    sjUniWatch.wmLog.logE(TAG, "language bcp:" + bcp)
 
