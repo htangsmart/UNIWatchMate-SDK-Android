@@ -9,12 +9,12 @@ import io.reactivex.rxjava3.core.SingleEmitter
 
 class SyncDistanceData : AbSyncData<List<WmDistanceData>>() {
 
-    var is_support: Boolean = true
+    var isSupport: Boolean = true
     var lastSyncTime: Long = 0
     private var activityObserveEmitter: SingleEmitter<List<WmDistanceData>>? = null
     private var observeChangeEmitter: ObservableEmitter<List<WmDistanceData>>? = null
     override fun isSupport(): Boolean {
-        return is_support
+        return isSupport
     }
 
     override fun latestSyncTime(): Long {

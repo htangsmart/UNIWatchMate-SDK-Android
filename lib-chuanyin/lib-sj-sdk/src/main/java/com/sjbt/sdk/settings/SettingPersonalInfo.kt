@@ -1,11 +1,9 @@
 package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmPersonalInfo
-import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.NodeData
-import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*

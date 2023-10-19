@@ -32,7 +32,7 @@ class SyncDeviceInfo(uniWatch: SJUniWatch) : AbSyncData<WmDeviceInfo>() {
      * 获取基本信息
      * @param
      */
-    fun getBasicInfo() {
+    private fun getBasicInfo() {
         uniWatch.sendNormalMsg(CmdHelper.baseInfoCmd)
     }
 

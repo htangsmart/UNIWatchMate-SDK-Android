@@ -67,7 +67,7 @@ public class BtEngine {
     public static final int TRANSFER_END_TIMEOUT = 15000;
     private static int DEFAULT_MSG_TIMEOUT = 10 * 1000;
     private static int MIN_MSG_TIMEOUT = 5 * 1000;
-    private static HashMap<String, Runnable> msgQueue = new HashMap<>();
+    private static HashMap<String, Runnable> msgQueueMap = new HashMap<>();
     private static Handler mHandler = new Handler(Looper.myLooper());
     private static Handler mUIHandler = new Handler(Looper.getMainLooper());
 
@@ -112,22 +112,23 @@ public class BtEngine {
 
     public BtEngine(SJUniWatch sjUniWatch) {
         mSjUniWatch = sjUniWatch;
-        mSjUniWatch.getWmLog().logSDK(TAG, "BtEngine() 构建");
+        logSdk("BtEngine() 构建");
         myHandlerThread.startThread();
     }
-
 
     public Listener getListener() {
         return mListener;
     }
-
+    private static void logSdk(String msg){
+        ((SJLog)mSjUniWatch.getWmLog()).logSDK(TAG, msg);
+    }
     /**
      * 循环读取对方数据(若没有数据，则阻塞等待)
      */
     private static void socketConnectRead() throws IOException {
 
         if (!mSocket.isConnected()) {
-            mSjUniWatch.getWmLog().logSDK(TAG, "开始连接-->:" + mDevice);
+            logSdk("开始连接-->:" + mDevice.getAddress());
 
             mStateMap.put(mDevice.getAddress(), STATE_CONNECTING);
             mSocket.connect();
@@ -138,7 +139,7 @@ public class BtEngine {
             mStateMap.put(mDevice.getAddress(), STATE_CONNECTED);
             BluetoothDevice device = mSocket.getRemoteDevice();
             clearMessageQueue();
-            mSjUniWatch.getWmLog().logSDK(TAG, "连接成功:" + device.getAddress());
+            logSdk("连接成功:" + device.getAddress());
             notifyUI(Listener.CONNECTED, device);
 
             EXECUTOR.execute(new Runnable() {
@@ -185,7 +186,7 @@ public class BtEngine {
                                 }
 
                                 String msgStr = byte2Hex(result).toUpperCase();
-                                mSjUniWatch.getWmLog().logSDK(TAG, "返回消息：" + msgStr);
+                                logSdk("返回消息：" + msgStr);
 
                                 String msgTimeCode = msgStr.substring(0, 8).toUpperCase();
 
@@ -196,11 +197,11 @@ public class BtEngine {
                                 msgTimeCode = sbCode.toString();
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"返回MSGCode：" + msgTimeCode);
-                                Runnable runnable = msgQueue.get(msgTimeCode);
+                                Runnable runnable = msgQueueMap.get(msgTimeCode);
 
                                 if (runnable != null) {
                                     mHandler.removeCallbacks(runnable);
-                                    msgQueue.remove(msgTimeCode);
+                                    msgQueueMap.remove(msgTimeCode);
                                 }
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"BIU APP 正常 消息队列：" + msgQueue.keySet());
@@ -233,7 +234,7 @@ public class BtEngine {
         }
 
         public void startThread() {
-            mSjUniWatch.getWmLog().logSDK(TAG, "startThread:启动线程");
+            logSdk("startThread:启动线程");
             start();
             mBzyHandler = new Handler(getLooper()) {
                 @Override
@@ -248,10 +249,10 @@ public class BtEngine {
 
                         case TYPE_CONNECT:
                             if (mDevice != null) {
-                                mSjUniWatch.getWmLog().logSDK(TAG, "创建BluetoothSocket：" + mDevice.getAddress());
+                                logSdk("创建BluetoothSocket：" + mDevice.getAddress());
                                 try {
                                     mSocket = mDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
-                                    mSjUniWatch.getWmLog().logSDK(TAG, "开启子线程读取" + mDevice.getAddress());
+                                    logSdk("开启子线程读取" + mDevice.getAddress());
                                     socketConnectRead();
                                 } catch (IOException e) {
 //                                    closeSocket("loopRead异常 " + e, true);
@@ -259,7 +260,7 @@ public class BtEngine {
                                     notifyErrorOnUI("3-" + e.getMessage());
                                 }
                             } else {
-                                mSjUniWatch.getWmLog().logSDK(TAG, "设备异常Device=null");
+                                logSdk("设备异常Device=null");
                             }
                             break;
                     }
@@ -327,22 +328,22 @@ public class BtEngine {
 
             if (!notSetTimeOut(type, cmdId)) {
                 String msgTimeCode = byte2Hex(bytes).substring(0, 8).toUpperCase();
-                msgQueue.put(msgTimeCode, new Runnable() {
+                msgQueueMap.put(msgTimeCode, new Runnable() {
                     @Override
                     public void run() {
-                        mSjUniWatch.getWmLog().logSDK(TAG, "消息发送超时回调：" + msgTimeCode);
+                        logSdk("消息发送超时回调：" + msgTimeCode);
                         notifyUI(Listener.TIME_OUT, bytes);
-                        mHandler.removeCallbacks(msgQueue.get(msgTimeCode));
-                        msgQueue.remove(msgTimeCode);
+                        mHandler.removeCallbacks(msgQueueMap.get(msgTimeCode));
+                        msgQueueMap.remove(msgTimeCode);
                     }
                 });
-                mHandler.postDelayed(msgQueue.get(msgTimeCode), DEFAULT_MSG_TIMEOUT);
+                mHandler.postDelayed(msgQueueMap.get(msgTimeCode), DEFAULT_MSG_TIMEOUT);
             }
 
 //            mSjUniWatch.getWmLog().logSDK(TAG,"开启子线程读取.容许最大长度Receive:" + mSocket.getMaxReceivePacketSize());
             mSocket.getOutputStream().write(bytes);
             mSocket.getOutputStream().flush();
-            mSjUniWatch.getWmLog().logSDK(TAG, "发送消息：" + BtUtils.bytesToHexString(bytes));
+            logSdk("发送消息：" + BtUtils.bytesToHexString(bytes));
 
         } catch (Throwable e) {
 //            closeSocket("发送过程 " + e.getMessage(), true);
@@ -466,7 +467,7 @@ public class BtEngine {
 
             if (mSocket != null && mSocket.isConnected()) {
                 mSocket.close();
-                mSjUniWatch.getWmLog().logSDK(TAG, name + " 关闭Socket");
+                logSdk(name + " 关闭Socket");
 
                 if (isNotify) {
                     notifyUI(Listener.ON_SOCKET_CLOSE, null);
@@ -507,7 +508,7 @@ public class BtEngine {
                                     if (msgBean.cmdIdStr.equals(CMD_STR_8015) && msgBean.head == HEAD_COMMON) {
                                         byte busy = byteBuffer.get(16);
                                         deviceBusing = (busy == 1);
-                                        mSjUniWatch.getWmLog().logSDK(TAG, "正在忙：" + deviceBusing);
+                                        logSdk("正在忙：" + deviceBusing);
                                         if (deviceBusing) {
                                             mHandler.postDelayed(busyRun, 15000);
                                         } else {
@@ -527,11 +528,11 @@ public class BtEngine {
                             mListener.socketNotify(state, obj);
                         }
                     } else {
-                        mSjUniWatch.getWmLog().logSDK(TAG, "Listener 是NULL，消息无法下发");
+                        logSdk("Listener 是NULL，消息无法下发");
                     }
 
                 } catch (Throwable e) {
-                    mSjUniWatch.getWmLog().logSDK(TAG, "333.异常");
+                    logSdk("333.异常");
                     e.printStackTrace();
                 }
             }
@@ -586,11 +587,11 @@ public class BtEngine {
                 msgTimeCode = sbCode.toString();
 
 //                        mSjUniWatch.getWmLog().logSDK(TAG,"返回MSGCode：" + msgTimeCode);
-                Runnable runnable = msgQueue.get(msgTimeCode);
+                Runnable runnable = msgQueueMap.get(msgTimeCode);
 
                 if (runnable != null) {
                     mHandler.removeCallbacks(runnable);
-                    msgQueue.remove(msgTimeCode);
+                    msgQueueMap.remove(msgTimeCode);
                 }
 
                 notifyUI(Listener.MSG, tempMsg);
@@ -610,7 +611,7 @@ public class BtEngine {
                         if (mListener != null) {
                             mListener.onConnectFailed(mDevice, msg);
                         } else {
-                            mSjUniWatch.getWmLog().logSDK(TAG, "BtEngine listener was destroyed");
+                            logSdk("BtEngine listener was destroyed");
                         }
                     } catch (Throwable e) {
                         e.printStackTrace();
@@ -635,20 +636,20 @@ public class BtEngine {
     }
 
     public void clearMsgQueue() {
-        if (msgQueue.size() > 0) {
-            for (String str : msgQueue.keySet()) {
-                mHandler.removeCallbacks(msgQueue.get(str));
+        if (msgQueueMap.size() > 0) {
+            for (String str : msgQueueMap.keySet()) {
+                mHandler.removeCallbacks(msgQueueMap.get(str));
             }
-            msgQueue.clear();
+            msgQueueMap.clear();
         }
     }
 
     private static void clearMessageQueue() {
-        if (msgQueue.size() > 0) {
-            for (String str : msgQueue.keySet()) {
-                mHandler.removeCallbacks(msgQueue.get(str));
+        if (msgQueueMap.size() > 0) {
+            for (String str : msgQueueMap.keySet()) {
+                mHandler.removeCallbacks(msgQueueMap.get(str));
             }
-            msgQueue.clear();
+            msgQueueMap.clear();
         }
     }
 

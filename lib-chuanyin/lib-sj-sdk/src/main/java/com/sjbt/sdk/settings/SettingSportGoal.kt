@@ -5,7 +5,6 @@ import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.NodeData
-import com.sjbt.sdk.entity.RequestType
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer

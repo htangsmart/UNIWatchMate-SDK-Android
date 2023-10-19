@@ -1,6 +1,5 @@
 package com.sjbt.sdk.app
 
-import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherRequest
 import com.base.sdk.entity.apps.WmWeatherTime
@@ -12,8 +11,6 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SIX_DAYS
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_TODAY
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 import io.reactivex.rxjava3.subjects.PublishSubject

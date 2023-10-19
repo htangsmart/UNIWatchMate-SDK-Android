@@ -126,7 +126,6 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                         val nameArray =
                             byteBuffer.array().copyOfRange(1, 21).takeWhile { it > 0 }.toByteArray()
                         val name = String(nameArray, StandardCharsets.UTF_8)
-                        sjUniWatch.wmLog.logD(TAG, "Alarm Id:$id Name：$name")
 
                         val hour = byteBuffer.get()
                         val minute = byteBuffer.get()
@@ -140,6 +139,8 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                                 minute.toInt(),
                                 AlarmRepeatOption.fromValue(repeatOptions.toInt())
                             )
+
+                        sjUniWatch.wmLog.logD(TAG, "Alarm info:$wmAlarm")
 
                         wmAlarm.isOn = isEnable.toInt() == 1
                         wmAlarm.alarmId = id

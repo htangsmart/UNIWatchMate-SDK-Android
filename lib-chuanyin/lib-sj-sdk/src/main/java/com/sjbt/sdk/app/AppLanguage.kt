@@ -8,7 +8,6 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {

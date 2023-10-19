@@ -4,9 +4,10 @@ import android.util.Log
 import com.base.sdk.port.log.AbWmLog
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.TAG_SJ
-import com.sjbt.sdk.sdkLogEnable
 
 class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
+
+    val sdkDebugLogEnable = true
 
     override fun logE(tag: String, msg: String) {
         if (sjUniWatch.sdkLogEnable) {
@@ -33,7 +34,7 @@ class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
     }
 
     fun logSDK(tag: String, msg: String) {
-        if (sdkLogEnable) {
+        if (sdkDebugLogEnable) {
             Log.e("$TAG_SJ$tag:", msg)
         }
     }
