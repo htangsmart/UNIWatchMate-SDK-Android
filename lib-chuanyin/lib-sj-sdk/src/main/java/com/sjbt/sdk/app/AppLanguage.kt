@@ -3,6 +3,7 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmLanguage
 import com.base.sdk.port.app.AbAppLanguage
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
@@ -16,6 +17,9 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     private val languageList = mutableListOf<WmLanguage>()
 
     private val TAG = "AppLanguage"
+
+    private var wmLanguage: WmLanguage? = null
+
     override fun isSupport(): Boolean {
         return true
     }
@@ -26,6 +30,7 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     }
 
     override fun setLanguage(language: WmLanguage): Single<WmLanguage> {
+        wmLanguage = language
         return Single.create {
             languageSetEmitter = it
             sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteLanguageCmd(language.bcp))
@@ -33,10 +38,10 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
     }
 
     fun languageBusiness(
-        it: NodeData,
+        nodeData: NodeData,
         msgBean: MsgBean?
     ) {
-        when (it.urn[2]) {
+        when (nodeData.urn[2]) {
             URN_SETTING_LANGUAGE_LIST -> {
 
                 msgBean?.let {
@@ -45,11 +50,13 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
                     }
                 }
 
-                val languageCount = it.data.size / 6
+                val languageCount = nodeData.data.size / 6
+                var currLanguageBcp = ""
 
                 for (i in 0 until languageCount) {
                     val bcpArray =
-                        it.data.copyOfRange(6 * i, 6 * i + 6).takeWhile { it > 0 }.toByteArray()
+                        nodeData.data.copyOfRange(6 * i, 6 * i + 6).takeWhile { it > 0 }
+                            .toByteArray()
 
 //                    sjUniWatch.wmLog.logE(TAG, "language bcpArray:" + bcpArray.size)
 
@@ -57,15 +64,26 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
 
 //                    sjUniWatch.wmLog.logE(TAG, "language bcp:" + bcp)
 
-                    val language = WmLanguage(bcp, "", i == 0)
-                    languageList.add(language)
+                    if (i != 0) {
+                        val language = WmLanguage(bcp, "", bcp == currLanguageBcp)
+                        languageList.add(language)
+                    } else {
+                        currLanguageBcp = bcp
+                    }
                 }
 
                 languageListEmitter?.onSuccess(languageList)
             }
 
             URN_SETTING_LANGUAGE_SET -> {
-
+                wmLanguage?.let {
+                    val result = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                    if (result) {
+                        languageSetEmitter?.onSuccess(it)
+                    } else {
+                        languageSetEmitter?.onError(RuntimeException("set fail"))
+                    }
+                }
             }
         }
     }
