@@ -45,37 +45,45 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
     }
 
     fun appFindBusiness(it: NodeData) {
-        when (it.urn[2]) {
 
-            URN_APP_FIND_DEVICE_START -> {
-                val startResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
-                startFindWatchEmitter?.onSuccess(startResult)
+        when(it.urn[1]){
+            URN_APP_FIND_DEVICE->{
+                when (it.urn[2]) {
+
+                    URN_APP_FIND_DEVICE_START -> {
+                        val startResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
+                        startFindWatchEmitter?.onSuccess(startResult)
+                    }
+
+                    URN_APP_FIND_DEVICE_STOP -> {
+                        val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
+                        stopFindWatchEmitter?.onSuccess(stopResult)
+                    }
+                }
             }
 
-            URN_APP_FIND_DEVICE_STOP -> {
-                val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
-                stopFindWatchEmitter?.onSuccess(stopResult)
-            }
+            URN_APP_FIND_PHONE->{
+                when (it.urn[2]) {
 
-            URN_APP_FIND_PHONE_START -> {
-                sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getResponseStartFindPhone())
+                    URN_APP_FIND_PHONE_START -> {
+//                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStartFindPhone())
+                        val byteBuffer =
+                            ByteBuffer.wrap(it.data)
+                        val count = byteBuffer.get().toInt()
+                        val timeSeconds = BtUtils.byte2short(it.data.copyOfRange(1, 3)).toInt()
+                        val wmFind = WmFind(count, timeSeconds)
+                        sjUniWatch.wmLog.logD(TAG, "findMobile: $wmFind")
+                        observeFindMobile.onNext(wmFind)
+                    }
 
-                val byteBuffer =
-                    ByteBuffer.wrap(it.data)
-                val count = byteBuffer.get().toInt()
-                val timeSeconds = BtUtils.byte2short(it.data.copyOfRange(1, 3)).toInt()
-                val wmFind = WmFind(count, timeSeconds)
-                sjUniWatch.wmLog.logD(TAG, "findMobile: $wmFind")
-                observeFindMobile.onNext(wmFind)
-            }
-
-            URN_APP_FIND_PHONE_STOP -> {
-                sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getResponseStopFindPhone())
-
-                val stopResult = it.data[0].toInt()== ErrorCode.ERR_CODE_OK.ordinal
-                stopFindMobile.onNext(stopResult)
+                    URN_APP_FIND_PHONE_STOP -> {
+                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStopFindPhone())
+                        stopFindMobile.onNext(true)
+                    }
+                }
             }
         }
+
     }
 }
 
