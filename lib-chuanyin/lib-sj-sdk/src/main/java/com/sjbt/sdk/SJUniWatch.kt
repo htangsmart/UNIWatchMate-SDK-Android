@@ -323,6 +323,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     val wmAppView = WmAppView(appViews)
                                     settingAppView.getEmitter?.onSuccess(wmAppView)
+                                    settingAppView.observeEmitter?.onNext(wmAppView)
                                 }
 
                                 CMD_ID_8009 -> {//APP 视图设置

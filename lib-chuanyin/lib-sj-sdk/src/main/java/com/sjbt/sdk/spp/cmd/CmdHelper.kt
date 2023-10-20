@@ -1573,23 +1573,9 @@ object CmdHelper {
     /**
      * 删除闹钟
      */
-    fun getExecuteDeleteAlarmCmd(alarm: WmAlarm): PayloadPackage {
+    fun getExecuteDeleteAlarmCmd(alarmIds: List<Byte>): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
-        byteBuffer.put(alarm.alarmId.toByte())
-        val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
-        byteBuffer.put(originNameArray.copyOf(20))
-        byteBuffer.put(alarm.hour.toByte())
-        byteBuffer.put(alarm.minute.toByte())
-        byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
-        byteBuffer.put(
-            if (alarm.isOn) {
-                1.toByte()
-            } else {
-                0.toByte()
-            }
-        )
-        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_4), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_4), alarmIds.toByteArray())
         return payloadPackage
     }
 
@@ -1723,7 +1709,7 @@ object CmdHelper {
      * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
      */
     fun getWriteTodayWeatherCmd(
-        totalLen:Int,
+        totalLen: Int,
         temperatureUnit: WmUnitInfo.TemperatureUnit,
         wmWeather: WmWeather
     ): PayloadPackage {
@@ -1789,7 +1775,7 @@ object CmdHelper {
      * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
      */
     fun getWriteSevenTodayWeatherCmd(
-        totalLen:Int,
+        totalLen: Int,
         temperatureUnit: WmUnitInfo.TemperatureUnit,
         wmWeather: WmWeather
     ): PayloadPackage {

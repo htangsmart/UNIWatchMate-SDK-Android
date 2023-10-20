@@ -22,7 +22,7 @@ abstract class AbAppAlarm : IWmSupport {
     /**
      * deleteAlarm 删除闹钟
      */
-    abstract fun deleteAlarm(alarm: WmAlarm): Single<WmAlarm>
+    abstract fun deleteAlarm(alarms: List<WmAlarm>): Single<Boolean>
 
     /**
      * updateAlarm 更新闹钟

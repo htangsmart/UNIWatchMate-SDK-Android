@@ -50,9 +50,9 @@ class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
 
     fun setAppViewResult(isSuccess: Boolean) {
         if (isSuccess) {
-            getEmitter?.onSuccess(mAppView)
+            setEmitter?.onSuccess(mAppView)
         } else {
-            getEmitter?.onError(Throwable("set fail"))
+            setEmitter?.onError(Throwable("set fail"))
         }
     }
 }

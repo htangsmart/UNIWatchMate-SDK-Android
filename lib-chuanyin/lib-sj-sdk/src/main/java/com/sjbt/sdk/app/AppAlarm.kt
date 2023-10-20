@@ -11,7 +11,6 @@ import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
 class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
@@ -19,7 +18,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
     private var _isSupport: Boolean = true
     private var alarmListEmitter: ObservableEmitter<List<WmAlarm>>? = null
     private var addAlarmEmitter: SingleEmitter<WmAlarm>? = null
-    private var deleteAlarmEmitter: SingleEmitter<WmAlarm>? = null
+    private var deleteAlarmEmitter: SingleEmitter<Boolean>? = null
     private var updateAlarmEmitter: SingleEmitter<WmAlarm>? = null
 
     private var mAlarm: WmAlarm? = null
@@ -48,15 +47,9 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
     }
 
     private fun deleteSuccess(success: Boolean) {
-        mAlarm?.let {
-            deleteAlarmEmitter?.onSuccess(
-                if (success) {
-                    it
-                } else {
-                    null
-                }
-            )
-        }
+        deleteAlarmEmitter?.onSuccess(
+            success
+        )
     }
 
     private fun updateSuccess(success: Boolean) {
@@ -85,11 +78,11 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         }
     }
 
-    override fun deleteAlarm(alarm: WmAlarm): Single<WmAlarm> {
-        mAlarm = alarm
-        return Single.create {
-            deleteAlarmEmitter = it
-            sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteDeleteAlarmCmd(alarm))
+    override fun deleteAlarm(alarms: List<WmAlarm>): Single<Boolean> {
+        return Single.create { emitter ->
+            deleteAlarmEmitter = emitter
+            val itArray = alarms.map { it.alarmId.toByte() }
+            sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteDeleteAlarmCmd(itArray))
         }
     }
 
@@ -124,7 +117,8 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
                         val alarmArray = it.data.copyOfRange(i * 25, i * 25 + 25)
                         val id = alarmArray[0].toInt()
-                        val nameArray = alarmArray.copyOfRange(1, 21).takeWhile { it.toInt() != 0 }.toByteArray()
+                        val nameArray = alarmArray.copyOfRange(1, 21).takeWhile { it.toInt() != 0 }
+                            .toByteArray()
                         val name = String(nameArray, StandardCharsets.UTF_8)
                         sjUniWatch.wmLog.logD(TAG, "name:$name")
 
@@ -141,10 +135,11 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                                 AlarmRepeatOption.fromValue(repeatOptions)
                             )
 
-                        sjUniWatch.wmLog.logD(TAG, "Alarm INFO:$wmAlarm ")
 
                         wmAlarm.isOn = isEnable == 1
                         wmAlarm.alarmId = id
+                        sjUniWatch.wmLog.logD(TAG, "Alarm INFO:$wmAlarm ")
+
                         if (id != 0) {
                             alarmList.add(wmAlarm)
                         }
