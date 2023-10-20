@@ -10,21 +10,16 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmMusicControlType
-import com.base.sdk.entity.apps.WmWeatherTime
-import com.base.sdk.entity.settings.WmUnitInfo
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.Utils
-import com.example.myapplication.uniWatchInit
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
 import com.sjbt.sdk.sample.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
-import kotlinx.coroutines.rx3.await
 
 
 class MyApplication : Application() {

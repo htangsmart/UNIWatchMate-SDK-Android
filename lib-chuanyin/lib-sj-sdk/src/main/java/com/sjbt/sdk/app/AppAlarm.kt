@@ -34,18 +34,6 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadAlarmListCmd())
     }
 
-    private fun addSuccess(success: Boolean) {
-        mAlarm?.let {
-            addAlarmEmitter?.onSuccess(
-                if (success) {
-                    it
-                } else {
-                    null
-                }
-            )
-        }
-    }
-
     private fun deleteSuccess(success: Boolean) {
         deleteAlarmEmitter?.onSuccess(
             success
@@ -94,28 +82,33 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         }
     }
 
-    fun alarmBusiness(it: NodeData) {
-        when (it.urn[2]) {
+    fun alarmBusiness(nodeData: NodeData) {
+        when (nodeData.urn[2]) {
 
             URN_APP_ALARM_ADD -> {
-                val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
-                sjUniWatch.wmLog.logD(TAG, "add alarm result:$result")
-                addSuccess(result)
+                val alarmId = nodeData.data[0].toInt()
+                sjUniWatch.wmLog.logD(TAG, "add alarm result:$alarmId")
+                mAlarm?.let {
+                    it.alarmId = alarmId
+                    addAlarmEmitter?.onSuccess(
+                        it
+                    )
+                }
             }
 
             URN_APP_ALARM_DELETE -> {
-                deleteSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
+                deleteSuccess(nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_ALARM_LIST -> {
                 val alarmList = mutableListOf<WmAlarm>()
-                val count = it.dataLen / 25
+                val count = nodeData.dataLen / 25
                 sjUniWatch.wmLog.logD(TAG, "Alarm Count：$count")
 
                 if (count > 0) {
                     for (i in 0 until count) {
 
-                        val alarmArray = it.data.copyOfRange(i * 25, i * 25 + 25)
+                        val alarmArray = nodeData.data.copyOfRange(i * 25, i * 25 + 25)
                         val id = alarmArray[0].toInt()
                         val nameArray = alarmArray.copyOfRange(1, 21).takeWhile { it.toInt() != 0 }
                             .toByteArray()
@@ -135,7 +128,6 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                                 AlarmRepeatOption.fromValue(repeatOptions)
                             )
 
-
                         wmAlarm.isOn = isEnable == 1
                         wmAlarm.alarmId = id
                         sjUniWatch.wmLog.logD(TAG, "Alarm INFO:$wmAlarm ")
@@ -150,7 +142,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             }
 
             URN_APP_ALARM_UPDATE -> {
-                updateSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
+                updateSuccess(nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
         }
     }
