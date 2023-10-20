@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.*
 import com.sjbt.sdk.sample.databinding.FragmentCombineBinding
@@ -101,18 +102,13 @@ class CombineFragment : BaseFragment(R.layout.fragment_combine) {
 class CombineViewModel : AsyncViewModel<SingleAsyncState<Unit>>(SingleAsyncState()) {
 
     private val authManager = Injector.getAuthManager()
-    private val deviceManager = Injector.getDeviceManager()
-
-//    ToNote:Because convert as val parameter, so need Observable.defer{} to wrap it
-//    val flowDeviceInfo = Observable.defer {
-//        deviceManager.configFeature.observerDeviceInfo().startWithItem(deviceManager.configFeature.getDeviceInfo())
-//    }.asFlow().shareInView(viewModelScope)
 
     fun signOut() {
         suspend {
             //Delay 3 seconds. Simulate the sign out process
             delay(1500)
             authManager.signOut()
+            UNIWatchMate.disconnect()
         }.execute(SingleAsyncState<Unit>::async) {
             copy(async = it)
         }
