@@ -224,10 +224,10 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                     ) + "%"
                 )
                 if (isLocalUpdate) {
-                    promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
-                        it.progress.toDouble(),
-                        2
-                    ) + "%")
+//                   promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
+//                        it.progress.toDouble(),
+//                        2
+//                    ) + "%")
                 }
             }
 

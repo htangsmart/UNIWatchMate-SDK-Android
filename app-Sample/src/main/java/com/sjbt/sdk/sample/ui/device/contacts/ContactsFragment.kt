@@ -35,26 +35,7 @@ import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-/**
- * **Document**
- * https://github.com/htangsmart/FitCloudPro-SDK-Android/wiki/10.Other-Features#setting-contacts
- *
- * ***Description**
- * Display and modify contacts
- *
- * **Usage**
- * 1. [ContactsFragment]
- * Display and add contacts
- * [ContactsAdapter]
- *
- * And wait contacts changes saving.
- * [SetContactsDialogFragment]
- *
- * 2. [ContactsViewModel]
- * Show how to request contacts and set contacts
- * [FcSettingsFeature.requestContacts] [FcSettingsFeature.setContacts]
- *
- */
+
 class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val viewBind: FragmentContactsBinding by viewBinding()

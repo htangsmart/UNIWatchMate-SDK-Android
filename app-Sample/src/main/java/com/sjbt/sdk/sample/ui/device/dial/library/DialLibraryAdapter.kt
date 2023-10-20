@@ -7,14 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.sjbt.sdk.sample.databinding.ItemDialLibraryBinding
 import com.sjbt.sdk.sample.model.user.DialMock
-import com.sjbt.sdk.sample.ui.device.dial.createDefaultShape
 import com.sjbt.sdk.sample.utils.glideShowMipmapImage
-import com.topstep.fitcloud.sdk.v2.model.settings.dial.FcShape
 
 class DialLibraryAdapter : RecyclerView.Adapter<DialLibraryAdapter.DialLibraryViewHolder>() {
 
     //Create a Shape by default. To avoid error
-    var shape: FcShape = createDefaultShape()
 
     var listener: Listener? = null
 
@@ -31,7 +28,6 @@ class DialLibraryAdapter : RecyclerView.Adapter<DialLibraryAdapter.DialLibraryVi
     override fun onBindViewHolder(holder: DialLibraryViewHolder, position: Int) {
         val items = this.items ?: return
         val item = items[position]
-        holder.viewBind.cardView.setShape(shape)
         holder.viewBind.tvStatus.visibility=if(item.installed==1) View.VISIBLE else View.GONE
         holder.itemView.clickTrigger {
             listener?.onItemClick(item)

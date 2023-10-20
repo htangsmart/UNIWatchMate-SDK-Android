@@ -72,7 +72,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
-        debug{
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
@@ -108,7 +108,7 @@ def static buildTime() {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar','lib_*.aar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', 'lib_*.aar'])
 
 
     testImplementation 'junit:junit:4.13.2'
@@ -122,12 +122,10 @@ dependencies {
     if (use_chuanyin_aar.equalsIgnoreCase("true")) {
         implementation(name: 'lib-interface', ext: 'aar')
         implementation(name: 'lib-sj-sdk', ext: 'aar')
-        implementation(name: 'lib-fc-sdk', ext: 'aar')
         implementation(name: 'lib-api', ext: 'aar')
-    }else{
+    } else {
         implementation project(path: ':lib-chuanyin:lib-interface')
         implementation project(path: ':lib-chuanyin:lib-sj-sdk')
-        implementation project(path: ':lib-chuanyin:lib-fc-sdk')
         implementation project(path: ':lib-chuanyin:lib-api')
     }
     implementation project(path: ':zbarlibrary')

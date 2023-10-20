@@ -13,7 +13,6 @@ import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.topstep.fitcloud.sdk.v2.model.config.FcDeviceInfo
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
