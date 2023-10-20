@@ -144,7 +144,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             runCatchingWithLog {
                 this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
 
-                val userInfo = WmBindInfo("124", "124324", BindType.SCAN_QR, WmDeviceModel.SJ_WATCH)
+                val userInfo = WmBindInfo("124", "124324", BindType.SCAN_QR)
                 val wmScanDevice = parseSjScanQr(scanResult.getContent())
                 if (wmScanDevice == null) {
                     ToastUtil.showToast(getString(R.string.device_scan_tips_error))
@@ -158,7 +158,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                                 wmScanDevice.name!!
                             }
                         )
-                        UNIWatchMate.connectScanQr(
+                        val devie = UNIWatchMate.connectScanQr(
                             scanResult.getContent(),
                             userInfo
                         )
@@ -282,7 +282,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     private fun startDiscover() {
-        startScan=true
+        startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
