@@ -71,6 +71,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         }
 
     private fun getEmergencyContactBack(emergencyCall: WmEmergencyCall) {
+        mEmergencyCall = emergencyCall
         emergencyNumberEmitter?.onNext(emergencyCall)
     }
 
@@ -139,25 +140,30 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             URN_APP_CONTACT_GET_EMERGENCY -> {
 
-                val emergencyByteArray = it.data
-                val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
-                val name = String(
-                    emergencyByteArray.copyOf(32),
-                    StandardCharsets.UTF_8
-                )
+                if (it.dataLen >= 53) {
+                    val emergencyByteArray = it.data
+                    val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                    val name = String(
+                        emergencyByteArray.copyOf(32),
+                        StandardCharsets.UTF_8
+                    )
 
-                val num = String(
-                    emergencyByteArray.copyOf(20),
-                    StandardCharsets.UTF_8
-                )
+                    val num = String(
+                        emergencyByteArray.copyOf(20),
+                        StandardCharsets.UTF_8
+                    )
 
-                val emergencyContacts = mutableListOf<WmContact>()
-                WmContact.create(name, num)?.let {
-                    emergencyContacts.add(it)
+                    val emergencyContacts = mutableListOf<WmContact>()
+                    WmContact.create(name, num)?.let {
+                        emergencyContacts.add(it)
+                    }
+
+                    val emergencyCall = WmEmergencyCall(enable, emergencyContacts)
+                    getEmergencyContactBack(emergencyCall)
+                } else {
+                    val emergencyCall = WmEmergencyCall(false, mutableListOf<WmContact>())
+                    getEmergencyContactBack(emergencyCall)
                 }
-
-                val emergencyCall = WmEmergencyCall(enable, emergencyContacts)
-                getEmergencyContactBack(emergencyCall)
             }
         }
     }
