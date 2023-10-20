@@ -1076,7 +1076,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type
                 || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type
-                || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type) {
+                || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type
+            ) {
 
                 wmLog.logD(TAG, "Each node msg")
                 parseResponseEachNode(payloadPackage, msgBean)
@@ -1236,14 +1237,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBindInfo = bindInfo
         val params = UrlParse.getUrlParams(qrString)
 
+        bindInfo.model = WmDeviceModel.NOR_REG
         if (params.isNotEmpty()) {
             val schemeMacAddress = params["mac"]
             bindInfo.randomCode = params["random"]
+            val projectName = params["projectname"]
+            bindInfo.model = if ("OSW-802N".equals(projectName)) {
+                WmDeviceModel.SJ_WATCH
+            } else {
+                WmDeviceModel.NOR_REG
+            }
+
             return schemeMacAddress?.let {
                 connect(it, bindInfo)
             }
+
         } else {
-            return WmDevice(bindInfo.model)
+            return WmDevice(bindInfo.model!!)
         }
     }
 
@@ -1257,6 +1267,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
+
         val wmDevice = WmDevice(bindInfo.model)
         wmDevice.address = address
         wmDevice.mode = bindInfo.model
