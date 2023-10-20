@@ -58,6 +58,7 @@ object AlarmHelper {
             wmAlarm.repeatOptions
         )
         alarm.isOn = wmAlarm.isOn
+        alarm.alarmId = wmAlarm.alarmId
         return alarm
     }
 

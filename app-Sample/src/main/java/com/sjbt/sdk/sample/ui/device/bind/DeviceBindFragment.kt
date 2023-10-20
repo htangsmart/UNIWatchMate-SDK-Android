@@ -46,6 +46,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import com.sjbt.sdk.utils.UrlParse
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
@@ -149,6 +150,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                 } else {
                     if (wmScanDevice.address != null) {
+//                        deviceManager.delDevice()
                         deviceManager.bind(
                             wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
                                 UNKNOWN_DEVICE_NAME
