@@ -15,7 +15,6 @@ import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
-import com.topstep.fitcloud.sdk.v2.model.config.FcTurnWristLightingConfig
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await

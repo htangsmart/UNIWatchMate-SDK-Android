@@ -3,6 +3,7 @@ package com.sjbt.sdk.sample.ui.device.contacts
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmContact
+import com.base.sdk.entity.settings.WmEmergencyCall
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
@@ -15,21 +16,25 @@ import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
-import kotlinx.coroutines.rx3.awaitSingle
+import kotlinx.coroutines.rx3.awaitFirst
 
 data class ContactsState(
     val requestContacts: Async<ArrayList<WmContact>> = Uninitialized,
 )
 
+
 sealed class ContactsEvent {
     class RequestFail(val throwable: Throwable) : ContactsEvent()
-
+    class RequestEmergencyFail(val throwable: Throwable) : ContactsEvent()
     class Inserted(val position: Int) : ContactsEvent()
     class Removed(val position: Int) : ContactsEvent()
     class Moved(val fromPosition: Int, val toPosition: Int) : ContactsEvent()
 
     object NavigateUp : ContactsEvent()
 }
+
+
+
 
 class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(ContactsState()) {
 
@@ -43,7 +48,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         viewModelScope.launch {
             state.copy(requestContacts = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appContact.observableContactList.awaitSingle()
+                UNIWatchMate.wmApps.appContact.observableContactList.awaitFirst()
             }.onSuccess {
                 state.copy(requestContacts = Success(ArrayList(it))).newState()
             }.onFailure {

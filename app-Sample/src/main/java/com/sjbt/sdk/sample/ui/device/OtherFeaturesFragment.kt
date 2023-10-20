@@ -72,7 +72,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
         viewBind.itemStopFindDevice.clickTrigger {
             viewLifecycleScope.launchWhenStarted {
-                val stopFind=   UNIWatchMate.wmApps.appFind.stopFindMobile().awaitFirst()
+                val stopFind=   UNIWatchMate.wmApps.appFind.stopFindWatch().await()
                 ToastUtil.showToast("stopFind $stopFind")
             }
         }
@@ -224,7 +224,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                     ) + "%"
                 )
                 if (isLocalUpdate) {
-//                    promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
+//                   promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
 //                        it.progress.toDouble(),
 //                        2
 //                    ) + "%")

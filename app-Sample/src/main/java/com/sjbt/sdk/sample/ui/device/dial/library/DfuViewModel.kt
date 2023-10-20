@@ -1,7 +1,6 @@
 package com.sjbt.sdk.sample.ui.device.dial.library
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
@@ -10,24 +9,16 @@ import com.base.sdk.port.WmTransferState
 import com.blankj.utilcode.util.FileIOUtils
 import com.github.kilnn.tool.dialog.prompt.PromptDialogHolder
 import com.sjbt.sdk.sample.MyApplication
-import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
 import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.utils.showFailed
-import com.topstep.fitcloud.sdk.exception.FcDfuException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
-import kotlinx.coroutines.rx3.awaitLast
-import okhttp3.internal.wait
 import timber.log.Timber
 import java.io.File
 
@@ -119,14 +110,5 @@ class DfuViewModel : ViewModel() {
  */
 fun PromptDialogHolder.showDfuFail(context: Context, throwable: Throwable) {
     Timber.w(throwable)
-    var toastId = 0
-    if (throwable is FcDfuException) {
-        val errorType = throwable.errorType
-        val errorCode = throwable.errorCode
-        when (errorType) {
-        }
-
-    } else {
-        showFailed(throwable)
-    }
+    showFailed(throwable)
 }

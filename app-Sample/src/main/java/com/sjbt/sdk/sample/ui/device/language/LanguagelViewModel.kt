@@ -24,7 +24,7 @@ sealed class DialEvent {
 }
 
 class LanguagelInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialState()) {
-//  private val deviceManager = Injector.getDeviceManager()
+    //  private val deviceManager = Injector.getDeviceManager()
     init {
         requestLanguages()
     }
@@ -56,8 +56,11 @@ class LanguagelInstalledViewModel : StateEventViewModel<DialState, DialEvent>(Di
         viewModelScope.launch {
             val wmLanguages = state.requestLanguages()
             if (wmLanguages != null && position < wmLanguages.size) {
-                UNIWatchMate.wmApps.appLanguage.setLanguage(wmLanguages[position]).await()
-                wmLanguages.removeAt(position)
+              UNIWatchMate.wmApps.appLanguage.setLanguage(wmLanguages[position]).await()
+
+                for ((index, language) in wmLanguages.withIndex()) {
+                    language.curr_lang = index == position
+                }
                 DialEvent.LanguageSet(position).newEvent()
             }
         }

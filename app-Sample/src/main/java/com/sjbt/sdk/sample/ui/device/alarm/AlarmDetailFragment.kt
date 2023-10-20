@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.AlarmRepeatOption
 import com.base.sdk.entity.apps.WmAlarm
 import com.github.kilnn.tool.widget.ktx.clickTrigger
@@ -157,11 +158,13 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
                 alarm.hour = hour
                 alarm.minute = viewBind.wheelMinute.getValue()
                 alarm.isOn = true
+                UNIWatchMate.wmLog.logI("TAG", "isEditMode")
                 if (isEditMode) {
                     viewModel.modifyAlarm(args.position, alarm)
                 } else {
                     viewModel.addAlarm(alarm)
                 }
+                UNIWatchMate.wmLog.logI("TAG", "edit end")
                 findNavController().navigateUp()
             }
 
@@ -244,7 +247,7 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     override fun dialogSetAlarmRepeat(options: Set<AlarmRepeatOption>) {
         alarm.repeatOptions = options
         viewBind.itemRepeat.getTextView().text =
-            context?.let { AlarmHelper.repeatToSimpleStr( alarm.repeatOptions, it) }
+            context?.let { AlarmHelper.repeatToSimpleStr(alarm.repeatOptions, it) }
     }
 
 }

@@ -229,7 +229,7 @@ internal class DeviceManagerImpl(
                     return@launchWithLog
                 }
                 CacheDataHelper.setSynchronizingData(true)
-//              showLoadingDialog()
+                showLoadingDialog()
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
                     val deviceInfo=   UNIWatchMate.wmSync.syncDeviceInfoData.syncData(System.currentTimeMillis()).await()

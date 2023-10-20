@@ -123,6 +123,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 setAlarm = alarmModified
                 alarmAction = AlarmAction.UPDATE
                 setAlarmsAction.execute()
+                UNIWatchMate.wmLog.logI("TAG","modifyAlarm")
             }
         }
     }
@@ -152,7 +153,9 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                     }
 
                     AlarmAction.DELETE -> {
-                        UNIWatchMate.wmApps.appAlarm.deleteAlarm(it).await()
+                        val list= mutableListOf<WmAlarm>()
+                        list.add(it)
+                        UNIWatchMate.wmApps.appAlarm.deleteAlarm(list).await()
                     }
 
                     else -> {

@@ -13,6 +13,7 @@ import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitFirst
 import kotlinx.coroutines.rx3.awaitSingle
 
 data class DialState(
@@ -35,7 +36,7 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
         viewModelScope.launch {
             state.copy(requestDials = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appDial.syncDialList().awaitSingle()
+                UNIWatchMate.wmApps.appDial.syncDialList().awaitFirst()
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestDials = Success(it)).newState()

@@ -5,7 +5,6 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.cardview.widget.CardView
 import com.github.kilnn.tool.ui.DisplayUtil
-import com.topstep.fitcloud.sdk.v2.model.settings.dial.FcShape
 
 class DialCardView : CardView {
 
@@ -36,15 +35,4 @@ class DialCardView : CardView {
         setMeasuredDimension(widthSize, heightSize)
     }
 
-    fun setShape(shape: FcShape) {
-        val aspectRatio = shape.width.toFloat() / shape.height //宽高比
-        if (aspectRatio != this.aspectRatio) {
-            this.aspectRatio = aspectRatio
-            requestLayout()
-        }
-    }
-}
-
-fun createDefaultShape(): FcShape {
-    return FcShape.createRectangle(240, 240)
 }
