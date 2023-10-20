@@ -13,7 +13,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asExecutor
 
 @Database(
-    version = 2,
+    version = 3,
     entities = [SportGoalEntity::class,UserEntity::class,DeviceBindEntity::class,UnitInfoEntity::class],
 )
 abstract class AppDatabase : RoomDatabase() {

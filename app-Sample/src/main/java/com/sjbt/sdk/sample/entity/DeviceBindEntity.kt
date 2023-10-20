@@ -2,6 +2,7 @@ package com.sjbt.sdk.sample.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.base.sdk.entity.WmDeviceModel
 import com.sjbt.sdk.sample.model.device.ConnectorDevice
 
 @Entity
@@ -21,7 +22,18 @@ data class DeviceBindEntity(
      * 设备名称
      */
     val name: String,
+    val deviceMode: Int,
 )
+
+fun DeviceBindEntity.intToDeviceMode(): WmDeviceModel {
+    if (deviceMode == 0) {
+        return WmDeviceModel.SJ_WATCH
+    }else{
+        return WmDeviceModel.FC_WATCH
+    }
+
+}
+
 
 internal fun DeviceBindEntity?.toModel(): ConnectorDevice? {
     return if (this == null) {
@@ -30,6 +42,7 @@ internal fun DeviceBindEntity?.toModel(): ConnectorDevice? {
         ConnectorDevice(
             address = address,
             name = name,
+            wmDeviceMode=intToDeviceMode(),
             isTryingBind = false
         )
     }
