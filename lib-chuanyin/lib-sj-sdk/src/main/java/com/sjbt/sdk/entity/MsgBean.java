@@ -12,7 +12,11 @@ import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_CAMERA_PREVIEW;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_COMMON;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_FILE_SPP_A_2_D;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_NODE_TYPE;
+
 import android.util.Log;
+
+import com.sjbt.sdk.utils.BtUtils;
+
 import java.nio.ByteBuffer;
 
 public class MsgBean {
@@ -69,17 +73,21 @@ public class MsgBean {
 
         if (isNodeMsg()) {
             short requestId = 0;
+
+            byte[] requestArray = new byte[2];
+
             if (payload != null && payload.length > 2) {
-                ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
-                requestId = byteBuffer.getShort();
+                requestArray[0] = payload[0];
+                requestArray[1] = payload[1];
+                requestId = BtUtils.byte2short(requestArray);
             }
 
-            timeOutCode = "" + head + cmdOrder + cmdId + requestId;
-        } else {
-            timeOutCode = "" + head + cmdOrder + cmdId;
-        }
+            Log.e(TAG_SJ, "timeout code requestId:" + requestId);
 
-        Log.e(TAG_SJ, "timeOutCode:" + timeOutCode);
+            timeOutCode = "" + head + cmdId + requestId;
+        } else {
+            timeOutCode = "" + head + cmdId;
+        }
 
         return timeOutCode;
     }

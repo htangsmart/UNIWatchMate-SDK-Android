@@ -176,7 +176,7 @@ public class BtEngine {
 
                             try {
 
-                                mSjUniWatch.getWmLog().logD(TAG,"receiveMsg:"+byte2Hex(result));
+                                mSjUniWatch.getWmLog().logD(TAG, "back message：" + byte2Hex(result));
                                 if (result.length == 0) {
                                     return;
                                 }
@@ -303,24 +303,27 @@ public class BtEngine {
             MsgBean msgBean = CmdHelper.getPayLoadJson(false, bytes);
 
             if (!msgBean.isNotTimeOut()) {
-                msgQueueMap.put(msgBean.getTimeOutCode(), new Runnable() {
+                String msgTimeCode = msgBean.getTimeOutCode();
+                logD("send message timeout code：" + msgTimeCode);
+                msgQueueMap.put(msgTimeCode, new Runnable() {
                     @Override
                     public void run() {
-                        logD("message timeout：" + msgBean.getTimeOutCode());
 
                         notifyUI(Listener.TIME_OUT, msgBean);
 
-                        mHandler.removeCallbacks(msgQueueMap.get(msgBean.getTimeOutCode()));
-                        msgQueueMap.remove(msgBean.getTimeOutCode());
+                        logD("real message timeout code：" + msgBean.getTimeOutCode());
+
+                        mHandler.removeCallbacks(msgQueueMap.get(msgTimeCode));
+                        msgQueueMap.remove(msgTimeCode);
                     }
                 });
 
-                mHandler.postDelayed(msgQueueMap.get(msgBean.getTimeOutCode()), DEFAULT_MSG_TIMEOUT);
+                mHandler.postDelayed(msgQueueMap.get(msgTimeCode), DEFAULT_MSG_TIMEOUT);
             }
 
             mSocket.getOutputStream().write(bytes);
             mSocket.getOutputStream().flush();
-            logD("sended Msg：" + BtUtils.bytesToHexString(bytes));
+            logD("send message：" + BtUtils.bytesToHexString(bytes));
 
         } catch (Throwable e) {
 //            closeSocket("发送过程 " + e.getMessage(), true);
@@ -514,8 +517,7 @@ public class BtEngine {
             MsgBean msgBean = CmdHelper.getPayLoadJson(true, msg);
 
             String msgTimeCode = msgBean.getTimeOutCode();
-
-//                        mSjUniWatch.getWmLog().logD(TAG,"返回MSGCode：" + msgTimeCode);
+            mSjUniWatch.getWmLog().logD(TAG, "back message timeout code 1：" + msgTimeCode);
             Runnable runnable = msgQueueMap.get(msgTimeCode);
 
             if (runnable != null) {
@@ -532,8 +534,8 @@ public class BtEngine {
                 System.arraycopy(msg, tempPosition + 4, tempLenArray, 0, 4);
                 payloadLen = ((tempLenArray[2]) & 0XFF) | ((tempLenArray[3] & 0XFF) << 8);
 
-//                mSjUniWatch.getWmLog().logD(TAG,"payLoad2长度 hex:" + BtUtils.bytesToHexString(tempLenArray));
-//                mSjUniWatch.getWmLog().logD(TAG,"payLoad2长度：" + payloadLen);
+                mSjUniWatch.getWmLog().logD(TAG, "payLoad2长度 hex:" + BtUtils.bytesToHexString(tempLenArray));
+                mSjUniWatch.getWmLog().logD(TAG, "payLoad2长度：" + payloadLen);
 
                 byte[] singleMsg = new byte[payloadLen + BT_MSG_BASE_LEN];
                 System.arraycopy(msg, tempPosition, singleMsg, 0, singleMsg.length);
@@ -544,7 +546,8 @@ public class BtEngine {
                 MsgBean msgBean = CmdHelper.getPayLoadJson(true, singleMsg);
                 String msgTimeCode = msgBean.getTimeOutCode();
 
-//                        mSjUniWatch.getWmLog().logD(TAG,"返回MSGCode：" + msgTimeCode);
+                mSjUniWatch.getWmLog().logD(TAG, "back message timeout code 2：" + msgTimeCode);
+
                 Runnable runnable = msgQueueMap.get(msgTimeCode);
 
                 if (runnable != null) {
