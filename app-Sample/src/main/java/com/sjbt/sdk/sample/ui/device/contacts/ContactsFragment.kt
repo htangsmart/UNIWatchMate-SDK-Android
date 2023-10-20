@@ -26,6 +26,7 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.databinding.FragmentContactsBinding
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
@@ -58,7 +59,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val viewBind: FragmentContactsBinding by viewBinding()
     private val viewModel: ContactsViewModel by viewModels()
-    private val emergencyModel: EmergecyContactViewModel by viewModels()
+    private val emergencyModel: EmergencyContactViewModel by viewModels()
     private lateinit var adapter: ContactsAdapter
 
     private val pickContact =
@@ -99,10 +100,13 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 newContact?.let {
                     if (emergency) {
                         emergencyModel.setEmergencyContact(it)
+                        viewBind.itemEmergencyContact.getTitleView()?.text =
+                            it.name
+                        viewBind.itemEmergencyContact.getTextView()?.text =
+                            it.number
                     } else {
-
+                        viewModel.addContacts(it)
                     }
-                    viewModel.addContacts(it)
                 }
             }
 
@@ -161,6 +165,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             ?.setOnCheckedChangeListener { buttonView, isChecked ->
                 emergencyModel.setEmergencyEnbalbe(isChecked)
             }
+
         viewBind.itemEmergencyContact.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
                 PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
@@ -172,6 +177,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 }
             }
         }
+
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
                 if ((adapter.sources?.size ?: 0) >= 10) {
@@ -249,14 +255,15 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 emergencyModel.flowState.collect { state ->
                     when (state.requestEmergencyCall) {
                         is Fail -> {
-                            viewBind.llEmergency.visibility = View.GONE
+                            viewBind.llEmergency.setAllChildEnabled(false)
                         }
+
                         is Success -> {
                             val emergencyCall = state.requestEmergencyCall()
                             if (emergencyCall == null) {
                             } else {
                                 viewBind.loadingView.visibility = View.GONE
-                                viewBind.llEmergency.visibility = View.VISIBLE
+                                viewBind.llEmergency.setAllChildEnabled(true)
                                 if (emergencyCall.emergencyContacts.size > 0) {
                                     viewBind.itemEmergencyContactSwitch.getSwitchView()?.isChecked =
                                         emergencyCall.isEnabled

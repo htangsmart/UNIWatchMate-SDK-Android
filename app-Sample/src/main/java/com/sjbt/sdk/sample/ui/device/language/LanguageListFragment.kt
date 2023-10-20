@@ -90,8 +90,7 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
                         }
 
                         is DialEvent.LanguageSet -> {
-                            viewBind.loadingView.visibility = View.GONE
-                            adapter.notifyItemRemoved(event.position)
+                            adapter.notifyDataSetChanged()
                         }
 
                     }
