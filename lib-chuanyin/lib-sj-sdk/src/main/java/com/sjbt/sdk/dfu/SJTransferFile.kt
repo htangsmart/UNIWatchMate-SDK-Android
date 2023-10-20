@@ -147,7 +147,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                             FileUtils.readFileBytes(mTransferFiles!![mSendFileCount])
 
                         mFileDataArray?.let {
-                            sjUniWatch.wmLog.logSDK(TAG, "开启线程读取文件字节流长度：" + it.size)
+                            sjUniWatch.wmLog.logD(TAG, "开启线程读取文件字节流长度：" + it.size)
                             continueSendFileData(0, it)
                         }
 
@@ -166,14 +166,14 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferring = true
                 mErrorSend = isRight.toInt() != 1
                 mOtaProcess = buffer.getInt(17)
-                sjUniWatch.wmLog.logSDK(
+                sjUniWatch.wmLog.logD(
                     TAG,
                     "返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount"
                 )
                 if (mErrorSend) { //失败
                     //                                        removeCallBackRunner(mTransferTimeoutRunner)
                     //                                        mOtaProcess = mOtaProcess > 0 ? mOtaProcess - 1 : mOtaProcess;
-                    sjUniWatch.wmLog.logSDK(TAG, "出错后序号：$mOtaProcess")
+                    sjUniWatch.wmLog.logD(TAG, "出错后序号：$mOtaProcess")
                     if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         sendErrorMsg(mOtaProcess)
                     } else {
@@ -181,7 +181,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     }
                 } else { //成功
                     mTransferRetryCount = 0
-                    sjUniWatch.wmLog.logSDK(TAG, "掰正的消息：$mOtaProcess")
+                    sjUniWatch.wmLog.logD(TAG, "掰正的消息：$mOtaProcess")
 
                     Thread {
                         // 执行耗时操作
@@ -362,7 +362,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
         }
 
-//        sjUniWatch.wmLog.logSDK(TAG,"分包类型：" + mDivide);
+//        sjUniWatch.wmLog.logD(TAG,"分包类型：" + mDivide);
         if (otaProcess != mPackageCount - 1) {
             info.offSet = otaProcess * mCellLength
             info.payload = ByteArray(mCellLength)
@@ -374,7 +374,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 info.payload.size
             )
         } else {
-//            sjUniWatch.wmLog.logSDK(TAG,"最后一包长度：" + mLastDataLength);
+//            sjUniWatch.wmLog.logD(TAG,"最后一包长度：" + mLastDataLength);
             if (mLastDataLength == 0) {
                 info.offSet = otaProcess * mCellLength
                 info.payload = ByteArray(mCellLength)

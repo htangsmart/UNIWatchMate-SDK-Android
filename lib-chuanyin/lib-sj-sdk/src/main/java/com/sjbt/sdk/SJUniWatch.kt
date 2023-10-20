@@ -243,7 +243,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                        (wmLog as SJLog).logSDK(TAG, "bindinfo:" + it)
+                                        (wmLog as SJLog).logD(TAG, "bindinfo:" + it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -523,12 +523,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8003 -> {
                                     val frameSuccess = msg[16]
 
-                                    (wmLog as SJLog).logSDK(TAG, "发送成功：$frameSuccess")
-                                    (wmLog as SJLog).logSDK(
+                                    (wmLog as SJLog).logD(TAG, "发送成功：$frameSuccess")
+                                    (wmLog as SJLog).logD(
                                         TAG, "发送下一帧：" + appCamera.mH264FrameMap.frameCount
                                     )
 
-                                    (wmLog as SJLog).logSDK(
+                                    (wmLog as SJLog).logD(
                                         TAG,
                                         "continueUpdateFrame 03:${appCamera.continueUpdateFrame}"
                                     )
@@ -549,7 +549,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
 //                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
                                     if (msgBean.payload.size > 10) {//设备应用层回复
-                                        (wmLog as SJLog).logSDK(
+                                        (wmLog as SJLog).logD(
                                             TAG,
                                             "应用层消息：" + msgBean.payload.size
                                         )
@@ -560,7 +560,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         parseNodePayload(true, msgBean, payloadPackage)
 
                                     } else {//设备传输层回复
-                                        (wmLog as SJLog).logSDK(
+                                        (wmLog as SJLog).logD(
                                             TAG,
                                             "传输层消息：" + msgBean.payload.size
                                         )
@@ -577,18 +577,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
-                                        (wmLog as SJLog).logSDK(TAG, "应用层消息：" + msgBean.payloadLen)
+                                        (wmLog as SJLog).logD(TAG, "应用层消息：" + msgBean.payloadLen)
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
 
                                         parseNodePayload(true, msgBean, payloadPackage)
                                     } else {//设备传输层回复
-                                        (wmLog as SJLog).logSDK(TAG, "传输层消息：" + msgBean.payloadLen)
+                                        (wmLog as SJLog).logD(TAG, "传输层消息：" + msgBean.payloadLen)
 
                                     }
 
-                                    (wmLog as SJLog).logSDK(TAG, "响应消息：" + msgBean.payload.size)
+                                    (wmLog as SJLog).logD(TAG, "响应消息：" + msgBean.payload.size)
 
                                 }
 
@@ -600,7 +600,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-                                    (wmLog as SJLog).logSDK(TAG, "收到通讯层消息：" + msgBean.payload.size)
+                                    (wmLog as SJLog).logD(TAG, "收到通讯层消息：" + msgBean.payload.size)
                                 }
                             }
                         }
@@ -880,8 +880,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    fun logSdk(TAG: String, msg: String) {
-        (wmLog as SJLog).logSDK(TAG, msg)
+    fun logD(TAG: String, msg: String) {
+        (wmLog as SJLog).logD(TAG, msg)
     }
 
     private fun removeDevice() {

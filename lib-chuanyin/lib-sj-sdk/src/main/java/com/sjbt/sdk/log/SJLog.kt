@@ -33,10 +33,10 @@ class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
         }
     }
 
-    fun logSDK(tag: String, msg: String) {
-        if (sdkDebugLogEnable) {
-            Log.e("$TAG_SJ$tag:", msg)
-        }
-    }
+//    fun logSDK(tag: String, msg: String) {
+//        if (sdkDebugLogEnable) {
+//            Log.e("$TAG_SJ$tag:", msg)
+//        }
+//    }
 
 }
