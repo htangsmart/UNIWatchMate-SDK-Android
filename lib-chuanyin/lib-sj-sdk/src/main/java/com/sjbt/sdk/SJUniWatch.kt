@@ -58,18 +58,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
 
-    var mBindInfo: WmBindInfo? = null
-    var mCurrDevice: BluetoothDevice? = null
-    var mCurrAddress: String? = null
-    var mConnectTryCount = 0
-    var mConnectState: WmConnectState = WmConnectState.DISCONNECTED
+    private var mBindInfo: WmBindInfo? = null
+    private var mCurrDevice: BluetoothDevice? = null
+    private var mCurrAddress: String? = null
+    private var mConnectTryCount = 0
+    private var mConnectState: WmConnectState = WmConnectState.DISCONNECTED
 
     override val wmSettings = SJSettings(this)
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
     override val wmTransferFile = SJTransferFile(this)
     override val wmLog: AbWmLog = SJLog(this)
-    val mBtEngine: BtEngine = BtEngine(this)
+
+    private val mBtEngine: BtEngine = BtEngine(this)
     private val mBindStateMap = HashMap<String, Boolean>()
 
     //同步数据
@@ -229,8 +230,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         try {
             when (state) {
                 MSG -> {
-                    val msg = obj as ByteArray
-                    val msgBean: MsgBean = CmdHelper.getPayLoadJson(msg)
+                    val msgBean: MsgBean = obj as MsgBean
 
                     when (msgBean.head) {
                         HEAD_VERIFY -> {
@@ -301,7 +301,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-                                    appNotification.sendNotificationEmitter?.onSuccess(msg[16].toInt() == 1)
+                                    appNotification.sendNotificationEmitter?.onSuccess(msgBean.payload[0].toInt() == 1)
                                 }
 
                                 CMD_ID_8007 -> {//同步时间
@@ -327,13 +327,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8009 -> {//APP 视图设置
-                                    settingAppView.setAppViewResult(msg[16].toInt() == 1)
+                                    settingAppView.setAppViewResult(msgBean.payload[0].toInt() == 1)
                                 }
 
                                 CMD_ID_8010 -> {//设置/删除表盘返回
-                                    val type = msg[16].toInt() // 1设定 2删除
-                                    val actResult = msg[17].toInt() //是否操作成功
-                                    val reason = msg[18].toInt() //是否操作成功
+                                    val type = msgBean.payload[0].toInt() // 1设定 2删除
+                                    val actResult = msgBean.payload[1].toInt()  //是否操作成功
+                                    val reason = msgBean.payload[2].toInt()  //是否操作成功
 
                                     appDial.deleteDialResult(actResult == 1)
                                 }
@@ -364,15 +364,40 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8017 -> {//获取触感
-
-                                    val ringState = msg[16].toInt()
-                                    val msgShake = msg[17].toInt()
-                                    val crowShake = msg[18].toInt()
-                                    val sysShake = msg[19].toInt()
-                                    val armScreen = msg[20].toInt()
+                                    var ringState = 0
+                                    var msgShake = 0
+                                    var crowShake = 0
+                                    var sysShake = 0
+                                    var armScreen = 0
                                     var keepNoVoice = 0
-                                    if (msg.size > 21) {
-                                        keepNoVoice = msg[21].toInt()
+
+                                    for (i in 0 until msgBean.payload.size) {
+
+                                        when (i) {
+                                            0 -> {
+                                                ringState = msgBean.payload[i].toInt()
+                                            }
+
+                                            1 -> {
+                                                msgShake = msgBean.payload[1].toInt()
+                                            }
+
+                                            2 -> {
+                                                crowShake = msgBean.payload[2].toInt()
+                                            }
+
+                                            3 -> {
+                                                sysShake = msgBean.payload[3].toInt()
+                                            }
+
+                                            4 -> {
+                                                armScreen = msgBean.payload[4].toInt()
+                                            }
+
+                                            5 -> {
+                                                keepNoVoice = msgBean.payload[5].toInt()
+                                            }
+                                        }
                                     }
 
                                     val wmWistRaise = WmWistRaise(armScreen == 1)
@@ -397,7 +422,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8018 -> {//设置触感
 
-                                    val setSuccess = msg[16].toInt() == 1
+                                    val setSuccess = msgBean.payload[0].toInt() == 1
 
                                     if (setSuccess) {
                                         settingSoundAndHaptic.setSuccess()
@@ -408,8 +433,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                 CMD_ID_8019 -> {//监听触感
                                     sendNormalMsg(CmdHelper.deviceRingStateRespondCmd)
-                                    val ctype = msg[16].toInt()
-                                    val vValue = msg[17].toInt()
+                                    val ctype = msgBean.payload[0].toInt()
+                                    val vValue = msgBean.payload[1].toInt()
 
                                     when (ctype) {
 
@@ -438,7 +463,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8029 -> {//设备拉起或者关闭相机监听
-                                    appCamera.observeDeviceCamera(msg[16].toInt() == 1)
+                                    appCamera.observeDeviceCamera(msgBean.payload[0].toInt() == 1)
                                     sendNormalMsg(
                                         CmdHelper.getCameraRespondCmd(
                                             CMD_ID_8029, 1.toByte()
@@ -447,12 +472,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_802A -> {//监听打开相机
-                                    appCamera.openCameraResult(msg[16].toInt() == 1)
+                                    appCamera.openCameraResult(msgBean.payload[0].toInt() == 1)
                                 }
 
                                 CMD_ID_802B -> {//监听相机闪光灯和前后摄像头
-                                    val action = msg[16]
-                                    val stateOn = msg[17]
+                                    val action = msgBean.payload[0]
+                                    val stateOn = msgBean.payload[1]
 
                                     appCamera.observeCameraAction(action, stateOn)
 
@@ -468,7 +493,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_802E -> {//绑定
-                                    val result = msg[16]
+                                    val result = msgBean.payload[0].toInt()
                                     wmLog.logD(TAG, "bind result:$result")
 
                                     if (result.toInt() == 1) {
@@ -488,7 +513,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_802F -> {//解绑
-                                    val result = msg[16].toInt()
+                                    val result = msgBean.payload[0].toInt()
 
                                     mCurrAddress?.let {
                                         mBindStateMap.put(it, false)
@@ -509,7 +534,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         HEAD_SPORT_HEALTH -> {
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_800C, CMD_ID_800D, CMD_ID_800E -> {
-                                    settingSleepSet.sleepSetBusiness(msgBean, msg)
+                                    settingSleepSet.sleepSetBusiness(msgBean)
                                 }
                             }
                         }
@@ -518,11 +543,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {
-                                    appCamera.cameraPreviewBuz(msg)
+                                    appCamera.cameraPreviewBuz(msgBean)
                                 }
 
                                 CMD_ID_8003 -> {
-                                    val frameSuccess = msg[16]
+                                    val frameSuccess = msgBean.payload[0]
 
                                     (wmLog as SJLog).logD(TAG, "发送成功：$frameSuccess")
                                     (wmLog as SJLog).logD(
@@ -541,7 +566,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         HEAD_FILE_SPP_A_2_D -> {
-                            wmTransferFile.transferFileBuz(msgBean, msg)
+                            wmTransferFile.transferFileBuz(msgBean)
                         }
 
                         HEAD_NODE_TYPE -> {
@@ -609,9 +634,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 }
 
                 TIME_OUT -> {
-                    wmLog.logD(TAG, "msg time out:")
-
-                    msgTimeOut(obj as ByteArray)
+                    msgTimeOut(obj as MsgBean)
                 }
 
                 BUSY -> {
@@ -651,19 +674,21 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         )
     }
 
-    private fun msgTimeOut(msg: ByteArray) {
+    private fun msgTimeOut(msgBean: MsgBean) {
+
+        wmLog.logD(TAG, "msg time out：$msgBean")
 
         mBtAdapter?.takeIf { !it.isEnabled }?.let {
             mBtEngine.clearMsgQueue()
             mBtEngine.clearStateMap()
-//            btStateChange(WmConnectState.DISCONNECTED)
+            btStateChange(WmConnectState.BT_DISABLE)
+            disconnect()
         }
 
-        val msgBean = CmdHelper.getPayLoadJson(msg)
         when (msgBean.head) {
             HEAD_VERIFY -> {
-                when (msgBean.cmdIdStr) {
-                    CMD_STR_8001_TIME_OUT, CMD_STR_8002_TIME_OUT -> {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001, CMD_ID_8002 -> {
                         mBtEngine.clearStateMap()
                         mBtEngine.clearMsgQueue()
 
@@ -675,58 +700,58 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             HEAD_COMMON -> {
-                when (msgBean.cmdIdStr) {
-                    CMD_STR_8001_TIME_OUT -> {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001 -> {
 //                        syncDeviceInfo.syncTimeOut("get basicInfo timeout!")
                     }
 
-                    CMD_STR_8002_TIME_OUT -> {
+                    CMD_ID_8002 -> {
                     }
 
-                    CMD_STR_8003_TIME_OUT -> {
+                    CMD_ID_8003 -> {
 //                        if (batteryEmitter != null) {
 //                            batteryEmitter.onError(RuntimeException("get battery timeout!"))
 //                        }
 
                     }
 
-                    CMD_STR_8004_TIME_OUT -> {
+                    CMD_ID_8004 -> {
 //                        if (sendNotifyEmitter != null) {
 //                            sendNotifyEmitter.onError(RuntimeException("send notify timeout!"))
 //                        }
 
                     }
-                    CMD_STR_8005_TIME_OUT -> {}
-                    CMD_STR_8006_TIME_OUT -> {}
-                    CMD_STR_8007_TIME_OUT -> {
+                    CMD_ID_8005 -> {}
+                    CMD_ID_8006 -> {}
+                    CMD_ID_8006 -> {
                         appDateTime.setEmitter?.onSuccess(false)
                     }
 
-                    CMD_STR_8008_TIME_OUT -> {
+                    CMD_ID_8008 -> {
                         settingAppView.getEmitter?.onError(RuntimeException("get app views"))
                     }
-                    CMD_STR_8009_TIME_OUT -> {
+                    CMD_ID_8009 -> {
                         settingAppView.setEmitter?.onError(RuntimeException("set app view time out"))
                     }
-                    CMD_STR_800A_TIME_OUT -> {}
-                    CMD_STR_800B_TIME_OUT -> {}
-                    CMD_STR_800C_TIME_OUT -> {}
-                    CMD_STR_800D_TIME_OUT -> {}
-                    CMD_STR_800E_TIME_OUT -> {}
-                    CMD_STR_800F_TIME_OUT -> {
+                    CMD_ID_800A -> {}
+                    CMD_ID_800B -> {}
+                    CMD_ID_800C -> {}
+                    CMD_ID_800D -> {}
+                    CMD_ID_800E -> {}
+                    CMD_ID_800F -> {
                         settingAppView.getEmitter?.onError(RuntimeException("getAppViews timeout!"))
                     }
 
 //                   TODO
-//                    CMD_STR_8010_TIME_OUT -> if (dialDelEmitter != null) {
+//                    CMD_ID_8010 -> if (dialDelEmitter != null) {
 //                        dialDelEmitter.onError(RuntimeException("delete dial timeout!"))
 //
 //                    }
 
-                    CMD_STR_8011_TIME_OUT -> {}
-                    CMD_STR_8012_TIME_OUT -> {}
-                    CMD_STR_8013_TIME_OUT -> {}
-                    CMD_STR_8014_TIME_OUT -> {
+                    CMD_ID_8011 -> {}
+                    CMD_ID_8012 -> {}
+                    CMD_ID_8013 -> {}
+                    CMD_ID_8014 -> {
 
 //                        TODO
 //                        if (getDialEmitter != null) {
@@ -734,7 +759,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                        }
 
                     }
-                    CMD_STR_8017_TIME_OUT -> {
+                    CMD_ID_8017 -> {
 
                     }
                     //                        if (mGetDeviceRingStateListener != null) {
@@ -743,7 +768,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                        if (shakeEmitterSingle != null) {
 //                            shakeEmitterSingle.onError(RuntimeException("shake timeout!"))
 //                        }
-                    CMD_STR_8018_TIME_OUT -> {
+                    CMD_ID_8018 -> {
 
                         //                        if (mSetDeviceRingStateListener != null) {
 //                            mSetDeviceRingStateListener.onTimeOut(msgBean);
@@ -753,39 +778,39 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                        }
                     }
 
-                    CMD_STR_801C_TIME_OUT -> {
+                    CMD_ID_801C -> {
 //                        if (setAlarmEmitter != null) {
 //                            setAlarmEmitter.onError(RuntimeException("set alarm timeout!"))
 //                        }
                     }
 
-                    CMD_STR_801E_TIME_OUT -> {
+                    CMD_ID_801E -> {
 //                        if (getAlarmEmitter != null) {
 //                            getAlarmEmitter.onError(RuntimeException("get alarm timeout!"))
 //                        }
                     }
-                    CMD_STR_8021_TIME_OUT -> {
+                    CMD_ID_8021 -> {
 //                        if (searchDeviceEmitter != null) {
 //                            searchDeviceEmitter.onError(RuntimeException("search device timeout!"))
 //                        }
                     }
-                    CMD_STR_8022_TIME_OUT -> {
+                    CMD_ID_8022 -> {
 //                        if (contactListEmitter != null) {
 //                            contactListEmitter.onError(RuntimeException("get contact list timeout!"))
 //                        }
                     }
-                    CMD_STR_8023_TIME_OUT -> {
+                    CMD_ID_8023 -> {
 //                        if (appAddContactEmitter != null) {
 //                            appAddContactEmitter.onError(RuntimeException("app add contact time out"))
 //                        }
                     }
-                    CMD_STR_8025_TIME_OUT -> {
+                    CMD_ID_8025 -> {
 //                        if (appDelContactEmitter != null) {
 //                            appDelContactEmitter.onError(RuntimeException("app delete contact timeout"))
 //                        }
                     }
-                    CMD_STR_8026_TIME_OUT -> {}
-                    CMD_STR_8027_TIME_OUT -> {
+                    CMD_ID_8026 -> {}
+                    CMD_ID_8027 -> {
 //                        if (contactActionType == CONTACT_ACTION_LIST) {
 //                            contactListEmitter.onError(RuntimeException("get contact list timeout!"))
 //                        } else if (contactActionType == CONTACT_ACTION_ADD) {
@@ -794,13 +819,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                            appDelContactEmitter.onError(RuntimeException("app delete contact timeout"))
 //                        }
                     }
-                    CMD_STR_8029_TIME_OUT -> {}
-                    CMD_STR_802A_TIME_OUT -> {
+                    CMD_ID_8029 -> {}
+                    CMD_ID_802A -> {
 //                        if (requestDeviceCameraEmitter != null) {
 //                            requestDeviceCameraEmitter.onError(RuntimeException("request device camera timeout!"))
 //                        }
                     }
-                    CMD_STR_802D_TIME_OUT -> {
+                    CMD_ID_802D -> {
 //                        if (actionSupportEmitter != null) {
 //                            actionSupportEmitter.onError(RuntimeException("action bean error!"))
 //                        }
@@ -809,8 +834,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             HEAD_SPORT_HEALTH -> {
-                when (msgBean.cmdIdStr) {
-                    CMD_STR_8001_TIME_OUT -> {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001 -> {
 
 //                        if (getSportInfoEmitter != null) {
 //                            getSportInfoEmitter.onError(RuntimeException("get sport info timeout"))
@@ -820,43 +845,43 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                     }
 
-                    CMD_STR_8002_TIME_OUT -> {
+                    CMD_ID_8002 -> {
 //                        if (stepEmitter != null) {
 //                            stepEmitter.onError(RuntimeException("get step timeout"))
 //                        }
                     }
 
-                    CMD_STR_8003_TIME_OUT -> {
+                    CMD_ID_8003 -> {
 //                        if (rateEmitter != null) {
 //                            rateEmitter.onError(RuntimeException("get rate timeout"))
 //                        }
                     }
-                    CMD_STR_8008_TIME_OUT -> {
+                    CMD_ID_8008 -> {
 //                        if (sleepRecordEmitter != null) {
 //                            sleepRecordEmitter.onError(RuntimeException("get sleep record timeout"))
 //                        }
                     }
-                    CMD_STR_8009_TIME_OUT -> {
+                    CMD_ID_8009 -> {
 //                        if (getBloodOxEmitter != null) {
 //                            getBloodOxEmitter.onError(RuntimeException("get blood ox timeout"))
 //                        }
                     }
-                    CMD_STR_800A_TIME_OUT -> {
+                    CMD_ID_800A -> {
 //                        if (getBloodSugarEmitter != null) {
 //                            getBloodSugarEmitter.onError(RuntimeException("get blood sugar timeout"))
 //                        }
                     }
-                    CMD_STR_800B_TIME_OUT -> {
+                    CMD_ID_800B -> {
 //                        if (getBloodPressEmitter != null) {
 //                            getBloodPressEmitter.onError(RuntimeException("get blood press timeout"))
 //                        }
                     }
-                    CMD_STR_800C_TIME_OUT -> {
+                    CMD_ID_800C -> {
 //                        if (sleepSetEmitter != null) {
 //                        sleepSetEmitter.onError(RuntimeException("sleep set timeout"))
 //                        }
                     }
-                    CMD_STR_800D_TIME_OUT -> {
+                    CMD_ID_800D -> {
 //                        if (setSleepEmitter != null) {
 //                        setSleepEmitter.onError(RuntimeException("set sleep timeout"))
 //                    }
@@ -865,13 +890,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             HEAD_FILE_SPP_A_2_D -> {
-                wmTransferFile.timeOut(msg)
+                wmTransferFile.timeOut(msgBean)
             }
 
             HEAD_CAMERA_PREVIEW -> {
                 wmTransferFile.mTransferring = false
-                when (msgBean.cmdIdStr) {
-                    CMD_STR_8001_TIME_OUT -> {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001 -> {
 //                        if (cameraPreviewEmitter != null) {
 //                        cameraPreviewEmitter.onError(RuntimeException("camera preview timeout"))
 //                    }
@@ -1037,21 +1062,22 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 回复device Node节点消息
      */
     fun sendResponseNodeCmdList(payloadPackage: PayloadPackage) {
-        payloadPackage.toResponseByteArray(requestType = ResponseResultType.RESPONSE_ALL_OK).forEach {
-            var payload: ByteArray = it
+        payloadPackage.toResponseByteArray(requestType = ResponseResultType.RESPONSE_ALL_OK)
+            .forEach {
+                var payload: ByteArray = it
 
-            val cmdArray = CmdHelper.constructCmd(
-                HEAD_NODE_TYPE,
-                CMD_ID_8001,
-                DIVIDE_N_2,
-                0,
-                0,
-                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-                payload
-            )
+                val cmdArray = CmdHelper.constructCmd(
+                    HEAD_NODE_TYPE,
+                    CMD_ID_8001,
+                    DIVIDE_N_2,
+                    0,
+                    0,
+                    BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                    payload
+                )
 
-            sendNormalMsg(cmdArray)
-        }
+                sendNormalMsg(cmdArray)
+            }
 
         mPayloadPackage = payloadPackage
 
@@ -1068,12 +1094,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 wmLog.logD(TAG, "结果全部OK")
             } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
                 wmLog.logD(TAG, "结果全部Fail")
-            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type||payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type) {
+            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type) {
                 wmLog.logD(TAG, "返回所有节点消息")
                 parseResponseEachNode(payloadPackage, msgBean)
-            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type){
+            } else if (payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type) {
 
-            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_READ.type){
+            } else if (payloadPackage.actionType == RequestType.REQ_TYPE_READ.type) {
 
             }
 //            } else {
@@ -1201,7 +1227,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return head == HEAD_COMMON && (cmdId == CMD_ID_8028 || cmdId == CMD_ID_8029 || cmdId == CMD_ID_802A || cmdId == CMD_ID_802B || cmdId == CMD_ID_802C)
     }
 
-    override fun socketNotifyError(obj: ByteArray?) {
+    override fun socketNotifyError(obj: MsgBean?) {
 
     }
 

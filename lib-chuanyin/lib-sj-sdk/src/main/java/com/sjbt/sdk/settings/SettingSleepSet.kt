@@ -71,14 +71,14 @@ class SettingSleepSet(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>
         };
     }
 
-    fun sleepSetBusiness(msgBean: MsgBean, msg: ByteArray) {
+    fun sleepSetBusiness(msgBean: MsgBean) {
         when (msgBean.cmdId.toShort()) {
             CMD_ID_800C -> {
-                val sleepOpen = msg[16].toInt()
-                val startHour = msg[17].toInt()
-                val startMin = msg[18].toInt()
-                val endHour = msg[19].toInt()
-                val endMin = msg[20].toInt()
+                val sleepOpen = msgBean.payload[0].toInt()
+                val startHour = msgBean.payload[1].toInt()
+                val startMin = msgBean.payload[2].toInt()
+                val endHour = msgBean.payload[3].toInt()
+                val endMin = msgBean.payload[4].toInt()
 
                 val wmSleepSettings = WmSleepSettings(
                     sleepOpen == 1,
@@ -97,11 +97,11 @@ class SettingSleepSet(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>
                 )
             }
             CMD_ID_800D -> {
-                val sleepOpen2 = msg[16].toInt()
-                val startHour2 = msg[17].toInt()
-                val startMin2 = msg[18].toInt()
-                val endHour2 = msg[19].toInt()
-                val endMin2 = msg[20].toInt()
+                val sleepOpen2 = msgBean.payload[0].toInt()
+                val startHour2 = msgBean.payload[1].toInt()
+                val startMin2 = msgBean.payload[2].toInt()
+                val endHour2 = msgBean.payload[3].toInt()
+                val endMin2 = msgBean.payload[4].toInt()
 
                 observeSleepSetting(
                     WmSleepSettings(
@@ -117,7 +117,7 @@ class SettingSleepSet(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>
             }
 
             CMD_ID_800E -> {
-                val setSleepResult = msg[16].toInt()
+                val setSleepResult = msgBean.payload[0].toInt()
                 setSleepConfigSuccess(setSleepResult == 1)
             }
         }

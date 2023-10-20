@@ -9,6 +9,7 @@ import com.base.sdk.port.app.WMCameraPosition
 import com.sjbt.sdk.MSG_INTERVAL_FRAME
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.H264FrameMap
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
@@ -243,16 +244,14 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     }
 
-    fun cameraPreviewBuz(msg: ByteArray) {
-        val byteBuffer =
-            ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN)
+    fun cameraPreviewBuz(msgBean: MsgBean) {
 
-        val camera_pre_allow = byteBuffer[16] //是否容许同步画面 0允许 1不允许
+        val camera_pre_allow = msgBean.payload[0] //是否容许同步画面 0允许 1不允许
 
-        val reason = byteBuffer[17]
+        val reason = msgBean.payload[1]
         val lenArray = ByteArray(4)
 
-        System.arraycopy(msg, 18, lenArray, 0, lenArray.size)
+        System.arraycopy(msgBean.payload, 2, lenArray, 0, lenArray.size)
 
         mOtaProcess = 0
         mCellLength =

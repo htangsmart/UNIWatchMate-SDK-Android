@@ -124,23 +124,29 @@ object CmdHelper {
     /**
      * 获取JSON格式的 Payload数据
      *
-     * @param msg_result
+     * @param msg
      * @return
      */
     @JvmStatic
-    fun getPayLoadJson(msg_result: ByteArray): MsgBean {
+    fun getPayLoadJson(response: Boolean, msg: ByteArray): MsgBean {
         val msgBean = MsgBean()
         try {
-            val byteBuffer = ByteBuffer.wrap(msg_result)
+            val byteBuffer = ByteBuffer.wrap(msg)
             msgBean.head = byteBuffer.get()
             msgBean.cmdOrder = byteBuffer.get()
+
             val cmdId = ByteArray(2)
-            System.arraycopy(msg_result, 2, cmdId, 0, cmdId.size)
+
+            System.arraycopy(msg, 2, cmdId, 0, cmdId.size)
+
+            if (response) {
+                val temp = cmdId[0]
+                cmdId[0] = cmdId[1]
+                cmdId[1] = temp
+                cmdId[0] = 0x00
+            }
+
             msgBean.cmdIdStr = BtUtils.bytesToHexString(cmdId)
-            val temp = cmdId[0]
-            cmdId[0] = cmdId[1]
-            cmdId[1] = temp
-            cmdId[0] = 0x00
             msgBean.cmdId = BtUtils.byte2short(cmdId).toInt()
             //            LogUtils.logBlueTooth("返回命令cmdId:" + msgBean.cmdId);
             val divideArray = ByteArray(2)
@@ -150,36 +156,20 @@ object CmdHelper {
             val divideType = readShortFromBytes(divideArray.reversedArray()).divideType
             msgBean.divideType = divideType
 
-//            byte[] len = new byte[2];
-//            System.arraycopy(msg_result, 6, len, 0, len.length);
-//
-//            byte a = len[0];
-//            byte b = len[1];
-//
-//            len[0] = b;
-//            len[1] = a;
+            val payLoadLength = msg.size - 16
 
-//            String lenHex = BtUtils.bytesToHexString(len);
-//            int length = BtUtils.hexToInt(lenHex);
-            val payLoadLength = msg_result.size - 16
-            //            LogUtils.logBlueTooth("lenHex:" + lenHex);
-//            LogUtils.logBlueTooth("length:" + length);
-//            LogUtils.logBlueTooth("divideType:" + divideType);
             msgBean.payloadLen = payLoadLength
             val offsetArray = ByteArray(4)
-            System.arraycopy(msg_result, 8, offsetArray, 0, offsetArray.size)
+            System.arraycopy(msg, 8, offsetArray, 0, offsetArray.size)
             msgBean.offset = ByteUtil.bytesToInt(offsetArray, ByteOrder.LITTLE_ENDIAN)
             val crcArray = ByteArray(4)
-            System.arraycopy(msg_result, 12, crcArray, 0, crcArray.size)
+            System.arraycopy(msg, 12, crcArray, 0, crcArray.size)
             msgBean.crc = ByteUtil.bytesToInt(crcArray, ByteOrder.LITTLE_ENDIAN)
 
-//            LogUtils.logBlueTooth("offset:" + msgBean.offset);
-//            LogUtils.logBlueTooth("crc:" + msgBean.crc);
-//            LogUtils.logBlueTooth("length:" + length);
             if (msgBean.divideType == DIVIDE_N_2 || msgBean.divideType == DIVIDE_N_JSON) {
                 if (payLoadLength > 0) {
                     val payload = ByteArray(payLoadLength)
-                    System.arraycopy(msg_result, 16, payload, 0, payLoadLength)
+                    System.arraycopy(msg, 16, payload, 0, payLoadLength)
                     msgBean.payload = payload
                     if (divideType == DIVIDE_N_JSON) {
                         val payloadJson = String(payload, StandardCharsets.UTF_8)
@@ -188,13 +178,11 @@ object CmdHelper {
                 }
             } else {
                 val divideIndexArray = ByteArray(4)
-                System.arraycopy(msg_result, 16, divideIndexArray, 0, divideIndexArray.size)
+                System.arraycopy(msg, 16, divideIndexArray, 0, divideIndexArray.size)
                 msgBean.divideIndex = ByteUtil.bytesToInt(divideIndexArray)
 
-//                LogUtils.logBlueTooth("分包序号HEX：" + BtUtils.bytesToHexString(divideIndexArray));
-//                LogUtils.logBlueTooth("分包序号INT：" + msgBean.divideIndex);
                 val payload = ByteArray(payLoadLength - 4)
-                System.arraycopy(msg_result, 20, payload, 0, payload.size)
+                System.arraycopy(msg, 20, payload, 0, payload.size)
                 msgBean.payload = payload
             }
         } catch (e: Exception) {
@@ -203,18 +191,6 @@ object CmdHelper {
         return msgBean
     }
 
-    //密钥
-    //异或原参
-    //        LogUtils.logBlueTooth("APP加密的Key1:" + mKey1);
-    //未加密数据
-
-//        LogUtils.logBlueTooth("APP未加密的数据:" + verificationArray[4]);
-
-//        LogUtils.logBlueTooth("APP加密后的数据:" + verificationArray[2]);
-    //加密后累加
-
-//        LogUtils.logBlueTooth("APP未加密的数据_mKeyData2 :" + mKeyData2);
-//        LogUtils.logBlueTooth("APP解密累加后 KEY2:" + mKey2);
     /**
      * 新协议 获取校验命令
      *

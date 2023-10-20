@@ -101,14 +101,13 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         })
     }
 
-    fun transferFileBuz(msgBean: MsgBean, msg: ByteArray) {
+    fun transferFileBuz(msgBean: MsgBean) {
         when (msgBean.cmdId.toShort()) {
             CMD_ID_8001 -> {
                 mSendFileCount = 0
                 mErrorSend = false
-                val byteBuffer = ByteBuffer.wrap(msg)
-                val ota_allow = byteBuffer[16] //是否容许升级 0允许 1不允许
-                val reason = byteBuffer[17] //是否容许升级 0允许 1不允许
+                val ota_allow = msgBean.payload[0] //是否容许升级 0允许 1不允许
+                val reason = msgBean.payload[1] //是否容许升级 0允许 1不允许
                 sjUniWatch.wmLog.logD(TAG, "1.Allow transfer:$ota_allow")
                 if (ota_allow.toInt() == 1) {
                     mSendingFile = mTransferFiles!![0]
@@ -135,7 +134,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
             CMD_ID_8002 -> {
                 val lenArray = ByteArray(4)
-                System.arraycopy(msg, 16, lenArray, 0, lenArray.size)
+                System.arraycopy(msgBean.payload, 0, lenArray, 0, lenArray.size)
                 mOtaProcess = 0
                 mCellLength = ByteBuffer.wrap(lenArray)
                     .order(ByteOrder.LITTLE_ENDIAN).int - 4
@@ -161,11 +160,10 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             }
 
             CMD_ID_8003 -> {
-                val buffer = ByteBuffer.wrap(msg).order(ByteOrder.LITTLE_ENDIAN)
-                val isRight = buffer[16]
+                val isRight = msgBean.payload[0]
                 mTransferring = true
                 mErrorSend = isRight.toInt() != 1
-                mOtaProcess = buffer.getInt(17)
+                mOtaProcess = msgBean.payload[1].toInt()
                 sjUniWatch.wmLog.logD(
                     TAG,
                     "返回消息状态:$mErrorSend 返回ota_process:$mOtaProcess 总包个数:$mPackageCount"
@@ -207,8 +205,8 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                 mTransferRetryCount = 0
                 mOtaProcess = 0
                 //                                    removeCallBackRunner(mTransferTimeoutRunner)
-                val dataSuccess = ByteBuffer.wrap(msg)[16]
-                sjUniWatch.wmLog.logD(TAG, "发送结果:$dataSuccess")
+                val dataSuccess = msgBean.payload[0]
+                sjUniWatch.wmLog.logD(TAG, "transfer result:$dataSuccess")
                 sjUniWatch.clearMsg()
                 if (dataSuccess == 1.toByte()) {
                     mSendFileCount++
@@ -275,7 +273,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
             CMD_ID_8006 -> {
                 mTransferring = false
                 mCanceledSend = true
-                val reasonCancel = ByteBuffer.wrap(msg)[16]
+                val reasonCancel = msgBean.payload[0]
                 sjUniWatch.wmLog.logD(TAG, "设备取消传输原因：$reasonCancel")
                 transferEnd()
                 transferError("file transfer error reason:06 Error")
@@ -400,19 +398,18 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
         return info
     }
 
-    fun timeOut(msg: ByteArray) {
+    fun timeOut(msgBean:MsgBean) {
         if (mCanceledSend) {
             sjUniWatch.clearMsg()
             return
         }
 
-        val msgBean = CmdHelper.getPayLoadJson(msg)
         when (msgBean.head) {
             HEAD_FILE_SPP_A_2_D -> {
                 mTransferring = false
-                when (msgBean.cmdIdStr) {
-                    CMD_STR_8001_TIME_OUT -> {}
-                    CMD_STR_8002_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001 -> {}
+                    CMD_ID_8002 -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         mTransferRetryCount++
                         mSendingFile = mTransferFiles!![mSendFileCount]
                         sjUniWatch.sendNormalMsg(
@@ -425,7 +422,7 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
                     } else {
                         transferEnd()
                     }
-                    CMD_STR_8003_TIME_OUT ->
+                    CMD_ID_8003 ->
                         if (mTransferRetryCount < MAX_RETRY_COUNT) {
                             mTransferRetryCount++
                             sjUniWatch.sendNormalMsg(
@@ -439,11 +436,9 @@ class SJTransferFile(val sjUniWatch: SJUniWatch) : AbWmTransferFile() {
 //                        if (mTransferFileListener != null) {
 //                            mTransferFileListener.transferFail(FAIL_TYPE_TIMEOUT, "8003 time out")
 //                        }
-
-
                         }
 
-                    CMD_STR_8004_TIME_OUT -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
+                    CMD_ID_8004 -> if (mTransferRetryCount < MAX_RETRY_COUNT) {
                         mTransferRetryCount++
                         val ota_data = CmdHelper.transfer04Cmd
                         sjUniWatch.sendNormalMsg(ota_data)
