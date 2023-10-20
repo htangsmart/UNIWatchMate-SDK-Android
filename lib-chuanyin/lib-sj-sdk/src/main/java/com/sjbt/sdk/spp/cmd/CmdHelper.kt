@@ -1375,10 +1375,11 @@ object CmdHelper {
     ): PayloadPackage {
 
         val payloadPackage = PayloadPackage()
-        val bbSport: ByteBuffer = ByteBuffer.allocate(3)
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4)
         bbSport.put(wmUnitInfo.timeFormat.ordinal.toByte())
-        bbSport.put(wmUnitInfo.temperatureUnit.ordinal.toByte())
         bbSport.put(wmUnitInfo.distanceUnit.ordinal.toByte())
+        bbSport.put(wmUnitInfo.temperatureUnit.ordinal.toByte())
+        bbSport.put(wmUnitInfo.weightUnit.ordinal.toByte())
 
         payloadPackage.putData(getUrnId(URN_2, URN_3), bbSport.array())
 
