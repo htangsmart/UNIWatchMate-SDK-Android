@@ -23,8 +23,8 @@ fun uniWatchInit(application: Application) {
     //2.配置支持不同厂商的手表
     UNIWatchMate.init(
         application, listOf(
-            SJUniWatchImpl(application, 10000),
-//            FcUniWatchImpl(application)
+            SJUniWatchImpl(application, 10000),//绅聚设备操作对象
+//            FcUniWatchImpl(application)//拓步设备操作对象
         )
     )
 }
