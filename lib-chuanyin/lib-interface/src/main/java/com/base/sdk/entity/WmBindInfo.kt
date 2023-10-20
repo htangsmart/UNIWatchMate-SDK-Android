@@ -7,7 +7,7 @@ data class WmBindInfo(
     val userId: String,
     val userName: String,
     val bindType: BindType,
-    val model: WmDeviceModel
+    var model: WmDeviceModel = WmDeviceModel.NOR_REG
 ) {
     var randomCode: String? = null
     override fun toString(): String {

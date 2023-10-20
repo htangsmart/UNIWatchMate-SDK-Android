@@ -186,7 +186,7 @@ public class BtEngine {
                                 }
 
                                 String msgStr = byte2Hex(result).toUpperCase();
-                                logD("返回消息：" + msgStr);
+                                logD("back msg：" + msgStr);
 
                                 String msgTimeCode = msgStr.substring(0, 8).toUpperCase();
 
@@ -343,7 +343,7 @@ public class BtEngine {
 //            mSjUniWatch.getWmLog().logD(TAG,"开启子线程读取.容许最大长度Receive:" + mSocket.getMaxReceivePacketSize());
             mSocket.getOutputStream().write(bytes);
             mSocket.getOutputStream().flush();
-            logD("发送消息：" + BtUtils.bytesToHexString(bytes));
+            logD("send msg：" + BtUtils.bytesToHexString(bytes));
 
         } catch (Throwable e) {
 //            closeSocket("发送过程 " + e.getMessage(), true);

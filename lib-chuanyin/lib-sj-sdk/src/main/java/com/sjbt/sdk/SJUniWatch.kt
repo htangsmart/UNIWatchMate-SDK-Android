@@ -550,10 +550,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
 //                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
                                     if (msgBean.payload.size > 10) {//设备应用层回复
-                                        (wmLog as SJLog).logD(
-                                            TAG,
-                                            "应用层消息：" + msgBean.payload.size
-                                        )
+//                                        (wmLog as SJLog).logD(
+//                                            TAG,
+//                                            "应用层消息：" + msgBean.payload.size
+//                                        )
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
@@ -578,18 +578,18 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
-                                        (wmLog as SJLog).logD(TAG, "应用层消息：" + msgBean.payloadLen)
+//                                        (wmLog as SJLog).logD(TAG, "应用层消息：" + msgBean.payloadLen)
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
 
                                         parseNodePayload(true, msgBean, payloadPackage)
                                     } else {//设备传输层回复
-                                        (wmLog as SJLog).logD(TAG, "传输层消息：" + msgBean.payloadLen)
+//                                        (wmLog as SJLog).logD(TAG, "传输层消息：" + msgBean.payloadLen)
 
                                     }
 
-                                    (wmLog as SJLog).logD(TAG, "响应消息：" + msgBean.payload.size)
+//                                    (wmLog as SJLog).logD(TAG, "响应消息：" + msgBean.payload.size)
 
                                 }
 
@@ -601,7 +601,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-                                    (wmLog as SJLog).logD(TAG, "收到通讯层消息：" + msgBean.payload.size)
+//                                    (wmLog as SJLog).logD(TAG, "收到通讯层消息：" + msgBean.payload.size)
                                 }
                             }
                         }
@@ -961,6 +961,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 发送写入类型Node节点消息
      */
     fun sendWriteNodeCmdList(payloadPackage: PayloadPackage) {
+        mPayloadMap.putFrame(payloadPackage)
 
         payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE).forEach {
             var payload: ByteArray = it
@@ -987,6 +988,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 发送读取类型Node节点消息
      */
     fun sendReadNodeCmdList(payloadPackage: PayloadPackage) {
+        mPayloadMap.putFrame(payloadPackage)
+
         payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_READ).forEach {
             var payload: ByteArray = it
 
@@ -1037,21 +1040,22 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 回复device Node节点消息
      */
     fun sendResponseNodeCmdList(payloadPackage: PayloadPackage) {
-        payloadPackage.toResponseByteArray(requestType = ResponseResultType.RESPONSE_ALL_OK).forEach {
-            var payload: ByteArray = it
+        payloadPackage.toResponseByteArray(requestType = ResponseResultType.RESPONSE_ALL_OK)
+            .forEach {
+                var payload: ByteArray = it
 
-            val cmdArray = CmdHelper.constructCmd(
-                HEAD_NODE_TYPE,
-                CMD_ID_8001,
-                DIVIDE_N_2,
-                0,
-                0,
-                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-                payload
-            )
+                val cmdArray = CmdHelper.constructCmd(
+                    HEAD_NODE_TYPE,
+                    CMD_ID_8001,
+                    DIVIDE_N_2,
+                    0,
+                    0,
+                    BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                    payload
+                )
 
-            sendNormalMsg(cmdArray)
-        }
+                sendNormalMsg(cmdArray)
+            }
 
         mPayloadPackage = payloadPackage
 
@@ -1059,29 +1063,28 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     private fun parseNodePayload(
-        response: Boolean, msgBean: MsgBean? = null, payloadPackage: PayloadPackage
+        fromDevice: Boolean, msgBean: MsgBean? = null, payloadPackage: PayloadPackage
     ) {
 
-        if (response) {
+        if (fromDevice) {
 //            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
             if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
-                wmLog.logD(TAG, "结果全部OK")
+                wmLog.logD(TAG, "All OK:" + mPayloadMap.getFrame(payloadPackage._id).packageSeq)
+
             } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
-                wmLog.logD(TAG, "结果全部Fail")
-            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type||payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type) {
-                wmLog.logD(TAG, "返回所有节点消息")
+                wmLog.logD(TAG, "All Fail" + mPayloadMap.getFrame(payloadPackage._id).packageSeq)
+
+            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type
+                || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type
+                || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type
+            ) {
+
+                wmLog.logD(TAG, "Each node msg")
                 parseResponseEachNode(payloadPackage, msgBean)
-            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type){
-
-            } else if(payloadPackage.actionType == RequestType.REQ_TYPE_READ.type){
-
             }
-//            } else {
-//                wmLog.logE(TAG, "设备回复错误消息！！！")
-//            }
 
         } else {
-            parseResponseEachNode(payloadPackage, msgBean)
+//            parseResponseEachNode(payloadPackage, msgBean)
         }
 
     }
@@ -1234,14 +1237,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBindInfo = bindInfo
         val params = UrlParse.getUrlParams(qrString)
 
+        bindInfo.model = WmDeviceModel.NOR_REG
         if (params.isNotEmpty()) {
             val schemeMacAddress = params["mac"]
             bindInfo.randomCode = params["random"]
+            val projectName = params["projectname"]
+            bindInfo.model = if ("OSW-802N".equals(projectName)) {
+                WmDeviceModel.SJ_WATCH
+            } else {
+                WmDeviceModel.NOR_REG
+            }
+
             return schemeMacAddress?.let {
                 connect(it, bindInfo)
             }
+
         } else {
-            return WmDevice(bindInfo.model)
+            return WmDevice(bindInfo.model!!)
         }
     }
 
@@ -1255,6 +1267,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBtStateReceiver?.let {
             it.setmCurrDevice(mCurrAddress)
         }
+
         val wmDevice = WmDevice(bindInfo.model)
         wmDevice.address = address
         wmDevice.mode = bindInfo.model
