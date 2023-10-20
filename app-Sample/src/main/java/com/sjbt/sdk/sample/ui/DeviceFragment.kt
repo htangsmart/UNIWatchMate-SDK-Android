@@ -50,6 +50,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewBind.itemDeviceBind.setOnClickListener(blockClick)
+//      viewBind.imgDeviceAdd.setOnClickListener(blockClick)
         viewBind.itemDeviceInfo.setOnClickListener(blockClick)
         viewBind.itemDeviceConfig.setOnClickListener(blockClick)
         viewBind.itemQrCodes.setOnClickListener(blockClick)
@@ -115,7 +116,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDeviceBind -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
-
+            viewBind.imgDeviceAdd -> {
+                findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
+            }
             viewBind.itemDeviceInfo -> {
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
             }
