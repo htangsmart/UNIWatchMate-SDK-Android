@@ -75,7 +75,7 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/img_device_add"
+                    android:id="@+id/img_device"
                     android:layout_width="61dp"
                     android:layout_height="61dp"
                     android:layout_alignParentEnd="true"
@@ -108,6 +108,7 @@ android:padding="@dimen/dp_15"
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_contacts"
+            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_contacts" />
 

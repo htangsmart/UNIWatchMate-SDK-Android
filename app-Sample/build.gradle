@@ -72,7 +72,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
-        debug{
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
@@ -108,24 +108,32 @@ def static buildTime() {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar','*.aar'])
+    //Required
+    implementation(name: 'lib-api', ext: 'aar')//api层aar
+    implementation(name: 'lib-interface', ext: 'aar')
+    implementation(name: 'lib-sj-sdk', ext: 'aar')//
+    implementation(name: 'lib_jni_opencv_1.0.1_202310091127', ext: 'aar')
+
+    implementation "androidx.core:core-ktx:$core_ktx_version"
+    implementation "com.google.code.gson:gson:$gson_version"
+    implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
+    implementation "io.reactivex.rxjava3:rxandroid:$rx_android_version"
+
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "com.google.android.material:material:$material_version"
+    implementation "com.guolindev.permissionx:permissionx:$permissionx_version"
+
+    //Required
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "com.google.android.material:material:$material_version"
-    implementation 'com.guolindev.permissionx:permissionx:1.6.4'
-
+    implementation(name: 'lib_toolkit_v1.0.0-alpha1', ext: 'aar')
     implementation project(path: ':zbarlibrary')
     implementation project(path: ':file-chooser-lib')
 
-    //Required
     implementation "com.jakewharton.timber:timber:$timber_version"
-    implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
-    implementation "io.reactivex.rxjava3:rxandroid:$rx_android_version"
     implementation "com.polidea.rxandroidble3:rxandroidble:1.17.2"
 
 //Base
@@ -135,7 +143,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
 
     implementation "com.jakewharton.timber:timber:$timber_version"
-    implementation "com.google.code.gson:gson:$gson_version"
 
     //JetPack-Lifecycle
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
@@ -167,9 +174,6 @@ dependencies {
 
     //JetPack-WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
-
-    //permission
-    implementation "com.guolindev.permissionx:permissionx:$permissionx_version"
 
     //retrofit2
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"

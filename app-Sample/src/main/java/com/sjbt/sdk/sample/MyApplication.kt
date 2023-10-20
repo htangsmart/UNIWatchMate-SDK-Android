@@ -40,7 +40,7 @@ class MyApplication : Application() {
         uniWatchInit(this)
 
         //第二步：通过setDeviceModel选定SDK(发现设备场景)，如果是扫码场景则用scanQr，二选一
-        UNIWatchMate.setDeviceModel(WmDeviceModel.SJ_WATCH)
+        UNIWatchMate.setDeviceModel(WmDeviceModel.NOR_REG)
         //UNIWatchMate.scanQr("www.shenju.watch?mac=00:00:56:78:9A:BC?name=SJ 8020N")
         //全局监听
         observeState()

@@ -116,9 +116,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDeviceBind -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
-            viewBind.imgDeviceAdd -> {
-                findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
-            }
+//            viewBind.imgDeviceAdd -> {
+//                findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
+//            }
             viewBind.itemDeviceInfo -> {
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
             }
