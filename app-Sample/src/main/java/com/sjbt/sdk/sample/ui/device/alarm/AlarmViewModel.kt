@@ -123,6 +123,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 setAlarm = alarmModified
                 alarmAction = AlarmAction.UPDATE
                 setAlarmsAction.execute()
+                UNIWatchMate.wmLog.logI("TAG","modifyAlarm")
             }
         }
     }
