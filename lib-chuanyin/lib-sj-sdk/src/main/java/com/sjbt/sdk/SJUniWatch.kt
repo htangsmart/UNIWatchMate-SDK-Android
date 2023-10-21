@@ -1253,7 +1253,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
         } else {
-            return WmDevice(bindInfo.model!!)
+            return WmDevice(bindInfo.model)
         }
     }
 
