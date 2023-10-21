@@ -1,6 +1,6 @@
 package com.base.sdk.port.app
 
-import com.base.sdk.entity.common.WmSport
+import com.base.sdk.entity.apps.WmSport
 import com.base.sdk.port.IWmSupport
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
