@@ -1237,7 +1237,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mBindInfo = bindInfo
         val params = UrlParse.getUrlParams(qrString)
 
-        bindInfo.model = WmDeviceModel.NOR_REG
+        bindInfo.model = WmDeviceModel.NOT_REG
         if (params.isNotEmpty()) {
             val schemeMacAddress = params["mac"]
             bindInfo.randomCode = params["random"]
@@ -1245,7 +1245,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             bindInfo.model = if ("OSW-802N".equals(projectName)) {
                 WmDeviceModel.SJ_WATCH
             } else {
-                WmDeviceModel.NOR_REG
+                WmDeviceModel.NOT_REG
             }
 
             return schemeMacAddress?.let {

@@ -3,6 +3,8 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
 import com.base.sdk.port.app.AbAppContact
+import com.sjbt.sdk.CONTACT_NAME
+import com.sjbt.sdk.CONTACT_NUM
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.MsgBean
@@ -100,13 +102,13 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 val byteArray =
                     ByteBuffer.wrap(it.data).array()
 
-                val chunkSize = 52
+                val chunkSize = CONTACT_NAME + CONTACT_NUM
 
                 if (it.dataLen.toInt() > chunkSize) {
                     var i = 0
                     while (i < byteArray.size) {
-                        val nameBytes = byteArray.copyOfRange(i, i + 32)
-                        val numBytes = byteArray.copyOfRange(i + 20, i + chunkSize)
+                        val nameBytes = byteArray.copyOfRange(i, i + CONTACT_NAME)
+                        val numBytes = byteArray.copyOfRange(i + CONTACT_NUM, i + chunkSize)
                         val name = String(nameBytes).trim()
                         val num = String(numBytes).trim()
                         val contact = WmContact.create(name, num)
@@ -135,17 +137,17 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             URN_APP_CONTACT_GET_EMERGENCY -> {
 
-                if (it.dataLen >= 53) {
+                if (it.dataLen >= CONTACT_NAME + CONTACT_NUM + 1) {
                     val emergencyByteArray = it.data
                     val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                     mEmergencyCall.isEnabled = enable
                     val name = String(
-                        emergencyByteArray.copyOf(32),
+                        emergencyByteArray.copyOf(CONTACT_NAME),
                         StandardCharsets.UTF_8
                     )
 
                     val num = String(
-                        emergencyByteArray.copyOf(20),
+                        emergencyByteArray.copyOf(CONTACT_NUM),
                         StandardCharsets.UTF_8
                     )
 
@@ -155,8 +157,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                     getEmergencyContactBack(mEmergencyCall)
                 } else {
-                    val emergencyCall = WmEmergencyCall(false, mutableListOf<WmContact>())
-                    getEmergencyContactBack(emergencyCall)
+                    getEmergencyContactBack(mEmergencyCall)
                 }
             }
         }

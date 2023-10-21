@@ -42,15 +42,12 @@ object UNIWatchMate : AbUniWatch() {
         this.application = application
         this.uniWatches.addAll(uniWatches)
 
-        Log.e(">>>>>>>>>>>>>>","初始化：${uniWatches.size}")
-
         if (uniWatches.isEmpty()) {
             throw RuntimeException("No Sdk Register Exception!")
         }
 
         this.uniWatches.forEach {
             uniWatchSubject.onNext(it)
-            Log.e(">>>>>>>>>>>>>>","初始化：$it")
         }
 
     }
