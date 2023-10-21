@@ -22,7 +22,8 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     private var contactCountSetEmitter: SingleEmitter<Boolean>? = null
     private var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>? = null
     private var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>? = null
-    private var mEmergencyCall: WmEmergencyCall? = null
+
+    private var mEmergencyCall: WmEmergencyCall = WmEmergencyCall(false, mutableListOf())
     private val mContacts = mutableListOf<WmContact>()
 
     override fun isSupport(): Boolean {
@@ -76,13 +77,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     }
 
     private fun updateEmergencyContactBack(success: Boolean) {
-        updateEmergencyEmitter?.onSuccess(
-            if (success) {
-                mEmergencyCall
-            } else {
-                null
-            }
-        )
+        updateEmergencyEmitter?.onSuccess(mEmergencyCall)
     }
 
     fun contactBusiness(
@@ -143,6 +138,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 if (it.dataLen >= 53) {
                     val emergencyByteArray = it.data
                     val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                    mEmergencyCall.isEnabled = enable
                     val name = String(
                         emergencyByteArray.copyOf(32),
                         StandardCharsets.UTF_8
@@ -153,13 +149,11 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         StandardCharsets.UTF_8
                     )
 
-                    val emergencyContacts = mutableListOf<WmContact>()
                     WmContact.create(name, num)?.let {
-                        emergencyContacts.add(it)
+                        mEmergencyCall.emergencyContacts.add(it)
                     }
 
-                    val emergencyCall = WmEmergencyCall(enable, emergencyContacts)
-                    getEmergencyContactBack(emergencyCall)
+                    getEmergencyContactBack(mEmergencyCall)
                 } else {
                     val emergencyCall = WmEmergencyCall(false, mutableListOf<WmContact>())
                     getEmergencyContactBack(emergencyCall)

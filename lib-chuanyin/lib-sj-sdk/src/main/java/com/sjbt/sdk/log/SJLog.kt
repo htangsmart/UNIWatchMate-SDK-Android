@@ -7,7 +7,7 @@ import com.sjbt.sdk.TAG_SJ
 
 class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
 
-    val sdkDebugLogEnable = false
+    val sdkDebugLogEnable = true
 
     override fun logE(tag: String, msg: String) {
         if (sjUniWatch.sdkLogEnable) {

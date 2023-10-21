@@ -1612,7 +1612,7 @@ object CmdHelper {
             byteBuffer.put(it.number.toByteArray().copyOf(20))
         }
 
-        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), byteBuffer.array())
 
         return payloadPackage
     }
@@ -1636,7 +1636,7 @@ object CmdHelper {
             byteBuffer.put(it.number.toByteArray().copyOf(20))
         }
 
-        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_4), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
 
         return payloadPackage
     }
@@ -1647,7 +1647,7 @@ object CmdHelper {
     fun getReadEmergencyNumberCmd(): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
-        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_5), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
         return payloadPackage
     }
 
