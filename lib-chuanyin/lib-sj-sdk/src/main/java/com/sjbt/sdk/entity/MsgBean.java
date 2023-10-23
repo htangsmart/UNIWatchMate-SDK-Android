@@ -58,9 +58,9 @@ public class MsgBean {
 
                 || (head == HEAD_CAMERA_PREVIEW && cmdId == CMD_ID_8002)//相机预览
 
-                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8001)//节点消息
-                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8002)//节点消息
-                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8004)//节点消息
+//                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8001)//节点消息
+//                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8002)//节点消息
+                || (head == HEAD_NODE_TYPE && cmdId == CMD_ID_8004)//通讯层节点消息
                 ;
     }
 
@@ -83,10 +83,12 @@ public class MsgBean {
             }
 
             Log.e(TAG_SJ, "timeout code requestId:" + requestId);
+            Log.e(TAG_SJ, "timeout code not timeout:" + isNotTimeOut());
 
-            timeOutCode = "" + head + cmdId + requestId;
+            timeOutCode = "" + head + requestId;//节点消息的
         } else {
-            timeOutCode = "" + head + cmdId;
+            timeOutCode = "" + head + cmdOrder + cmdId;
+            Log.e(TAG_SJ, "timeout code:" + timeOutCode);
         }
 
         return timeOutCode;

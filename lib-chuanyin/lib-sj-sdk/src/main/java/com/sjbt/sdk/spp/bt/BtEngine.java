@@ -523,6 +523,7 @@ public class BtEngine {
             if (runnable != null) {
                 mHandler.removeCallbacks(runnable);
                 msgQueueMap.remove(msgTimeCode);
+                mSjUniWatch.getWmLog().logD(TAG, "remove back message timeout code 1：" + msgTimeCode);
             }
 
             notifyUI(Listener.MSG, msgBean);
@@ -553,6 +554,7 @@ public class BtEngine {
                 if (runnable != null) {
                     mHandler.removeCallbacks(runnable);
                     msgQueueMap.remove(msgTimeCode);
+                    mSjUniWatch.getWmLog().logD(TAG, "remove back message timeout code 2：" + msgTimeCode);
                 }
 
                 notifyUI(Listener.MSG, msgBean);
