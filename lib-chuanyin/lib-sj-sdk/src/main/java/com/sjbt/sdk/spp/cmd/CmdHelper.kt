@@ -1725,8 +1725,24 @@ object CmdHelper {
         byteBuffer.put(wmWeather.location.city.toByteArray())
 
         //当天
-
         wmWeather.todayWeather.forEach {
+
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it.date
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+            val second = calendar.get(Calendar.SECOND)
+
+            byteBuffer.putShort(year.toShort())
+            byteBuffer.put(month.toByte())
+            byteBuffer.put(day.toByte())
+            byteBuffer.put(hour.toByte())
+            byteBuffer.put(minute.toByte())
+            byteBuffer.put(second.toByte())
+
             val currTemp = when (temperatureUnit) {
                 WmUnitInfo.TemperatureUnit.CELSIUS -> {//摄氏度
                     it.curTemp
@@ -1791,6 +1807,26 @@ object CmdHelper {
 
         wmWeather.weatherForecast.forEach {
 
+            //时间
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it.date
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+            val second = calendar.get(Calendar.SECOND)
+            val week = calendar.get(Calendar.WEEK_OF_MONTH)
+
+            byteBuffer.putShort(year.toShort())
+            byteBuffer.put(month.toByte())
+            byteBuffer.put(day.toByte())
+            byteBuffer.put(hour.toByte())
+            byteBuffer.put(minute.toByte())
+            byteBuffer.put(second.toByte())
+//            byteBuffer.put(week.toByte())
+            byteBuffer.put(it.week.ordinal.toByte())
+
             when (temperatureUnit) {
                 WmUnitInfo.TemperatureUnit.CELSIUS -> {//摄氏度
                     byteBuffer.put(it.lowTemp.toByte())
@@ -1811,28 +1847,10 @@ object CmdHelper {
             byteBuffer.put(it.dayCode.toByte())
             byteBuffer.put(it.nightCode.toByte())
             byteBuffer.put(it.dayDesc.length.toByte())
-            byteBuffer.put(it.dayDesc.toByteArray())
-            byteBuffer.put(it.nightCode.toByte())
             byteBuffer.put(it.nightDesc.length.toByte())
+
+            byteBuffer.put(it.dayDesc.toByteArray())
             byteBuffer.put(it.nightDesc.toByteArray())
-
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = it.date
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH) + 1 // 月份从0开始，需要加1
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-            val hour = calendar.get(Calendar.HOUR_OF_DAY)
-            val minute = calendar.get(Calendar.MINUTE)
-            val second = calendar.get(Calendar.SECOND)
-
-            byteBuffer.putShort(year.toShort())
-            byteBuffer.put(month.toByte())
-            byteBuffer.put(day.toByte())
-            byteBuffer.put(hour.toByte())
-            byteBuffer.put(minute.toByte())
-            byteBuffer.put(second.toByte())
-
-            byteBuffer.put(it.week.ordinal.toByte())
 
         }
 
