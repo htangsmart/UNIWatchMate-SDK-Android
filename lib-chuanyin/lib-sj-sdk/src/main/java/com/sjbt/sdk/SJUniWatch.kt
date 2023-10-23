@@ -218,7 +218,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onStopDiscovery() {
-
+                discoveryObservableEmitter?.onComplete()
             }
         })
 
@@ -936,59 +936,49 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 分包发送写入类型Node节点消息
      */
     fun sendWriteSubpackageNodeCmdList(
-        totalLen: Short, itemLen: Int, payloadPackage: PayloadPackage
+        totalLen: Short, mtu: Int, payloadPackage: PayloadPackage
     ) {
 
         mPayloadMap.putFrame(payloadPackage)
-        val nodeLen = payloadPackage.itemList[0].dataLen + 4
-        val nodeCount = payloadPackage.itemList.size
 
-//        var itemLen = 0
-//
-//        if (nodeLen * nodeCount > ITEM_MAX_LEN) {
-//
-//            if (nodeLen < 20) {
-//                itemLen = nodeLen * 30
-//            } else if (nodeLen < 30) {
-//                itemLen = nodeLen * 20
-//            } else if (nodeLen < 60) {
-//                itemLen = nodeLen * 10
-//            } else if (nodeLen < 90) {
-//                itemLen = nodeLen * 7
-//            }
-//        }
-
-        val packList = payloadPackage.toByteArray(
-            mtu = itemLen, requestType = RequestType.REQ_TYPE_WRITE
-        )
+        /**
+         * 返回业务单元list
+         */
+        val packList = payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE)
 
         var divideType = DIVIDE_N_2
-        for (i in 0 until packList.size) {
-            var payload: ByteArray = packList[i]
 
-            if (i == 0) {
-                divideType = DIVIDE_Y_F_2
-            } else if (i == packList.size) {
-                divideType = DIVIDE_Y_E_2
-            } else {
-                divideType = DIVIDE_Y_M_2
+        payloadPackage.itemList.forEach {
+
+            //每一个单元再做数据分包
+            val count = it.dataLen / mtu
+
+            for (i in 0 until count) {
+                //传输层分包
+                var payload: ByteArray = it.data.copyOfRange(i * mtu, i * mtu + mtu)
+
+                if (i == 0) {
+                    divideType = DIVIDE_Y_F_2
+                } else if (i == packList.size) {
+                    divideType = DIVIDE_Y_E_2
+                } else {
+                    divideType = DIVIDE_Y_M_2
+                }
+
+                val cmdArray = CmdHelper.constructCmd(
+                    HEAD_NODE_TYPE,
+                    CMD_ID_8001,
+                    divideType,
+                    totalLen,
+                    0,
+                    BtUtils.getCrc(HEX_FFFF, payload, payload.size),
+                    payload
+                )
+
+                sendNormalMsg(cmdArray)
             }
 
-            val cmdArray = CmdHelper.constructCmd(
-                HEAD_NODE_TYPE,
-                CMD_ID_8001,
-                divideType,
-                totalLen,
-                0,
-                BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-                payload
-            )
-
-            sendNormalMsg(cmdArray)
-
-            Thread.sleep(10)
         }
-
 //        parseNodePayload(false, null, payloadPackage)
     }
 
@@ -1446,8 +1436,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
 
+                wmLog.logE(TAG, "stopAfter:$stopAfter")
+
                 mHandler.postDelayed(object : Runnable {
                     override fun run() {
+
+                        discoveryObservableEmitter?.onComplete()
 
                         if (ActivityCompat.checkSelfPermission(
                                 mContext, Manifest.permission.BLUETOOTH_SCAN

@@ -1586,15 +1586,28 @@ object CmdHelper {
      */
     fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer =
-            ByteBuffer.allocate(contacts.size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
 
-        contacts.forEach {
-            byteBuffer.put(it.name.toByteArray().copyOf(CONTACT_NAME_LEN))
-            byteBuffer.put(it.number.toByteArray().copyOf(CONTACT_NUM_LEN))
+        val count = DEFAULT_ITEM_MAX_LEN / (CONTACT_NAME_LEN + CONTACT_PHONE_LEN)
+
+        val contactGroup = contacts.chunked(count)
+
+        for (i in 0 until contactGroup.size) {
+
+            val byteBuffer: ByteBuffer =
+                ByteBuffer.allocate(count * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
+
+            contactGroup[i].forEach {
+                byteBuffer.put(
+                    it.name.toByteArray().copyOf(CONTACT_NAME_LEN)
+                )
+
+                byteBuffer.put(
+                    it.number.toByteArray().copyOf(CONTACT_NUM_LEN)
+                )
+            }
+
+            payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), byteBuffer.array())
         }
-
-        payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), byteBuffer.array())
 
         return payloadPackage
     }

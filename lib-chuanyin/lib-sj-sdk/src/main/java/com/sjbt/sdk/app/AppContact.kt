@@ -48,9 +48,11 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
     override fun updateContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {
         updateContactEmitter = it
-        val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
 
         sjUniWatch.observableMtu.subscribe { mtu ->
+
+            val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
+
             sjUniWatch.sendWriteSubpackageNodeCmdList(
                 (contactList.size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN) + 10).toShort(),//通讯录个数长度+payload头长度
                 mtu,
