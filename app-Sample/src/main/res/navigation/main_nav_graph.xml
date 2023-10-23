@@ -29,7 +29,9 @@
         <action
             android:id="@+id/toDialHomePage"
             app:destination="@id/dialHomePageFragment" />
-
+        <action
+            android:id="@+id/toSportHomePage"
+            app:destination="@id/sportHomePageFragment" />
         <action
             android:id="@+id/toOtherFeatures"
             app:destination="@id/otherFeaturesFragment" />
@@ -363,8 +365,24 @@
 
 
     </fragment>
+    <fragment
+        android:id="@+id/sportHomePageFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.sport.SportHomePageFragment"
+        android:label="@string/ds_sport"
+        tools:layout="@layout/fragment_sport_home_page">
+        <action
+            android:id="@+id/toInstalledList"
+            app:destination="@id/installedSportsFragment" />
 
-
+        <action
+            android:id="@+id/toSportLibrary"
+            app:destination="@id/sportLibraryFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sportLibraryFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.sport.SportLibraryFragment"
+        android:label="@string/ds_sport_library"
+        tools:layout="@layout/fragment_sport_library" />
     <fragment
         android:id="@+id/dialLibraryFragment"
         android:name="com.sjbt.sdk.sample.ui.device.dial.library.DialLibraryFragment"
@@ -376,7 +394,11 @@
         android:name="com.sjbt.sdk.sample.ui.device.dial.DialInstalledListFragment"
         android:label="@string/ds_dial_installed"
         tools:layout="@layout/fragment_dial_installed_list" />
-
+    <fragment
+        android:id="@+id/installedSportsFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.sport.SportInstalledListFragment"
+        android:label="@string/ds_sport_installed"
+        tools:layout="@layout/fragment_sport_installed_list" />
 
     <fragment
         android:id="@+id/otherFeaturesFragment"

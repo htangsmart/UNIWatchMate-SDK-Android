@@ -3,7 +3,6 @@ package com.sjbt.sdk.sample.ui.device.bind
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -15,7 +14,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.setFragmentResultListener
@@ -29,10 +27,8 @@ import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
 import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
-import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.github.kilnn.tool.dialog.prompt.PromptDialogFragment
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.sjbt.sdk.sample.R
@@ -97,17 +93,18 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
         val userInfo = userInfoRepository.flowCurrent.value
         userInfo?.let {
+            val mDevice = UNIWatchMate.connect(
+                address,
+                WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
+            )
             deviceManager.bind(
                 address, if (name.isNullOrEmpty()) {
                     UNKNOWN_DEVICE_NAME
                 } else {
                     name
-                }
+                },WmDeviceModel.SJ_WATCH
             )
-            val mDevice = UNIWatchMate.connect(
-                address,
-                WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
-            )
+
             DeviceConnectDialogFragment().show(childFragmentManager, null)
         }
     }
@@ -142,25 +139,32 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         applicationScope.launchWithLog {
             runCatchingWithLog {
                 this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
-
-                val userInfo = WmBindInfo("124", "124324", BindType.SCAN_QR, WmDeviceModel.SJ_WATCH)
+                val userInfo = userInfoRepository.flowCurrent.value ?: return@launchWithLog
+                val bindInfo = WmBindInfo(userInfo.id.toString(), userInfo.name, BindType.SCAN_QR)
                 val wmScanDevice = parseSjScanQr(scanResult.getContent())
                 if (wmScanDevice == null) {
                     ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                 } else {
                     if (wmScanDevice.address != null) {
-                        deviceManager.bind(
-                            wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
-                                UNKNOWN_DEVICE_NAME
-                            } else {
-                                wmScanDevice.name!!
-                            }
-                        )
-                        UNIWatchMate.connectScanQr(
+//                        deviceManager.delDevice()
+                        val wmDevice = UNIWatchMate.connectScanQr(
                             scanResult.getContent(),
-                            userInfo
+                            bindInfo
                         )
-                        DeviceConnectDialogFragment().show(childFragmentManager, null)
+                        if (wmDevice != null) {
+                            UNIWatchMate.wmLog.logI(TAG,"device=$wmDevice")
+                            deviceManager.bind(
+                                wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
+                                    UNKNOWN_DEVICE_NAME
+                                } else {
+                                    wmScanDevice.name!!
+                                },wmDevice!!.mode
+                            )
+                            DeviceConnectDialogFragment().show(childFragmentManager, null)
+                        }else{
+                            ToastUtil.showToast(getString(R.string.device_scan_tips_error))
+                        }
+
                     } else {
                         ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                     }
@@ -280,7 +284,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     }
 
     private fun startDiscover() {
-        startScan=true
+        startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {

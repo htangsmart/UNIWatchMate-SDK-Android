@@ -16,27 +16,20 @@ class SJLog(val sjUniWatch: SJUniWatch) : AbWmLog() {
     }
 
     override fun logD(tag: String, msg: String) {
-        if (sjUniWatch.sdkLogEnable) {
+        if (sdkDebugLogEnable && sjUniWatch.sdkLogEnable) {
             Log.d(TAG_SJ + tag, msg)
         }
     }
 
     override fun logI(tag: String, msg: String) {
-        if (sjUniWatch.sdkLogEnable) {
+        if (sdkDebugLogEnable && sjUniWatch.sdkLogEnable) {
             Log.i(TAG_SJ + tag, msg)
         }
     }
 
     override fun logW(tag: String, msg: String) {
-        if (sjUniWatch.sdkLogEnable) {
+        if (sdkDebugLogEnable && sjUniWatch.sdkLogEnable) {
             Log.w(TAG_SJ + tag, msg)
         }
     }
-
-//    fun logSDK(tag: String, msg: String) {
-//        if (sdkDebugLogEnable) {
-//            Log.e("$TAG_SJ$tag:", msg)
-//        }
-//    }
-
 }

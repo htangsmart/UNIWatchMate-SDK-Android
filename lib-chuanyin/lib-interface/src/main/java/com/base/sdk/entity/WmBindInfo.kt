@@ -7,7 +7,7 @@ data class WmBindInfo(
     val userId: String,
     val userName: String,
     val bindType: BindType,
-    val model: WmDeviceModel
+    var model: WmDeviceModel = WmDeviceModel.NOT_REG
 ) {
     var randomCode: String? = null
     override fun toString(): String {
@@ -18,5 +18,4 @@ data class WmBindInfo(
 enum class BindType {
     SCAN_QR,
     DISCOVERY,
-//    CONNECT_BACK
 }

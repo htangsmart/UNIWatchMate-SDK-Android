@@ -24,6 +24,7 @@ import com.sjbt.sdk.sample.db.AppDatabase
 import com.sjbt.sdk.sample.entity.DeviceBindEntity
 import com.sjbt.sdk.sample.entity.toModel
 import com.sjbt.sdk.sample.model.device.ConnectorDevice
+import com.sjbt.sdk.sample.model.device.deviceModeToInt
 import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.launchWithLog
@@ -60,7 +61,7 @@ interface DeviceManager {
      * Trying bind a new device.
      * If bind success, the device info will be automatically saved to storage
      */
-    fun bind(address: String, name: String)
+    fun bind(address: String, name: String, wmDeviceMode: WmDeviceModel)
 
 
     /**
@@ -200,7 +201,7 @@ internal class DeviceManagerImpl(
                                         userInfo.id.toString(),
                                         "name",
                                         BindType.DISCOVERY,
-                                        WmDeviceModel.SJ_WATCH
+                                        storageDevice.wmDeviceMode
                                     )
                                 )
                             }
@@ -229,10 +230,12 @@ internal class DeviceManagerImpl(
                     return@launchWithLog
                 }
                 CacheDataHelper.setSynchronizingData(true)
-                showLoadingDialog()
+//                showLoadingDialog()
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
-                    val deviceInfo=   UNIWatchMate.wmSync.syncDeviceInfoData.syncData(System.currentTimeMillis()).await()
+                    val deviceInfo =
+                        UNIWatchMate.wmSync.syncDeviceInfoData.syncData(System.currentTimeMillis())
+                            .await()
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$deviceInfo")
                     CacheDataHelper.setCurrentDeviceInfo(deviceInfo)
                 }
@@ -245,8 +248,9 @@ internal class DeviceManagerImpl(
                     sportGoalRepository.flowCurrent.value?.let {
                         if (flowConnectorState.value == WmConnectState.VERIFIED) {
                             if (it.activityDuration == 0.toShort() || it.calories == 0 || it.steps == 0) {
-                                val sportGoal = UNIWatchMate.wmSettings.settingSportGoal.get().await()
-                                sportGoalRepository.modify(userId,sportGoal)
+                                val sportGoal =
+                                    UNIWatchMate.wmSettings.settingSportGoal.get().await()
+                                sportGoalRepository.modify(userId, sportGoal)
                                 UNIWatchMate.wmLog.logI(TAG, "modify sportGoal= $sportGoal")
                             } else {
                                 val result =
@@ -313,13 +317,13 @@ internal class DeviceManagerImpl(
         }
         .stateIn(applicationScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L), null)
 
-    override fun bind(address: String, name: String) {
+    override fun bind(address: String, name: String, wmDeviceMode: WmDeviceModel) {
         val userId = internalStorage.flowAuthedUserId.value
         if (userId == null) {
             UNIWatchMate.wmLog.logW(TAG, "bind error because no authed user")
             return
         }
-        deviceFromMemory.value = ConnectorDevice(address, name, true)
+        deviceFromMemory.value = ConnectorDevice(address, name, wmDeviceMode, true)
         applicationScope.launchWithLog {
             settingDao.clearDeviceBind(userId)
         }
@@ -354,9 +358,14 @@ internal class DeviceManagerImpl(
             deviceFromMemory.value = null
         } else {
             deviceFromMemory.value = ConnectorDevice(
-                device.address, device.name, false
+                device.address, device.name, device.wmDeviceMode, false
             )
-            val entity = DeviceBindEntity(userId, device.address, device.name)
+            val entity = DeviceBindEntity(
+                userId,
+                device.address,
+                device.name,
+                device.deviceModeToInt()
+            )
             settingDao.insertDeviceBind(entity)
         }
     }

@@ -2,6 +2,7 @@ package com.base.api
 
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import android.util.Log
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
@@ -34,15 +35,21 @@ object UNIWatchMate : AbUniWatch() {
     override val wmTransferFile: AbWmTransferFile = AbWmTransferDelegate(uniWatchObservable)
 
     fun init(application: Application, uniWatches: List<AbUniWatch>) {
-        if (this::application.isInitialized) {
-            return
-        }
+//        if (this::application.isInitialized) {
+//            return
+//        }
+        this.uniWatches.clear()
         this.application = application
         this.uniWatches.addAll(uniWatches)
 
         if (uniWatches.isEmpty()) {
             throw RuntimeException("No Sdk Register Exception!")
         }
+
+        this.uniWatches.forEach {
+            uniWatchSubject.onNext(it)
+        }
+
     }
 
     fun observeUniWatchChange(): Observable<AbUniWatch> {

@@ -1,6 +1,6 @@
 package com.base.sdk.entity.data
 
-import com.base.sdk.entity.common.WmValueTypeData
+import com.base.sdk.entity.apps.WmValueTypeData
 
 abstract class WmBaseSyncData(
     /**
