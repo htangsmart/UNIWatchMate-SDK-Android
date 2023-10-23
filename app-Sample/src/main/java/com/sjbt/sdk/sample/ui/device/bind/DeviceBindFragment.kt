@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.Menu
@@ -42,6 +43,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.CustomDividerItemDecoration
 import com.sjbt.sdk.utils.UrlParse
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import timber.log.Timber
@@ -102,7 +104,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     UNKNOWN_DEVICE_NAME
                 } else {
                     name
-                },WmDeviceModel.SJ_WATCH
+                }, WmDeviceModel.SJ_WATCH
             )
 
             DeviceConnectDialogFragment().show(childFragmentManager, null)
@@ -152,16 +154,16 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                             bindInfo
                         )
                         if (wmDevice != null) {
-                            UNIWatchMate.wmLog.logI(TAG,"device=$wmDevice")
+                            UNIWatchMate.wmLog.logI(TAG, "device=$wmDevice")
                             deviceManager.bind(
                                 wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
                                     UNKNOWN_DEVICE_NAME
                                 } else {
                                     wmScanDevice.name!!
-                                },wmDevice!!.mode
+                                }, wmDevice!!.mode
                             )
                             DeviceConnectDialogFragment().show(childFragmentManager, null)
-                        }else{
+                        } else {
                             ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                         }
 
@@ -287,15 +289,23 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS,"XS09 Ultra")?.asFlow()?.catch {
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, "XS09 Ultra")?.asFlow()
+                    ?.catch {
+                        this::class.simpleName?.let { tag ->
+                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                        }
+                        ToastUtil.showToast(it.message, true)
+                    }.onCompletion {
                     this::class.simpleName?.let { tag ->
-                        UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                        UNIWatchMate.wmLog.logE(tag, "startDiscover onCompletion")
                     }
-                    ToastUtil.showToast(it.message, true)
+                    viewBind.refreshLayout.isRefreshing = false
+                    startScan = false
                 }.collect {
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }
+
             }
         }
     }
