@@ -48,8 +48,6 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         viewModelScope.launch {
             state.copy(requestContacts = Loading()).newState()
             runCatchingWithLog {
-                val sportList = UNIWatchMate.wmApps.appSport.syncSportList.asFlow().collect()
-
                 UNIWatchMate.wmApps.appContact.observableContactList.awaitFirst()
             }.onSuccess {
                 state.copy(requestContacts = Success(ArrayList(it))).newState()

@@ -56,7 +56,7 @@ abstract class AbUniWatch {
     /**
      * 是否支持日志打印
      */
-    abstract fun setLogEnable(logEnable:Boolean)
+    abstract fun setLogEnable(logEnable: Boolean)
 
     /**
      * 连接方法
@@ -120,8 +120,13 @@ abstract class AbUniWatch {
 
     /**
      * 开始扫描设备
+     * tag 过滤设备名字前/后缀 例如：oraimo Watch Neo
      */
-    abstract fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice>
+    abstract fun startDiscovery(
+        scanTime: Int,
+        wmTimeUnit: WmTimeUnit,
+        tag: String
+    ): Observable<WmDiscoverDevice>
 
 
 }

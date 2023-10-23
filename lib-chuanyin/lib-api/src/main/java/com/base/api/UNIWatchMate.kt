@@ -57,11 +57,11 @@ object UNIWatchMate : AbUniWatch() {
     }
 
     override fun connect(address: String, bindInfo: WmBindInfo): WmDevice? {
-       return uniWatchSubject.value.connect(address,bindInfo)
+        return uniWatchSubject.value.connect(address, bindInfo)
     }
 
     override fun connect(device: BluetoothDevice, bindInfo: WmBindInfo): WmDevice? {
-        return uniWatchSubject.value.connect(device,bindInfo)
+        return uniWatchSubject.value.connect(device, bindInfo)
     }
 
     override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
@@ -80,7 +80,7 @@ object UNIWatchMate : AbUniWatch() {
     }
 
     override fun reset(): Completable {
-       return uniWatchSubject.value.reset()
+        return uniWatchSubject.value.reset()
     }
 
     override val observeConnectState: Observable<WmConnectState> = uniWatchSubject.switchMap {
@@ -112,8 +112,12 @@ object UNIWatchMate : AbUniWatch() {
         throw RuntimeException("No Sdk Match Exception!")
     }
 
-    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice> {
-        return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit)
+    override fun startDiscovery(
+        scanTime: Int,
+        wmTimeUnit: WmTimeUnit,
+        tag: String
+    ): Observable<WmDiscoverDevice> {
+        return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit,tag)
     }
 
     override fun setLogEnable(logEnable: Boolean) {

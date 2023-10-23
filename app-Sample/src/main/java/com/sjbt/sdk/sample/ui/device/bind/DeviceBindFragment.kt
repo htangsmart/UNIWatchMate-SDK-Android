@@ -287,7 +287,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS)?.asFlow()?.catch {
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS,"XS09 Ultra")?.asFlow()?.catch {
                     this::class.simpleName?.let { tag ->
                         UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
                     }
