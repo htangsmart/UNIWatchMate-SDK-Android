@@ -7,9 +7,9 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
-    private var observeEmitter: ObservableEmitter<WmWistRaise>? = null
+    var observeEmitter: ObservableEmitter<WmWistRaise>? = null
     private var setEmitter: SingleEmitter<WmWistRaise>? = null
-    private var getEmitter: SingleEmitter<WmWistRaise>? = null
+    var getEmitter: SingleEmitter<WmWistRaise>? = null
 
     private var sjUniWatch = sjUniWatch
     private var mWmWistRaise: WmWistRaise? = null
@@ -71,12 +71,10 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
     }
 
     override fun get(): Single<WmWistRaise> {
-        return Single.create(object : SingleOnSubscribe<WmWistRaise> {
-            override fun subscribe(emitter: SingleEmitter<WmWistRaise>) {
-                getEmitter = emitter
-                sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
-            }
-        })
+        return Single.create { emitter ->
+            getEmitter = emitter
+            sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
+        }
     }
 
 }

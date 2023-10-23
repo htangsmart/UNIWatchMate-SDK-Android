@@ -705,17 +705,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             HEAD_COMMON -> {
                 when (msgBean.cmdId.toShort()) {
                     CMD_ID_8001 -> {
-//                        syncDeviceInfo.syncTimeOut("get basicInfo timeout!")
+                        syncDeviceInfo.deviceEmitter?.onError(RuntimeException("get deviceInfo time out!"))
                     }
 
                     CMD_ID_8002 -> {
                     }
 
                     CMD_ID_8003 -> {
-//                        if (batteryEmitter != null) {
-//                            batteryEmitter.onError(RuntimeException("get battery timeout!"))
-//                        }
-
+                        syncBatteryInfo.batteryEmitter?.onError(RuntimeException("get battery time out"))
                     }
 
                     CMD_ID_8004 -> {
@@ -742,43 +739,31 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     CMD_ID_800D -> {}
                     CMD_ID_800E -> {}
                     CMD_ID_800F -> {
-                        settingAppView.getEmitter?.onError(RuntimeException("getAppViews timeout!"))
+                        appDial.syncDialListEmitter?.onError(RuntimeException("get dials timeout!"))
                     }
 
-//                   TODO
-//                    CMD_ID_8010 -> if (dialDelEmitter != null) {
-//                        dialDelEmitter.onError(RuntimeException("delete dial timeout!"))
-//
-//                    }
+                    CMD_ID_8010 -> {
+                        appDial.deleteEmitter?.onError(RuntimeException("delete dial timeout!"))
+                    }
 
                     CMD_ID_8011 -> {}
                     CMD_ID_8012 -> {}
                     CMD_ID_8013 -> {}
                     CMD_ID_8014 -> {
 
-//                        TODO
 //                        if (getDialEmitter != null) {
 //                            getDialEmitter.onError(RuntimeException("get dial timeout!"))
 //                        }
 
                     }
                     CMD_ID_8017 -> {
-
+                        settingSoundAndHaptic.getEmitter?.onError(RuntimeException("get sound and haptic time out"))
+                        settingAppView.observeEmitter?.onError(RuntimeException("get wist raise time out"))
                     }
-                    //                        if (mGetDeviceRingStateListener != null) {
-//                            mGetDeviceRingStateListener.onTimeOut(msgBean);
-//                        }
-//                        if (shakeEmitterSingle != null) {
-//                            shakeEmitterSingle.onError(RuntimeException("shake timeout!"))
-//                        }
-                    CMD_ID_8018 -> {
 
-                        //                        if (mSetDeviceRingStateListener != null) {
-//                            mSetDeviceRingStateListener.onTimeOut(msgBean);
-//                        }
-//                        if (setDeviceEmitter != null) {
-//                            setDeviceEmitter.onError(RuntimeException("set state timeout!"))
-//                        }
+                    CMD_ID_8018 -> {
+                        settingSoundAndHaptic.setEmitter?.onError(RuntimeException("set sound and haptic time out"))
+                        settingAppView.setEmitter?.onError(RuntimeException("set wist raise time out"))
                     }
 
                     CMD_ID_801C -> {
@@ -822,16 +807,25 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                            appDelContactEmitter.onError(RuntimeException("app delete contact timeout"))
 //                        }
                     }
-                    CMD_ID_8029 -> {}
-                    CMD_ID_802A -> {
-//                        if (requestDeviceCameraEmitter != null) {
-//                            requestDeviceCameraEmitter.onError(RuntimeException("request device camera timeout!"))
-//                        }
+                    CMD_ID_8029 -> {
+//                        appCamera.cameraSingleOpenEmitter?.onError(RuntimeException("call device camera time out"))
                     }
+
+                    CMD_ID_802A -> {
+                        appCamera.cameraSingleOpenEmitter?.onError(RuntimeException("call device camera time out"))
+                    }
+
                     CMD_ID_802D -> {
 //                        if (actionSupportEmitter != null) {
 //                            actionSupportEmitter.onError(RuntimeException("action bean error!"))
 //                        }
+                    }
+
+                    CMD_ID_802E -> {
+                        mObservableConnectState
+                    }
+
+                    CMD_ID_802F -> {
                     }
                 }
             }

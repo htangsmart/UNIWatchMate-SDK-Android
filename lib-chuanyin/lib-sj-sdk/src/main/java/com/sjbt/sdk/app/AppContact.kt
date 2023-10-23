@@ -41,6 +41,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     }
 
     override var observableContactList: Observable<List<WmContact>> = Observable.create {
+        mContacts.clear()
         contactListEmitter = it
         sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadContactListCmd())
     }
