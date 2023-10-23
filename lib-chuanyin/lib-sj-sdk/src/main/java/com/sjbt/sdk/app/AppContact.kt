@@ -28,6 +28,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     private var mEmergencyCall: WmEmergencyCall = WmEmergencyCall(false, mutableListOf())
     private val mContacts = mutableListOf<WmContact>()
 
+    private val TAG = "AppContact"
     override fun isSupport(): Boolean {
         return true
     }
@@ -115,6 +116,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                             val name = String(nameBytes).trim()
                             val num = String(numBytes).trim()
                             val contact = WmContact.create(name, num)
+                            sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
                             contact?.let {
                                 mContacts.add(it)
                             }

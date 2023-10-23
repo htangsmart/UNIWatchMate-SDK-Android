@@ -142,7 +142,11 @@ abstract class FcUniWatch(
         return wmDeviceModel == WmDeviceModel.FC_WATCH
     }
 
-    override fun startDiscovery(scanTime: Int, wmTimeUnit: WmTimeUnit): Observable<WmDiscoverDevice> {
+    override fun startDiscovery(
+        scanTime: Int,
+        wmTimeUnit: WmTimeUnit,
+        tag: String
+    ): Observable<WmDiscoverDevice> {
         TODO("Not yet implemented")
     }
 

@@ -121,6 +121,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var MTU: Int = 600
     private var mtuEmitter: SingleEmitter<Int>? = null
     private val mPayloadMap = PayloadMap()
+    private var discoveryTag: String = ""
 
     val observableMtu: Single<Int> = Single.create { emitter ->
         mtuEmitter = emitter
@@ -207,7 +208,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onDiscoveryDevice(device: WmDiscoverDevice) {
-                discoveryObservableEmitter.onNext(device)
+                if (device.device.name.contains(discoveryTag)) {
+                    discoveryObservableEmitter?.onNext(device)
+                }
             }
 
             override fun onStartDiscovery() {
@@ -1399,8 +1402,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     override fun startDiscovery(
-        scanTime: Int, wmTimeUnit: WmTimeUnit
+        scanTime: Int, wmTimeUnit: WmTimeUnit, tag: String
     ): Observable<WmDiscoverDevice> {
+        discoveryTag = tag
+
         return Observable.create(object : ObservableOnSubscribe<WmDiscoverDevice> {
             override fun subscribe(emitter: ObservableEmitter<WmDiscoverDevice>) {
                 discoveryObservableEmitter = emitter
@@ -1411,7 +1416,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 it, Manifest.permission.BLUETOOTH_SCAN
                             ) != PackageManager.PERMISSION_GRANTED
                         ) {
-                            discoveryObservableEmitter.onError(RuntimeException("permission denied"))
+                            discoveryObservableEmitter?.onError(RuntimeException("permission denied"))
                             return
                         }
                     }
