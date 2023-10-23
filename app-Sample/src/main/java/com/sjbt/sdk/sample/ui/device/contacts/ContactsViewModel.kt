@@ -14,7 +14,9 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
 
@@ -34,8 +36,6 @@ sealed class ContactsEvent {
 }
 
 
-
-
 class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(ContactsState()) {
 
     private val deviceManager = Injector.getDeviceManager()
@@ -48,6 +48,8 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         viewModelScope.launch {
             state.copy(requestContacts = Loading()).newState()
             runCatchingWithLog {
+                val sportList = UNIWatchMate.wmApps.appSport.syncSportList.asFlow().collect()
+
                 UNIWatchMate.wmApps.appContact.observableContactList.awaitFirst()
             }.onSuccess {
                 state.copy(requestContacts = Success(ArrayList(it))).newState()
@@ -56,6 +58,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                 ContactsEvent.RequestFail(it).newEvent()
             }
         }
+
     }
 
     fun addContacts(contacts: WmContact) {

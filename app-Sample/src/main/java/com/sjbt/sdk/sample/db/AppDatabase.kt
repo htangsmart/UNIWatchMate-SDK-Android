@@ -1,9 +1,11 @@
 package com.sjbt.sdk.sample.db
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import com.sjbt.sdk.sample.entity.DeviceBindEntity
 import com.sjbt.sdk.sample.entity.SportGoalEntity
 import com.sjbt.sdk.sample.entity.UnitInfoEntity
@@ -27,8 +29,17 @@ abstract class AppDatabase : RoomDatabase() {
                 .setQueryExecutor(ioDispatcher.asExecutor())
                 //Because this is a sample, version migration is not necessary. So use destructive recreate to avoid crash.
                 .fallbackToDestructiveMigration()
+                .addMigrations(MIGRATION_2_3)
                 .build()
             return database
         }
+
+        val  MIGRATION_2_3 =  Migration(2, 3) {
+            it.execSQL("ALTER TABLE DeviceBindEntity ADD COLUMN deviceMode INTEGER NOT NULL DEFAULT 0");
+        }
     }
+
+    //添加字段 具体的版本迁移策略
+
+
 }
