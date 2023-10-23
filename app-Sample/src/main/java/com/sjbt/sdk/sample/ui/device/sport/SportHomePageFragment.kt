@@ -26,7 +26,6 @@ class SportHomePageFragment : BaseFragment(R.layout.fragment_sport_home_page) {
             findNavController().navigate(SportHomePageFragmentDirections.toSportLibrary())
         }
 
-
     }
 
 }

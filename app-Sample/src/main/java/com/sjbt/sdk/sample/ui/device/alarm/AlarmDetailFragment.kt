@@ -21,14 +21,16 @@ import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentAlarmDetailBinding
 import com.sjbt.sdk.sample.utils.FormatterUtil
+import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.launch
 import java.util.*
 
 class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     AlarmLabelDialogFragment.Listener, AlarmRepeatDialogFragment.Listener {
 
     private val viewBind: FragmentAlarmDetailBinding by viewBinding()
-    private val viewModel: AlarmViewModel by viewModels({ requireParentFragment() })
+    private val viewModel: AlarmViewModel by viewModels({requireParentFragment()})
     private val args: AlarmDetailFragmentArgs by navArgs()
     private val formatter = FormatterUtil.get02dWheelIntFormatter()
     private val calendar = Calendar.getInstance()
@@ -44,6 +46,29 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        lifecycle.launchRepeatOnStarted {
+            launch {
+                viewModel.flowEvent.collect {
+                    when (it) {
+                        is AlarmEvent.AlarmInserted  -> {
+                            promptProgress.dismiss()
+                            findNavController().navigateUp()
+                        }
+                        is AlarmEvent.AlarmMoved -> {
+                            promptProgress.dismiss()
+                            findNavController().navigateUp()
+                        }
+                        is AlarmEvent.AlarmRemoved -> {
+                            promptProgress.dismiss()
+                            findNavController().navigateUp()
+                        }
+                        is AlarmEvent.AlarmFial -> {
+                            promptProgress.dismiss()
+                        }
+                    }
+                }
+            }
+        }
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
 
@@ -157,20 +182,20 @@ class AlarmDetailFragment : BaseFragment(R.layout.fragment_alarm_detail),
 
                 alarm.hour = hour
                 alarm.minute = viewBind.wheelMinute.getValue()
-                alarm.isOn = true
                 UNIWatchMate.wmLog.logI("TAG", "isEditMode")
+                promptProgress.showProgress("")
                 if (isEditMode) {
                     viewModel.modifyAlarm(args.position, alarm)
                 } else {
+                    alarm.isOn = true
                     viewModel.addAlarm(alarm)
                 }
                 UNIWatchMate.wmLog.logI("TAG", "edit end")
-                findNavController().navigateUp()
             }
 
             viewBind.btnDelete -> {
+                promptProgress.showProgress("")
                 viewModel.deleteAlarm(args.position)
-                findNavController().navigateUp()
             }
 
             viewBind.itemRepeat -> {

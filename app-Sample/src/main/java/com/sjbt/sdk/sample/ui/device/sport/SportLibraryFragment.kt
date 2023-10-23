@@ -6,7 +6,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.base.api.UNIWatchMate
-import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.entity.apps.WmSport
 import com.blankj.utilcode.util.GsonUtils
 import com.blankj.utilcode.util.ResourceUtils
@@ -26,13 +25,11 @@ import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.GridSpacingItemDecoration
 import com.sjbt.sdk.sample.widget.LoadingView
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 
@@ -214,10 +211,12 @@ class SportLibraryViewModel(
             val localSport = state.requestSports()?.get(position)
             localSport?.let {
                 val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
+                runCatchingWithLog {
+                    val result = UNIWatchMate.wmApps.appSport.addSport(wmSport).await()
+                    localSport.installed = true
+                    SportLibraryEvent.SportInstallSuccess(position)
+                }
 
-                val result = UNIWatchMate.wmApps.appSport.addSport(wmSport).await()
-                localSport.installed = true
-                SportLibraryEvent.SportInstallSuccess(position)
 //                SportLibraryEvent.SportInstallFail(e.message ?: "")
             }
         }
