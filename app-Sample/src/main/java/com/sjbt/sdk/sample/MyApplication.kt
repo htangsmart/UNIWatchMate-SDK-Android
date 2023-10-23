@@ -140,9 +140,8 @@ class MyApplication : Application() {
                         )
                     }
                     ToastUtil.showToast(it.toString(), false)
-
                 }.collect {
-                    ToastUtil.showToast(it.toString(), true)
+                    ToastUtil.showToast("FindMobile $it", true)
                 }
             }
             launchWithLog {
@@ -169,7 +168,7 @@ class MyApplication : Application() {
                     }
                     ToastUtil.showToast(it.toString(), false)
                 }.collect {
-                    ToastUtil.showToast(it.toString(), true)
+                    ToastUtil.showToast("stopFindMobile $it", true)
                 }
             }
         }
