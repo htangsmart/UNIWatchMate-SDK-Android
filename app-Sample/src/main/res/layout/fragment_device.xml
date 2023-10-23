@@ -45,7 +45,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_toStartOf="@+id/img_device"
                     android:orientation="vertical">
 
                     <TextView
@@ -119,8 +118,8 @@ android:padding="@dimen/dp_15"
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sport_push"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
             android:visibility="gone"
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_sport_push" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem

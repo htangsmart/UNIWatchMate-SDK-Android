@@ -27,6 +27,7 @@ sealed class AlarmEvent {
     class AlarmInserted(val position: Int) : AlarmEvent()
     class AlarmRemoved(val position: Int) : AlarmEvent()
     class AlarmMoved(val fromPosition: Int, val toPosition: Int) : AlarmEvent()
+    class AlarmFial(val throwable: Throwable) : AlarmEvent()
     object NavigateUp : AlarmEvent()
 }
 
@@ -81,10 +82,10 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
             if (alarms != null) {
                 val addPosition = findAlarmAddPosition(alarm, alarms)
                 alarms.add(addPosition, alarm)
-                AlarmEvent.AlarmInserted(addPosition).newEvent()
                 setAlarm = alarm
                 alarmAction = AlarmAction.ADD
-                setAlarmsAction.execute()
+                action()
+                AlarmEvent.AlarmInserted(addPosition).newEvent()
             }
         }
     }
@@ -99,7 +100,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 val alarm = alarms.removeAt(position)
                 setAlarm = alarm
                 alarmAction = AlarmAction.DELETE
-                setAlarmsAction.execute()
+                action()
                 AlarmEvent.AlarmRemoved(position).newEvent()
             }
         }
@@ -114,16 +115,17 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
             val alarms = state.requestAlarms()
             if (alarms != null && position < alarms.size) {
                 if (alarms.contains(alarmModified)) {
+                    AlarmEvent.AlarmFial(Throwable()).newEvent()
                     throw IllegalStateException()//不能直接改list里的数据
                 }
                 alarms.removeAt(position)
                 val addPosition = findAlarmAddPosition(alarmModified, alarms)
                 alarms.add(addPosition, alarmModified)
-                AlarmEvent.AlarmMoved(position, addPosition).newEvent()
                 setAlarm = alarmModified
                 alarmAction = AlarmAction.UPDATE
-                setAlarmsAction.execute()
+                action()
                 UNIWatchMate.wmLog.logI("TAG","modifyAlarm")
+                AlarmEvent.AlarmMoved(position, addPosition).newEvent()
             }
         }
     }
@@ -136,32 +138,26 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
     }
 
 
-    val setAlarmsAction = object : SingleAsyncAction<Unit>(
-        viewModelScope,
-        Uninitialized
-    ) {
+    suspend fun action() {
+        setAlarm?.let {
+            when (alarmAction) {
+                AlarmAction.ADD -> {
+                    val result = UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
+                    it.alarmId=result.alarmId
+                }
 
-        override suspend fun action() {
-            setAlarm?.let {
-                when (alarmAction) {
-                    AlarmAction.ADD -> {
-                        val result = UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
-                        it.alarmId=result.alarmId
-                    }
+                AlarmAction.UPDATE -> {
+                    UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
+                }
 
-                    AlarmAction.UPDATE -> {
-                        UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
-                    }
+                AlarmAction.DELETE -> {
+                    val list= mutableListOf<WmAlarm>()
+                    list.add(it)
+                    UNIWatchMate.wmApps.appAlarm.deleteAlarm(list).await()
+                }
 
-                    AlarmAction.DELETE -> {
-                        val list= mutableListOf<WmAlarm>()
-                        list.add(it)
-                        UNIWatchMate.wmApps.appAlarm.deleteAlarm(list).await()
-                    }
+                else -> {
 
-                    else -> {
-
-                    }
                 }
             }
         }

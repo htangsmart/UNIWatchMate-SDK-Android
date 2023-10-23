@@ -184,6 +184,9 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDial -> {
                 findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
             }
+            viewBind.itemSportPush -> {
+                findNavController().navigate(DeviceFragmentDirections.toSportHomePage())
+            }
 
             viewBind.itemPushDateTime -> {
                 applicationScope.launchWithLog {

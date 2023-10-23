@@ -30,36 +30,36 @@ class SetAlarmsDialogFragment : AppCompatDialogFragment() {
             .setTitle(R.string.ds_alarm)
             .setMessage(R.string.tip_setting_loading)
             .setNegativeButton(android.R.string.cancel) { _, _ ->
-                viewModel.setAlarmsAction.cancel()
+//                viewModel.setAlarmsAction.cancel()
             }
             .setPositiveButton(R.string.action_retry, null)
             .create()
         lifecycle.launchRepeatOnStarted {
-            viewModel.setAlarmsAction.flowState.collect {
-                when (it) {
-                    is Loading -> {
-                        dialog.setMessage(getString(R.string.tip_setting_loading))
-                        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                        positiveButton.isVisible = false
-                    }
-
-                    is Fail -> {
-                        dialog.setMessage(getString(R.string.tip_setting_fail))
-                        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                        positiveButton.isVisible = true
-                        positiveButton.setOnClickListener {
-                            viewModel.setAlarmsAction.retry()
-                        }
-                    }
-
-                    is Success -> {
-                        dialog.setMessage(getString(R.string.tip_setting_success))
-                        viewModel.sendNavigateUpEvent()
-                    }
-
-                    else -> {}
-                }
-            }
+//            viewModel.setAlarmsAction.flowState.collect {
+//                when (it) {
+//                    is Loading -> {
+//                        dialog.setMessage(getString(R.string.tip_setting_loading))
+//                        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+//                        positiveButton.isVisible = false
+//                    }
+//
+//                    is Fail -> {
+//                        dialog.setMessage(getString(R.string.tip_setting_fail))
+//                        val positiveButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+//                        positiveButton.isVisible = true
+//                        positiveButton.setOnClickListener {
+//                            viewModel.setAlarmsAction.retry()
+//                        }
+//                    }
+//
+//                    is Success -> {
+//                        dialog.setMessage(getString(R.string.tip_setting_success))
+//                        viewModel.sendNavigateUpEvent()
+//                    }
+//
+//                    else -> {}
+//                }
+//            }
         }
         return dialog
     }

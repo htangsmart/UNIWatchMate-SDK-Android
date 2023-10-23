@@ -14,7 +14,9 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
 
@@ -27,13 +29,12 @@ sealed class ContactsEvent {
     class RequestFail(val throwable: Throwable) : ContactsEvent()
     class RequestEmergencyFail(val throwable: Throwable) : ContactsEvent()
     class Inserted(val position: Int) : ContactsEvent()
+    class TestAdd100() : ContactsEvent()
     class Removed(val position: Int) : ContactsEvent()
     class Moved(val fromPosition: Int, val toPosition: Int) : ContactsEvent()
 
     object NavigateUp : ContactsEvent()
 }
-
-
 
 
 class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(ContactsState()) {
@@ -56,6 +57,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                 ContactsEvent.RequestFail(it).newEvent()
             }
         }
+
     }
 
     fun addContacts(contacts: WmContact) {
@@ -64,7 +66,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
             if (list != null) {
                 var exist = false
                 for (item in list) {
-                    if (item.number == contacts.number) {
+                    if (item.number == contacts.number && item.name == contacts.name) {
                         exist = true
                         break
                     }
@@ -74,6 +76,18 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                     ContactsEvent.Inserted(list.size).newEvent()
                     setContactsAction.execute()
                 }
+            }
+        }
+    }
+
+    fun add100Contacts(contacts: MutableList<WmContact>) {
+        viewModelScope.launch {
+            val list = state.requestContacts()
+            if (list != null) {
+                list.clear()
+                list.addAll(contacts)
+                ContactsEvent.TestAdd100().newEvent()
+                setContactsAction.execute()
             }
         }
     }

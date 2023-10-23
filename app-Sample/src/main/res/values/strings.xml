@@ -301,6 +301,7 @@
     <string name="ds_contacts">Frequent Contacts</string>
     <string name="ds_emergency_contacts">Emergency Contacts</string>
     <string name="ds_contacts_tips1">Up to 10 favorite contacts can be added.</string>
+    <string name="ds_contacts_test_add_100">test add 100 contacts</string>
 
     <!--Device Settings:Sport push-->
     <string name="ds_sport_push">Sports push</string>
@@ -311,11 +312,22 @@
     <string name="ds_dial_library">Dial Library</string>
     <string name="ds_dial_installed">Dial Installed</string>
     <string name="ds_installed">Installed</string>
-    <string name="ds_dial_installed_des">View the watch faces installed on the watch and support removal</string>
+    <string name="ds_dial_installed_des">View the watch dials installed on the watch and support removal</string>
     <string name="ds_dial_test_install">Dial Test install</string>
     <string name="ds_dial_test_install_des">Used to test install dial</string>
     <string name="tip_inner_dial_del_error">The built-in dial cannot be removed</string>
     <string name="built_in_dial">Built-in dial</string>
+    <!--Sport-->
+    <string name="ds_sport">Sport</string>
+    <string name="ds_sport_installed">Sport Installed</string>
+    <string name="ds_sport_installing">Sport Installing...</string>
+    <string name="ds_sport_build_in">Sport Build-in</string>
+    <string name="ds_sport_library">Sport Library</string>
+
+    <string name="ds_sport_test_install_des">Used to test install sport</string>
+    <string name="ds_sport_test_install">Sport Test install</string>
+    <string name="tip_inner_sport_del_error">The built-in sport cannot be removed</string>
+    <string name="ds_sport_installed_des">View the watch sports installed on the watch and support removal</string>
 
 
     <string name="ds_dial_library_des">The dial library feature allows you to access the dial on the FitCloud server and push it to your device.</string>

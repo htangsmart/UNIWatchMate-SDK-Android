@@ -91,7 +91,6 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                             adapter.items = dialLibraryViewModel.refreshInternal(wmDials)
                             adapter.notifyDataSetChanged()
                             viewBind.loadingView.visibility = View.GONE
-
                         }
 
                         else -> {}
