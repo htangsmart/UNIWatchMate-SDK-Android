@@ -198,7 +198,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             override fun onBindState(device: BluetoothDevice, bondState: Int) {
                 if (bondState == BluetoothDevice.BOND_NONE) {
                     if (device == mCurrDevice) {
-//                        mConnectTryCount = 0
+                        mConnectTryCount = MAX_RETRY_COUNT
                         mBtEngine.clearStateMap()
                         btStateChange(WmConnectState.DISCONNECTED)
 //                        removeCallBackRunner(mConnectTimeoutRunner)
