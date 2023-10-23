@@ -958,15 +958,26 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //            }
 //        }
 
-        payloadPackage.toByteArray(
+        val packList = payloadPackage.toByteArray(
             mtu = itemLen, requestType = RequestType.REQ_TYPE_WRITE
-        ).forEach {
-            var payload: ByteArray = it
+        )
+
+        var divideType = DIVIDE_N_2
+        for (i in 0 until packList.size) {
+            var payload: ByteArray = packList[i]
+
+            if (i == 0) {
+                divideType = DIVIDE_Y_F_2
+            } else if (i == packList.size) {
+                divideType = DIVIDE_Y_E_2
+            } else {
+                divideType = DIVIDE_Y_M_2
+            }
 
             val cmdArray = CmdHelper.constructCmd(
                 HEAD_NODE_TYPE,
                 CMD_ID_8001,
-                DIVIDE_N_2,
+                divideType,
                 totalLen,
                 0,
                 BtUtils.getCrc(HEX_FFFF, payload, payload.size),
@@ -974,6 +985,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             )
 
             sendNormalMsg(cmdArray)
+
+            Thread.sleep(10)
         }
 
 //        parseNodePayload(false, null, payloadPackage)

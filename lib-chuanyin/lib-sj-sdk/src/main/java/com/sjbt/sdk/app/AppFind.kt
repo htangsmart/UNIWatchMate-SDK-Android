@@ -77,7 +77,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
                     }
 
                     URN_APP_FIND_PHONE_STOP -> {
-                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStopFindPhone())
+//                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStopFindPhone())
                         stopFindMobile.onNext(true)
                     }
                 }

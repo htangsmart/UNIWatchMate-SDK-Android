@@ -203,4 +203,4 @@ const val URN_SPORT: Byte = URN_6
 const val CHANGE_CAMERA = 0.toByte()
 const val CHANGE_FLASH = 1.toByte()
 
-const val DEFAULT_ITEM_MAX_LEN = 600
+const val DEFAULT_ITEM_MAX_LEN = 650
