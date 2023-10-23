@@ -72,6 +72,7 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
         adapter.listener = object : AlarmListAdapter.Listener {
 
             override fun onItemModified(position: Int, alarmModified: WmAlarm) {
+                promptProgress.showProgress("")
                 viewModel.modifyAlarm(position, alarmModified)
             }
 
@@ -80,7 +81,11 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
             }
 
             override fun onItemDelete(position: Int) {
-                viewModel.deleteAlarm(position)
+                if (position >= 0) {
+                    promptProgress.showProgress("")
+                    viewModel.deleteAlarm(position)
+                }
+
             }
         }
         adapter.registerAdapterDataObserver(adapterDataObserver)
@@ -145,10 +150,12 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
 
                         is AlarmEvent.AlarmRemoved -> {
                             adapter.notifyItemRemoved(event.position)
+                            promptProgress.dismiss()
                         }
 
                         is AlarmEvent.AlarmMoved -> {
                             adapter.notifyItemMoved(event.fromPosition, event.toPosition)
+                            promptProgress.dismiss()
                         }
 
                         is AlarmEvent.NavigateUp -> {
@@ -174,12 +181,7 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
     }
 
     private fun onBackPressed() {
-        if (viewModel.setAlarmsAction.isSuccess()) {
-            navigateUpInNested()
-        } else {
-            //If alarm changes not saved, wait!!!
-            SetAlarmsDialogFragment().show(childFragmentManager, null)
-        }
+        navigateUpInNested()
     }
 
     private fun navigateUpInNested() {

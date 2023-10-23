@@ -17,8 +17,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmContact
+import com.sjbt.sdk.sample.BuildConfig
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
@@ -35,6 +35,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.random.Random
 
 
 class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
@@ -130,6 +131,13 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 DividerItemDecoration.VERTICAL
             )
         )
+        if (BuildConfig.DEBUG) {
+            viewBind.itemAddTest100.visibility=View.VISIBLE
+        }
+        viewBind.itemAddTest100.setOnClickListener {
+            promptProgress.showProgress("")
+            testAdd100Contacts()
+        }
         adapter.listener = object : ContactsAdapter.Listener {
             override fun onItemDelete(position: Int) {
                 viewModel.deleteContacts(position)
@@ -161,7 +169,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
-                if ((adapter.sources?.size ?: 0) >= 10) {
+                if ((adapter.sources?.size ?: 0) >= 100) {
                     promptToast.showInfo(R.string.ds_contacts_tips1)
                 } else {
                     PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
@@ -214,6 +222,11 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
                         is ContactsEvent.Inserted -> {
                             adapter.notifyItemInserted(event.position)
+                        }
+
+                        is ContactsEvent.TestAdd100 -> {
+                            adapter.notifyDataSetChanged()
+                            promptProgress.dismiss()
                         }
 
                         is ContactsEvent.Removed -> {
@@ -270,6 +283,37 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 }
             }
         }
+    }
+
+    private fun testAdd100Contacts() {
+        val contacts = mutableListOf<WmContact>()
+        val random = java.util.Random()
+
+        val firstNames = listOf(
+            "张三",
+            "李四",
+            "王五",
+            "赵六",
+            "陈七",
+            "刘八",
+            "孙九",
+            "周十",
+            "吴十一",
+            "郑十二"
+        )
+        val lastNames = listOf("一", "二", "三", "四", "五", "六", "七", "八", "九", "十")
+        for (indext in 0 until 100) {
+            val firstName = firstNames[random.nextInt(firstNames.size)]
+            val lastName = lastNames[random.nextInt(lastNames.size)]
+            val fullName = "$firstName$lastName"
+            val phoneNumber =
+                "${random.nextInt(900) + 100}${random.nextInt(900) + 100}${random.nextInt(9000) + 1000}"
+            val wmContact = WmContact.create(fullName, phoneNumber)
+            if (wmContact != null) {
+                contacts.add(wmContact)
+            }
+        }
+        viewModel.add100Contacts(contacts)
     }
 
     private val adapterDataObserver = object : RecyclerView.AdapterDataObserver() {
