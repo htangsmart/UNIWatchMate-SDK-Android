@@ -169,7 +169,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
-                if ((adapter.sources?.size ?: 0) >= 10) {
+                if ((adapter.sources?.size ?: 0) >= 100) {
                     promptToast.showInfo(R.string.ds_contacts_tips1)
                 } else {
                     PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
