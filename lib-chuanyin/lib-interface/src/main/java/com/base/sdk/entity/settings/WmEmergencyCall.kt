@@ -22,4 +22,10 @@ class WmEmergencyCall(
     fun removeContact(contact: WmContact) {
         emergencyContacts.remove(contact)
     }
+
+    override fun toString(): String {
+        return "WmEmergencyCall(isEnabled=$isEnabled, emergencyContacts=$emergencyContacts)"
+    }
+
+
 }

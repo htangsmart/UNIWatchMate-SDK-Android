@@ -1,10 +1,14 @@
 package com.sjbt.sdk.spp.cmd
 
+import android.util.Log
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.settings.*
 import com.base.sdk.port.FileType
 import com.google.gson.Gson
+import com.sjbt.sdk.ALARM_NAME_LEN
+import com.sjbt.sdk.CONTACT_NAME_LEN
+import com.sjbt.sdk.CONTACT_NUM_LEN
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
@@ -139,15 +143,16 @@ object CmdHelper {
 
             System.arraycopy(msg, 2, cmdId, 0, cmdId.size)
 
-            if (response) {
-                val temp = cmdId[0]
-                cmdId[0] = cmdId[1]
-                cmdId[1] = temp
-                cmdId[0] = 0x00
-            }
+            val temp = cmdId[0]
+            cmdId[0] = cmdId[1]
+            cmdId[1] = temp
+            cmdId[0] = 0x00
 
             msgBean.cmdIdStr = BtUtils.bytesToHexString(cmdId)
             msgBean.cmdId = BtUtils.byte2short(cmdId).toInt()
+
+            Log.e("SJ_SDK>>>>>", "response:" + response + "  cmdIdStr:" + msgBean.cmdIdStr)
+
             //            LogUtils.logBlueTooth("返回命令cmdId:" + msgBean.cmdId);
             val divideArray = ByteArray(2)
             divideArray[0] = byteBuffer[4]
@@ -1493,10 +1498,10 @@ object CmdHelper {
      */
     fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
         byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
-        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
         byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
@@ -1526,13 +1531,13 @@ object CmdHelper {
      */
     fun getWriteModifyAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
         byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
 
 //        Log.e(">>>>>>>>","alarm name："+String(originNameArray))
 
-        byteBuffer.put(originNameArray.copyOf(20))
+        byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
         byteBuffer.put(alarm.hour.toByte())
         byteBuffer.put(alarm.minute.toByte())
         byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
@@ -1581,11 +1586,12 @@ object CmdHelper {
      */
     fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(contacts.size * 52)
+        val byteBuffer: ByteBuffer =
+            ByteBuffer.allocate(contacts.size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
 
         contacts.forEach {
-            byteBuffer.put(it.name.toByteArray().copyOf(32))
-            byteBuffer.put(it.number.toByteArray().copyOf(20))
+            byteBuffer.put(it.name.toByteArray().copyOf(CONTACT_NAME_LEN))
+            byteBuffer.put(it.number.toByteArray().copyOf(CONTACT_NUM_LEN))
         }
 
         payloadPackage.putData(getUrnId(URN_4, URN_3, URN_2), byteBuffer.array())
@@ -1598,7 +1604,8 @@ object CmdHelper {
      */
     fun getWriteEmergencyNumberCmd(number: WmEmergencyCall): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(1 + 52 * number.emergencyContacts.size)
+        val byteBuffer: ByteBuffer =
+            ByteBuffer.allocate(1 + (CONTACT_NAME_LEN + CONTACT_NUM_LEN) * number.emergencyContacts.size)
         byteBuffer.put(
             if (number.isEnabled) {
                 1
@@ -1608,8 +1615,8 @@ object CmdHelper {
         )
 
         number.emergencyContacts.forEach {
-            byteBuffer.put(it.name.toByteArray().copyOf(32))
-            byteBuffer.put(it.number.toByteArray().copyOf(20))
+            byteBuffer.put(it.name.toByteArray().copyOf(CONTACT_NAME_LEN))
+            byteBuffer.put(it.number.toByteArray().copyOf(CONTACT_NUM_LEN))
         }
 
         payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())

@@ -179,9 +179,7 @@ const val URN_APP_SPORT: Byte = URN_2
 const val URN_APP_CONTACT: Byte = URN_3
 const val URN_APP_CONTACT_COUNT: Byte = URN_1
 const val URN_APP_CONTACT_LIST: Byte = URN_2
-const val URN_APP_CONTACT_UPDATE: Byte = URN_3
-const val URN_APP_CONTACT_SET_EMERGENCY: Byte = URN_4
-const val URN_APP_CONTACT_GET_EMERGENCY: Byte = URN_5
+const val URN_APP_CONTACT_EMERGENCY: Byte = URN_3
 
 const val URN_APP_WEATHER: Byte = URN_4
 const val URN_APP_WEATHER_PUSH_TODAY: Byte = URN_1

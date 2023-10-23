@@ -82,13 +82,13 @@ public class MsgBean {
                 requestId = BtUtils.byte2short(requestArray);
             }
 
-            Log.e(TAG_SJ, "timeout code requestId:" + requestId);
-            Log.e(TAG_SJ, "timeout code not timeout:" + isNotTimeOut());
+            Log.e(TAG_SJ, "node timeout code requestId:" + requestId);
+            Log.e(TAG_SJ, "node timeout code not timeout:" + isNotTimeOut());
 
             timeOutCode = "" + head + requestId;//节点消息的
         } else {
             timeOutCode = "" + head + cmdOrder + cmdId;
-            Log.e(TAG_SJ, "timeout code:" + timeOutCode);
+            Log.e(TAG_SJ, "old timeout code:" + timeOutCode+" cmdId:"+cmdId);
         }
 
         return timeOutCode;

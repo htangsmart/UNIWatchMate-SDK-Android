@@ -58,4 +58,10 @@ class WmContact internal constructor(
         val that = other as WmContact
         return name.trim { it <= ' ' } == that.name.trim { it <= ' ' } && number.trim { it <= ' ' } == that.number.trim { it <= ' ' }
     }
+
+    override fun toString(): String {
+        return "WmContact(name='$name', number='$number')"
+    }
+
+
 }
