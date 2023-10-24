@@ -57,6 +57,12 @@
             android:name=".ui.fileTrans.FileTransferActivity"
             android:theme="@style/MwAppTheme"
             android:screenOrientation="portrait" />
+
+        <service
+            android:name=".DeviceService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice"/>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.sjbt.sdk.sample.provider"

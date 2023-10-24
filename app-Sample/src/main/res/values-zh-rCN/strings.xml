@@ -592,4 +592,10 @@
     <string name="connect_help_restart_bluetooth">重启蓝牙</string>
     <string name="connect_help_restart_device">重启手表</string>
     <string name="connect_help_restart_phone">重启手机</string>
+
+    <!--Notification-->
+    <string name="notification_channel_core_name">核心</string>
+    <string name="notification_channel_core_des">核心交互操作的提醒</string>
+    <string name="notification_channel_device_des">设备名称和连接状态的提醒</string>
+    <string name="notification_channel_sport_des">正在进行运动的提醒</string>
 </resources>

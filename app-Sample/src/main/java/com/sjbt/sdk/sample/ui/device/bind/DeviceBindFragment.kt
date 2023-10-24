@@ -232,6 +232,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
             if (!startScan) {
                 scanDevicesAdapter.clearItems()
                 startDiscover()
+                viewBind.refreshLayout.isRefreshing = true
             }
         }
 
@@ -305,7 +306,6 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                     this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
                     scanDevicesAdapter.newScanResult(it)
                 }
-
             }
         }
     }
