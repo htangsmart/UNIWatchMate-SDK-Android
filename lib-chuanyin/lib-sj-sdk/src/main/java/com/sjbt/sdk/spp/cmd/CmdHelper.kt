@@ -66,8 +66,11 @@ object CmdHelper {
         val upperByte = data[0].toInt() and 248 shl 8 shr 3
         val lowerByte = data[1].toInt() and 0xFF
         val value = (lowerByte or upperByte).toShort()
+
         // 低三位分包类型和数据类型  7 = 0b00000111
         val divideType = (data[1].toInt() and 7).toByte()
+
+        Log.e("SJ_SDK>>>>>","divideType:"+divideType)
 
         return DivideInfo(divideType, value)
     }
@@ -96,13 +99,12 @@ object CmdHelper {
 
         //TYPE
         byteBuffer.put(head)
-        byteBuffer.put(CMD_ORDER_ARRAY[command_index % CMD_ORDER_ARRAY.size])
+        byteBuffer.put((command_index % 255).toByte())
         byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
-        val divideLenArray = writeShortToBytes(divideType, dividePayloadTotalLen)
-
-        Log.e("SJ_SDK>>>>>", "DivideType INFO:" + readShortFromBytes(divideLenArray))
+//        val divideLenArray = writeShortToBytes(divideType, dividePayloadTotalLen)
+//        Log.e("SJ_SDK>>>>>", "DivideType INFO:" + readShortFromBytes(divideLenArray))
 
         byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen))
         byteBuffer.putShort(payLoadLength.toShort())
@@ -1603,7 +1605,7 @@ object CmdHelper {
         for (i in 0 until contactGroup.size) {
 
             val byteBuffer: ByteBuffer =
-                ByteBuffer.allocate(count * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
+                ByteBuffer.allocate(contactGroup[i].size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
 
             contactGroup[i].forEach {
                 byteBuffer.put(

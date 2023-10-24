@@ -52,7 +52,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
-
     private var mBindInfo: WmBindInfo? = null
     private var mCurrDevice: BluetoothDevice? = null
     private var mCurrAddress: String? = null
@@ -115,12 +114,20 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private val mHandler = Handler(Looper.getMainLooper())
     var MTU: Int = 600
     private var mtuEmitter: SingleEmitter<Int>? = null
+    private var node04Emitter: SingleEmitter<Int>? = null
     private val mPayloadMap = PayloadMap()
     private var discoveryTag: String = ""
 
     val observableMtu: Single<Int> = Single.create { emitter ->
         mtuEmitter = emitter
         sendNormalMsg(CmdHelper.getMTUCmd)
+    }
+
+    fun sendAndObserveNode04(msg: ByteArray): Single<Int> {
+        return Single.create { emitter ->
+            node04Emitter = emitter
+            sendNormalMsg(msg)
+        }
     }
 
     private var unbindEmitter: CompletableEmitter? = null
@@ -614,9 +621,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 //                                        (wmLog as SJLog).logD(TAG, "传输层消息：" + msgBean.payloadLen)
 
                                     }
-
 //                                    (wmLog as SJLog).logD(TAG, "响应消息：" + msgBean.payload.size)
-
                                 }
 
                                 CMD_ID_8003 -> {
@@ -627,7 +632,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 }
 
                                 CMD_ID_8004 -> {
-//                                    (wmLog as SJLog).logD(TAG, "收到通讯层消息：" + msgBean.payload.size)
+                                    wmLog.logD(TAG, "收到通讯层消息：" + msgBean.payload.size)
+                                    node04Emitter?.onSuccess(msgBean.cmdOrder.toInt())
                                 }
                             }
                         }

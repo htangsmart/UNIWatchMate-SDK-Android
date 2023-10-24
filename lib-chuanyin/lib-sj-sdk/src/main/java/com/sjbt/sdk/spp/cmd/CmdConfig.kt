@@ -69,13 +69,13 @@ const val CMD_ID_802D: Short = 0x2D
 const val CMD_ID_802E: Short = 0x2E
 const val CMD_ID_802F: Short = 0x2F
 
-/**
- * 循环使用order_id
- */
-val CMD_ORDER_ARRAY = byteArrayOf(
-    0X01, 0X02, 0X03, 0X04, 0X05, 0X06, 0X07, 0X08, 0X09, 0X0A,
-    0X0B, 0X0C, 0X0D, 0X0E, 0X0F
-)
+///**
+// * 循环使用order_id
+// */
+//val CMD_ORDER_ARRAY = byteArrayOf(
+//    0X01, 0X02, 0X03, 0X04, 0X05, 0X06, 0X07, 0X08, 0X09, 0X0A,
+//    0X0B, 0X0C, 0X0D, 0X0E, 0X0F
+//)
 
 /**
  * 蓝牙命令组装通用方法

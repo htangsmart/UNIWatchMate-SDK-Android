@@ -108,52 +108,55 @@ class PayloadPackage {
      * @return
      */
     fun toByteArray(
-        mtu: Int = DEFAULT_ITEM_MAX_LEN,
         requestType: RequestType
     ): List<ByteArray> {
-        val limitation = mtu
+        //val limitation = DEFAULT_ITEM_MAX_LEN*3/2
         val payloadList = mutableListOf<ByteArray>() //payload列表
-        val bytes: ByteBuffer = ByteBuffer.allocate(limitation) //payload
-        var tempByteArray = ByteArray(0)
+        val bytes: ByteBuffer = ByteBuffer.allocate(DEFAULT_ITEM_MAX_LEN*3/2) //payload
+//        var tempByteArray = ByteArray(0)
         actionType = requestType.type
-        buildPackageHeader(bytes)
+//        buildPackageHeader(bytes)
         var total_item_count = 0
-        var count = 0
+        var count = 1
         itemList.mapIndexed() { index, item ->
             val nextNode = item.toBytes(actionType)
-            count++
+            //count++
             total_item_count++
             //如果现有的payload长度加上当前item的长度超过了限制，则将现有的payload加入到payloadList中，
             // 并重新计算payload长度
-            if (bytes.position() + tempByteArray.size + nextNode.size > limitation) {
-                bytes.put(count.toByte()) //将itemCount写入bytes
-                bytes.put(tempByteArray) //将tempByteArray写入bytes
+//            if (bytes.position() + tempByteArray.size + nextNode.size > limitation) {
+//                bytes.put(count.toByte()) //将itemCount写入bytes
+//                bytes.put(tempByteArray) //将tempByteArray写入bytes
+//
+//                bytes.flip() // Now the limit is set to position
+//                val actualData = ByteArray(bytes.limit())
+//                bytes.get(actualData)
+//                payloadList.add(actualData)
+//
+//                count = 0
+//                bytes.clear()
+//                tempByteArray = ByteArray(0)
+//                buildPackageHeader(bytes)
+//                tempByteArray = tempByteArray.plus(nextNode)
+//            } else {
+//                tempByteArray = tempByteArray.plus(nextNode)
+//            }
 
-                bytes.flip() // Now the limit is set to position
-                val actualData = ByteArray(bytes.limit())
-                bytes.get(actualData)
-                payloadList.add(actualData)
+            bytes.clear()
+            buildPackageHeader(bytes)
 
-                count = 0
-                bytes.clear()
-                tempByteArray = ByteArray(0)
-                buildPackageHeader(bytes)
-            } else {
-                tempByteArray = tempByteArray.plus(nextNode)
-            }
+            bytes.put(count.toByte()) //将itemCount写入bytes
+            bytes.put(nextNode) //将tempByteArray写入bytes
+            // 如果是最后一个payload，则将packageSeq重置为0xFFFF,并将payload加入到payloadList中
+            if (index == itemList.size-1)
+                bytes.putInt(2, 0xFFFFFFFF.toInt())
+
+            bytes.flip() // Now the limit is set to position
+            val actualData = ByteArray(bytes.limit())
+            bytes.get(actualData)
+            payloadList.add(actualData)
         }
 
-        // 如果是最后一个payload，则将packageSeq重置为0xFFFF,并将payload加入到payloadList中
-        if (bytes.position() > 0) {
-            bytes.putInt(2, 0xFFFFFFFF.toInt())
-        }
-
-        bytes.put(count.toByte()) //将itemCount写入bytes
-        bytes.put(tempByteArray) //将tempByteArray写入bytes
-        bytes.flip() // Now the limit is set to position
-        val actualData = ByteArray(bytes.limit())
-        bytes.get(actualData)
-        payloadList.add(actualData)
 
 //        if (total_item_count != itemCount) {
 //            throw Exception("total_item_count != itemCount")

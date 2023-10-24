@@ -131,9 +131,9 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 DividerItemDecoration.VERTICAL
             )
         )
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             viewBind.itemAddTest100.visibility=View.VISIBLE
-        }
+//        }
         viewBind.itemAddTest100.setOnClickListener {
             promptProgress.showProgress("")
             testAdd100Contacts()

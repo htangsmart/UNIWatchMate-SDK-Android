@@ -52,7 +52,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
             val payloadPackage = CmdHelper.getWriteContactListCmd(contactList)
 
             sendWriteSubpackageNodeCmdList(
-                (contactList.size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN) + 10).toShort(),//通讯录个数长度+payload头长度
                 mtu,
                 payloadPackage
             )
@@ -84,9 +83,9 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         updateEmergencyEmitter?.onSuccess(mEmergencyCall)
     }
 
-    private val businessMap = LinkedHashMap<Int, LinkedHashMap<Int, MsgBean>>()
-
-    //    private val msgPkMap = LinkedHashMap<Int, MsgBean>()
+    //    private val businessMap: LinkedHashMap<Int, LinkedHashMap<Int, MsgBean>> =
+//        linkedMapOf<Int, LinkedHashMap<Int, MsgBean>>()
+    private val msgPkMap = LinkedHashMap<Int, MsgBean>()
     private var contactIndex = 0
     private var packageIndex = 0
 
@@ -94,33 +93,43 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
      * 分包发送写入类型Node节点消息
      */
 
+    private var firstPkOrder = 0
     fun sendWriteSubpackageNodeCmdList(
-        totalLen: Short, mtu: Int, payloadPackage: PayloadPackage
+        mtu: Int, payloadPackage: PayloadPackage
     ) {
         /**
          * 返回业务单元list
          */
-        val packList = payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE)
+        val businessList = payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE)
         var divideType = DIVIDE_N_2
-        businessMap.clear()
+//        businessMap.clear()
+        msgPkMap.clear()
 
-        for (k in 0 until packList.size) {
+        for (k in 0 until businessList.size) {
 
-            val it = packList[k]
+            val businessArray = businessList[k]
 
-            sjUniWatch.wmLog.logE(TAG, "业务分包数据：" + BtUtils.bytesToHexString(it))
+            sjUniWatch.wmLog.logE(
+                TAG,
+                "业务分包数据 长度：" + businessArray.size + "->" + BtUtils.bytesToHexString(businessArray)
+            )
 
             //每一个单元再做数据分包
-            var count = it.size / mtu
-            if (it.size % mtu != 0) {
-                count.plus(1)
+            var count = businessArray.size / mtu
+            var lastCount = businessArray.size % mtu
+            if (lastCount != 0) {
+                count += 1
             }
-
-            val msgPkMap = LinkedHashMap<Int, MsgBean>()
 
             for (i in 0 until count) {
                 //传输层分包
-                var payload: ByteArray = it.copyOfRange(i * mtu, i * mtu + mtu)
+                var payload: ByteArray? = null
+
+                if (i == count - 1) {
+                    payload = businessArray.copyOfRange(i * mtu, i * mtu + lastCount)
+                } else {
+                    payload = businessArray.copyOfRange(i * mtu, i * mtu + mtu)
+                }
 
                 if (i == 0) {
                     divideType = DIVIDE_Y_F_2
@@ -130,13 +139,11 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                     divideType = DIVIDE_Y_M_2
                 }
 
-                sjUniWatch.wmLog.logE(TAG, "DIVIDE TYPE:$divideType - i:$i")
-
                 val cmdArray = CmdHelper.constructCmd(
                     HEAD_NODE_TYPE,
                     CMD_ID_8001,
                     divideType,
-                    totalLen,
+                    businessArray.size.toShort(),
                     0,
                     BtUtils.getCrc(HEX_FFFF, payload, payload.size),
                     payload
@@ -144,20 +151,36 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                 val msgBean = CmdHelper.getPayLoadJson(false, cmdArray)
 
-                msgPkMap.put(i, msgBean)
-            }
+                msgPkMap.put(msgBean.cmdOrder.toInt(), msgBean)
 
-            businessMap.put(k, msgPkMap)
+                if (k == 0 && i == 0) {
+                    firstPkOrder = msgBean.cmdOrder.toInt()
+                    sjUniWatch.wmLog.logE(TAG, "第一包序号：" + firstPkOrder)
+                }
+
+//                sjUniWatch.sendNormalMsg(msgBean.originData)
+//                Thread.sleep(100)
+            }
+//            businessMap.put(k, msgPkMap)
         }
 
-        businessMap.get(0)?.let {
-            it.get(0)?.let { it1 -> sjUniWatch.sendNormalMsg(it1.originData) }
+        sjUniWatch.wmLog.logE(TAG, "总分包个数：" + msgPkMap.size)
 
-            Thread.sleep(100)
-            it.get(1)?.let { it1 -> sjUniWatch.sendNormalMsg(it1.originData) }
+//        msgPkMap.get(firstPkOrder)?.let { msgBean ->
+//            sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
+//                sjUniWatch.wmLog.logE(TAG, "成功返回序号：" + order)
+//            }
+//        }
 
-            Thread.sleep(100)
-            it.get(2)?.let { it1 -> sjUniWatch.sendNormalMsg(it1.originData) }
+        sendObserveNode(firstPkOrder)
+    }
+
+    private fun sendObserveNode(order: Int) {
+        msgPkMap.get(order)?.let { msgBean ->
+            sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
+                sjUniWatch.wmLog.logE(TAG, "成功返回序号：" + order)
+                sendObserveNode(order % 255 + 1)
+            }
         }
     }
 
