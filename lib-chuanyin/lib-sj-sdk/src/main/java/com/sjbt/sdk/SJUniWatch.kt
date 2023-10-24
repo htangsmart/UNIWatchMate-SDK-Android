@@ -1,15 +1,11 @@
 package com.sjbt.sdk
 
-import android.Manifest
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
@@ -68,7 +64,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     override val wmApps = SJApps(this)
     override val wmSync = SJSyncData(this)
     override val wmTransferFile = SJTransferFile(this)
-    override val wmLog: AbWmLog = SJLog(this)
+    override val wmLog = SJLog(this)
 
     private val mBtEngine: BtEngine = BtEngine(this)
     private val mBindStateMap = HashMap<String, Boolean>()
@@ -218,7 +214,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onStopDiscovery() {
-                discoveryObservableEmitter?.onComplete()
+                if (!discoveryObservableEmitter.isDisposed) {
+                    discoveryObservableEmitter?.onComplete()
+                    wmLog.logD(TAG, "onComplete")
+                }
             }
         })
 
@@ -246,7 +245,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8002 -> {
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
-                                        (wmLog as SJLog).logD(TAG, "bindinfo:" + it)
+                                        wmLog.logD(TAG, "bindinfo:" + it)
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -948,22 +947,24 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         var divideType = DIVIDE_N_2
 
-        payloadPackage.itemList.forEach {
-
+        packList.forEach {
+            wmLog.logE(TAG, "业务分包数据：" + BtUtils.bytesToHexString(it))
             //每一个单元再做数据分包
-            val count = it.dataLen / mtu
+            val count = it.size / mtu
 
             for (i in 0 until count) {
                 //传输层分包
-                var payload: ByteArray = it.data.copyOfRange(i * mtu, i * mtu + mtu)
+                var payload: ByteArray = it.copyOfRange(i * mtu, i * mtu + mtu)
 
                 if (i == 0) {
                     divideType = DIVIDE_Y_F_2
-                } else if (i == packList.size) {
+                } else if (i == count - 1) {
                     divideType = DIVIDE_Y_E_2
                 } else {
                     divideType = DIVIDE_Y_M_2
                 }
+
+                wmLog.logE(TAG, "DIVIDE TYPE:" + divideType + " - i:" + i)
 
                 val cmdArray = CmdHelper.constructCmd(
                     HEAD_NODE_TYPE,
@@ -1403,58 +1404,57 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     ): Observable<WmDiscoverDevice> {
         discoveryTag = tag
 
-        return Observable.create(object : ObservableOnSubscribe<WmDiscoverDevice> {
-            override fun subscribe(emitter: ObservableEmitter<WmDiscoverDevice>) {
-                discoveryObservableEmitter = emitter
+        return Observable.create { emitter ->
+            discoveryObservableEmitter = emitter
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    mContext?.let {
-                        if (ActivityCompat.checkSelfPermission(
-                                it, Manifest.permission.BLUETOOTH_SCAN
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            discoveryObservableEmitter?.onError(RuntimeException("permission denied"))
-                            return
-                        }
-                    }
+            //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            //                    mContext?.let {
+            //                        if (ActivityCompat.checkSelfPermission(
+            //                                it, Manifest.permission.BLUETOOTH_SCAN
+            //                            ) != PackageManager.PERMISSION_GRANTED
+            //                        ) {
+            //                            discoveryObservableEmitter?.onError(RuntimeException("permission denied"))
+            //                            return
+            //                        }
+            //                    }
+            //                }
+            (wmLog as SJLog).logD(TAG, "discoveryObservableEmitter:$discoveryObservableEmitter")
+            mBtAdapter?.startDiscovery()
+
+            val stopAfter: Long = when (wmTimeUnit) {
+                WmTimeUnit.SECONDS -> {
+                    scanTime * 1000L
                 }
-
-                mBtAdapter?.startDiscovery()
-
-                val stopAfter: Long = when (wmTimeUnit) {
-                    WmTimeUnit.SECONDS -> {
-                        scanTime * 1000L
-                    }
-                    WmTimeUnit.MILLISECONDS -> {
-                        scanTime.toLong()
-                    }
-                    WmTimeUnit.MINUTES -> {
-                        scanTime * 1000 * 60L
-                    }
-                    else -> {
-                        scanTime.toLong()
-                    }
+                WmTimeUnit.MILLISECONDS -> {
+                    scanTime.toLong()
                 }
-
-                wmLog.logE(TAG, "stopAfter:$stopAfter")
-
-                mHandler.postDelayed(object : Runnable {
-                    override fun run() {
-
-                        discoveryObservableEmitter?.onComplete()
-
-                        if (ActivityCompat.checkSelfPermission(
-                                mContext, Manifest.permission.BLUETOOTH_SCAN
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            return
-                        }
-
-                        mBtAdapter?.cancelDiscovery()
-                    }
-                }, stopAfter)
+                WmTimeUnit.MINUTES -> {
+                    scanTime * 1000 * 60L
+                }
+                else -> {
+                    scanTime.toLong()
+                }
             }
-        })
+
+            wmLog.logE(TAG, "stopAfter:$stopAfter")
+
+            mHandler.postDelayed(object : Runnable {
+                override fun run() {
+
+                    if (!discoveryObservableEmitter.isDisposed) {
+                        discoveryObservableEmitter?.onComplete()
+                        wmLog.logD(TAG, "onComplete")
+                    }
+                    //                        if (ActivityCompat.checkSelfPermission(
+                    //                                mContext, Manifest.permission.BLUETOOTH_SCAN
+                    //                            ) != PackageManager.PERMISSION_GRANTED
+                    //                        ) {
+                    //                            return
+                    //                        }
+                    mBtAdapter?.cancelDiscovery()
+                }
+            }, stopAfter)
+        }
     }
 
     override fun getDeviceModel(): WmDeviceModel {

@@ -43,13 +43,15 @@ object CmdHelper {
     private fun writeShortToBytes(divideType: Byte, totalLen: Short): ByteArray {
         val result = ByteArray(2)
 
-        // 用第一个字节存储value的低8位
-        result[0] = totalLen.toByte()
-        // 用第二个字节的高5位存储value的高5位 248 = 0b11111000
-        result[1] = (totalLen.toInt() shr 8 and 248).toByte()
+        // 用第一个字节的高5位存储value的高5位 248 = 0b11111000
+        result[0] = (totalLen.toInt() shr 8 shl 3 and 248).toByte()
 
         // 写入低三位分包类型和数据类型 7 = 0b00000111
-        result[1] = (divideType and 7) or result[1]
+        result[0] = (divideType and 7) or result[0]
+
+        // 用第二个字节存储value的低8位
+        result[1] = totalLen.toByte()
+
 
         return result
     }
@@ -60,8 +62,10 @@ object CmdHelper {
     fun readShortFromBytes(data: ByteArray): DivideInfo {
         require(data.size == 2) { "Invalid byte array length" }
 
-        // 使用第一个字节的低8位和第二个字节的高5位构造short值 248 = 0b11111000
-        val value = (data[0].toInt() and 0xFF or (data[1].toInt() and 248 shl 8)).toShort()
+        // 使用第二个字节的低8位和第一个字节的高5位构造short值 248 = 0b11111000
+        val upperByte = data[0].toInt() and 248 shl 8 shr 3
+        val lowerByte = data[1].toInt() and 0xFF
+        val value = (lowerByte or upperByte).toShort()
         // 低三位分包类型和数据类型  7 = 0b00000111
         val divideType = (data[1].toInt() and 7).toByte()
 
@@ -96,6 +100,10 @@ object CmdHelper {
         byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
+        val divideLenArray = writeShortToBytes(divideType, dividePayloadTotalLen)
+
+        Log.e("SJ_SDK>>>>>", "DivideType INFO:" + readShortFromBytes(divideLenArray))
+
         byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen).reversedArray())
         byteBuffer.putShort(payLoadLength.toShort())
 
@@ -151,7 +159,7 @@ object CmdHelper {
             msgBean.cmdIdStr = BtUtils.bytesToHexString(cmdId)
             msgBean.cmdId = BtUtils.byte2short(cmdId).toInt()
 
-            Log.e("SJ_SDK>>>>>", "response:" + response + "  cmdIdStr:" + msgBean.cmdIdStr)
+//            Log.e("SJ_SDK>>>>>", "response:" + response + "  cmdIdStr:" + msgBean.cmdIdStr)
 
             //            LogUtils.logBlueTooth("返回命令cmdId:" + msgBean.cmdId);
             val divideArray = ByteArray(2)

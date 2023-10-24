@@ -68,10 +68,12 @@ class BtStateReceiver(
 
             BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
                 sjLog.logI(TAG, "Phone BlueTooth start discovery")
+                mOnBtStateListener?.onStartDiscovery()
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
                 sjLog.logI(TAG, "Phone BlueTooth end discovery")
+                mOnBtStateListener?.onStopDiscovery()
             }
 
             BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED, BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED, BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED -> {

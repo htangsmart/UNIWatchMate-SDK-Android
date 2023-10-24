@@ -151,7 +151,10 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         )
 
                         val num = String(
-                            emergencyByteArray.copyOf(CONTACT_NUM_LEN),
+                            emergencyByteArray.copyOfRange(
+                                CONTACT_NAME_LEN,
+                                CONTACT_NAME_LEN + CONTACT_NUM_LEN + 1
+                            ),
                             StandardCharsets.UTF_8
                         )
 
