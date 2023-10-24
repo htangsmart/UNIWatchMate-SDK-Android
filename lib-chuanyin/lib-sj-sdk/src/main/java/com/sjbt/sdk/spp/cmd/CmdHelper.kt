@@ -104,7 +104,7 @@ object CmdHelper {
 
         Log.e("SJ_SDK>>>>>", "DivideType INFO:" + readShortFromBytes(divideLenArray))
 
-        byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen).reversedArray())
+        byteBuffer.put(writeShortToBytes(divideType, dividePayloadTotalLen))
         byteBuffer.putShort(payLoadLength.toShort())
 
         //Offset
@@ -144,6 +144,7 @@ object CmdHelper {
         val msgBean = MsgBean()
         try {
             val byteBuffer = ByteBuffer.wrap(msg)
+            msgBean.originData = msg
             msgBean.head = byteBuffer.get()
             msgBean.cmdOrder = byteBuffer.get()
 
@@ -788,7 +789,7 @@ object CmdHelper {
         val byteBuffer = ByteBuffer.allocate(1 + 4 + 1)
         byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(type)
-        if (type == FileType.OTA.type.toByte()) {
+        if (type == FileType.OTA.type.toByte() || type == FileType.OTA_UPEX.type.toByte()) {
             byteBuffer.putInt(-1)
         } else {
             byteBuffer.putInt(fileLen)

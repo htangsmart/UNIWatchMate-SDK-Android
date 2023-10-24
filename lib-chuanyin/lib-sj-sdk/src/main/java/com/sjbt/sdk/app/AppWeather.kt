@@ -55,11 +55,11 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                         "today weather package count:" + payloadPackage.itemCount
                     )
 
-                    sjUniWatch.sendWriteSubpackageNodeCmdList(
-                        (totalLen + 10).toShort(),//当天天气总长度
-                        mtu,
-                        payloadPackage
-                    )
+//                    sjUniWatch.sendWriteSubpackageNodeCmdList(
+//                        (totalLen + 10).toShort(),//当天天气总长度
+//                        mtu,
+//                        payloadPackage
+//                    )
                 }
             }
         }
@@ -95,11 +95,11 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                         "7 days weather package count:" + payloadPackage.itemCount
                     )
 
-                    sjUniWatch.sendWriteSubpackageNodeCmdList(
-                        (sevenDayLen + 10).toShort(),//7天天气总长度
-                        mtu,
-                        payloadPackage
-                    )
+//                    sjUniWatch.sendWriteSubpackageNodeCmdList(
+//                        (sevenDayLen + 10).toShort(),//7天天气总长度
+//                        mtu,
+//                        payloadPackage
+//                    )
                 }
 
             }

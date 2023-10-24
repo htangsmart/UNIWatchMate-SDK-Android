@@ -12,12 +12,8 @@ import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_CAMERA_PREVIEW;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_COMMON;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_FILE_SPP_A_2_D;
 import static com.sjbt.sdk.spp.cmd.CmdConfigKt.HEAD_NODE_TYPE;
-
 import android.util.Log;
-
 import com.sjbt.sdk.utils.BtUtils;
-
-import java.nio.ByteBuffer;
 
 public class MsgBean {
     //    public String head;
@@ -35,6 +31,8 @@ public class MsgBean {
 
     public byte[] payload;
     public String payloadJson;
+
+    public byte[]  originData;
 
     @Override
     public String toString() {

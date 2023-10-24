@@ -15,7 +15,6 @@ import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
-import com.base.sdk.port.log.AbWmLog
 import com.google.gson.Gson
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
@@ -929,58 +928,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
 
         mBtEngine.sendMsgOnWorkThread(msg)
-    }
-
-    /**
-     * 分包发送写入类型Node节点消息
-     */
-    fun sendWriteSubpackageNodeCmdList(
-        totalLen: Short, mtu: Int, payloadPackage: PayloadPackage
-    ) {
-
-        mPayloadMap.putFrame(payloadPackage)
-
-        /**
-         * 返回业务单元list
-         */
-        val packList = payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE)
-
-        var divideType = DIVIDE_N_2
-
-        packList.forEach {
-            wmLog.logE(TAG, "业务分包数据：" + BtUtils.bytesToHexString(it))
-            //每一个单元再做数据分包
-            val count = it.size / mtu
-
-            for (i in 0 until count) {
-                //传输层分包
-                var payload: ByteArray = it.copyOfRange(i * mtu, i * mtu + mtu)
-
-                if (i == 0) {
-                    divideType = DIVIDE_Y_F_2
-                } else if (i == count - 1) {
-                    divideType = DIVIDE_Y_E_2
-                } else {
-                    divideType = DIVIDE_Y_M_2
-                }
-
-                wmLog.logE(TAG, "DIVIDE TYPE:" + divideType + " - i:" + i)
-
-                val cmdArray = CmdHelper.constructCmd(
-                    HEAD_NODE_TYPE,
-                    CMD_ID_8001,
-                    divideType,
-                    totalLen,
-                    0,
-                    BtUtils.getCrc(HEX_FFFF, payload, payload.size),
-                    payload
-                )
-
-                sendNormalMsg(cmdArray)
-            }
-
-        }
-//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
