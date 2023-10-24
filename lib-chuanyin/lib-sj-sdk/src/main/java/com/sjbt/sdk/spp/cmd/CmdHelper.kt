@@ -70,7 +70,7 @@ object CmdHelper {
         // 低三位分包类型和数据类型  7 = 0b00000111
         val divideType = (data[1].toInt() and 7).toByte()
 
-        Log.e("SJ_SDK>>>>>","divideType:"+divideType)
+        Log.e("SJ_SDK>>>>>", "divideType:" + divideType)
 
         return DivideInfo(divideType, value)
     }
@@ -193,13 +193,19 @@ object CmdHelper {
                     }
                 }
             } else {
-                val divideIndexArray = ByteArray(4)
-                System.arraycopy(msg, 16, divideIndexArray, 0, divideIndexArray.size)
-                msgBean.divideIndex = ByteUtil.bytesToInt(divideIndexArray)
+                if (msgBean.head != HEAD_NODE_TYPE) {//如果不是节点数据，分包前四个是序号
+                    val divideIndexArray = ByteArray(4)
+                    System.arraycopy(msg, 16, divideIndexArray, 0, divideIndexArray.size)
+                    msgBean.divideIndex = ByteUtil.bytesToInt(divideIndexArray)
 
-                val payload = ByteArray(payLoadLength - 4)
-                System.arraycopy(msg, 20, payload, 0, payload.size)
-                msgBean.payload = payload
+                    val payload = ByteArray(payLoadLength - 4)
+                    System.arraycopy(msg, 20, payload, 0, payload.size)
+                    msgBean.payload = payload
+                } else {
+                    val payload = ByteArray(payLoadLength)
+                    System.arraycopy(msg, 16, payload, 0, payload.size)
+                    msgBean.payload = payload
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

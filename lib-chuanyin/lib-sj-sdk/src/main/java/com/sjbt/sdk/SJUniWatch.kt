@@ -115,12 +115,21 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     var MTU: Int = 600
     private var mtuEmitter: SingleEmitter<Int>? = null
     private var node04Emitter: SingleEmitter<Int>? = null
+    private var subPkObservableEmitter: ObservableEmitter<MsgBean>? = null
+
     private val mPayloadMap = PayloadMap()
     private var discoveryTag: String = ""
 
     val observableMtu: Single<Int> = Single.create { emitter ->
         mtuEmitter = emitter
         sendNormalMsg(CmdHelper.getMTUCmd)
+    }
+
+    fun sendReadSubPkObserveNode(payloadPackage: PayloadPackage): Observable<MsgBean> {
+        return Observable.create { emitter ->
+            subPkObservableEmitter = emitter
+            sendReadNodeCmdList(payloadPackage)
+        }
     }
 
     fun sendAndObserveNode04(msg: ByteArray): Single<Int> {
@@ -557,12 +566,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                 CMD_ID_8003 -> {
                                     val frameSuccess = msgBean.payload[0]
 
-                                    (wmLog as SJLog).logD(TAG, "发送成功：$frameSuccess")
-                                    (wmLog as SJLog).logD(
+                                    wmLog.logD(TAG, "发送成功：$frameSuccess")
+                                    wmLog.logD(
                                         TAG, "发送下一帧：" + appCamera.mH264FrameMap.frameCount
                                     )
 
-                                    (wmLog as SJLog).logD(
+                                    wmLog.logD(
                                         TAG,
                                         "continueUpdateFrame 03:${appCamera.continueUpdateFrame}"
                                     )
@@ -583,7 +592,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
 //                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
                                     if (msgBean.payload.size > 10) {//设备应用层回复
-//                                        (wmLog as SJLog).logD(
+//                                        wmLog.logD(
 //                                            TAG,
 //                                            "应用层消息：" + msgBean.payload.size
 //                                        )
@@ -594,7 +603,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         parseNodePayload(true, msgBean, payloadPackage)
 
                                     } else {//设备传输层回复
-                                        (wmLog as SJLog).logD(
+                                        wmLog.logD(
                                             TAG,
                                             "传输层消息：" + msgBean.payload.size
                                         )
@@ -611,24 +620,32 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
-//                                        (wmLog as SJLog).logD(TAG, "应用层消息：" + msgBean.payloadLen)
+                                        wmLog.logD(TAG, "应用层消息：" + msgBean.payloadLen)
+                                        wmLog.logD(TAG, "应用层消息 DIVIDE TYPE：" + msgBean.divideType)
 
-                                        var payloadPackage: PayloadPackage =
-                                            PayloadPackage.fromByteArray(msgBean.payload)
+                                        if (msgBean.divideType == DIVIDE_N_2) {
+                                            var payloadPackage: PayloadPackage =
+                                                PayloadPackage.fromByteArray(msgBean.payload)
 
-                                        parseNodePayload(true, msgBean, payloadPackage)
+                                            parseNodePayload(true, msgBean, payloadPackage)
+                                        } else {
+                                            subPkObservableEmitter?.onNext(msgBean)
+                                            if (msgBean.divideType == DIVIDE_Y_E_2) {
+                                                subPkObservableEmitter?.onComplete()
+                                            }
+                                        }
+
                                     } else {//设备传输层回复
-//                                        (wmLog as SJLog).logD(TAG, "传输层消息：" + msgBean.payloadLen)
-
+                                        wmLog.logD(TAG, "传输层消息：" + msgBean.payloadLen)
                                     }
-//                                    (wmLog as SJLog).logD(TAG, "响应消息：" + msgBean.payload.size)
+//                                    wmLog.logD(TAG, "响应消息：" + msgBean.payload.size)
                                 }
 
                                 CMD_ID_8003 -> {
                                     MTU =
                                         BtUtils.byte2short(msgBean.payload.reversedArray()).toInt()
                                     mtuEmitter?.onSuccess(MTU)
-                                    (wmLog as SJLog).logD(TAG, "MTU:$MTU")
+                                    wmLog.logD(TAG, "MTU:$MTU")
                                 }
 
                                 CMD_ID_8004 -> {
@@ -908,7 +925,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     fun logD(TAG: String, msg: String) {
-        (wmLog as SJLog).logD(TAG, msg)
+        wmLog.logD(TAG, msg)
     }
 
     private fun removeDevice() {
@@ -1140,7 +1157,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_CONTACT -> {
-                            appContact.contactBusiness(payloadPackage, it, msgBean)
+                            appContact.contactBusiness(payloadPackage, it, msgBean!!)
                         }
 
                         URN_APP_WEATHER -> {
@@ -1371,7 +1388,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             //                        }
             //                    }
             //                }
-            (wmLog as SJLog).logD(TAG, "discoveryObservableEmitter:$discoveryObservableEmitter")
+            wmLog.logD(TAG, "discoveryObservableEmitter:$discoveryObservableEmitter")
             mBtAdapter?.startDiscovery()
 
             val stopAfter: Long = when (wmTimeUnit) {

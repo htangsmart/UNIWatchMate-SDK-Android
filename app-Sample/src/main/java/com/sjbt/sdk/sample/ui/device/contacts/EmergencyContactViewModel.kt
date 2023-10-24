@@ -1,5 +1,6 @@
 package com.sjbt.sdk.sample.ui.device.contacts
 
+import android.telephony.emergency.EmergencyNumber
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmContact
@@ -43,7 +44,8 @@ class EmergencyContactViewModel :
             state.copy(requestEmergencyCall = Loading()).newState()
             runCatchingWithLog {
                 UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts")
-                UNIWatchMate.wmApps.appContact.observableEmergencyContacts().awaitFirst()
+//                UNIWatchMate.wmApps.appContact.observableEmergencyContacts().awaitFirst
+                WmEmergencyCall(false, mutableListOf())
             }.onSuccess {
                 UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts result$it")
                 state.copy(requestEmergencyCall = Success(it)).newState()

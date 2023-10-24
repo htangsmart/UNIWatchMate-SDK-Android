@@ -26,6 +26,8 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     private var mEmergencyCall: WmEmergencyCall = WmEmergencyCall(false, mutableListOf())
     private val mContacts = mutableListOf<WmContact>()
 
+    private val msgList = mutableSetOf<MsgBean>()
+
     private val TAG = "AppContact"
     override fun isSupport(): Boolean {
         return true
@@ -41,7 +43,10 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     override var observableContactList: Observable<List<WmContact>> = Observable.create {
         mContacts.clear()
         contactListEmitter = it
-        sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadContactListCmd())
+        sjUniWatch.sendReadSubPkObserveNode(CmdHelper.getReadContactListCmd()).subscribe {
+            msgList.add(it)
+            sjUniWatch.wmLog.logE(TAG, "返回消息个数：" + msgList.size)
+        }
     }
 
     override fun updateContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {
@@ -86,8 +91,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     //    private val businessMap: LinkedHashMap<Int, LinkedHashMap<Int, MsgBean>> =
 //        linkedMapOf<Int, LinkedHashMap<Int, MsgBean>>()
     private val msgPkMap = LinkedHashMap<Int, MsgBean>()
-    private var contactIndex = 0
-    private var packageIndex = 0
 
     /**
      * 分包发送写入类型Node节点消息
@@ -187,7 +190,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     fun contactBusiness(
         payload: PayloadPackage,
         it: NodeData,
-        msgBean: MsgBean?
+        msgBean: MsgBean
     ) {
         when (it.urn[2]) {
 
@@ -205,32 +208,39 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         mContacts.clear()
                     }
 
-                    val byteArray =
-                        ByteBuffer.wrap(it.data).array()
+                    if (msgBean.divideType == DIVIDE_N_2) {
+                        val byteArray =
+                            ByteBuffer.wrap(it.data).array()
 
-                    val chunkSize = CONTACT_NAME_LEN + CONTACT_NUM_LEN
+                        val chunkSize = CONTACT_NAME_LEN + CONTACT_NUM_LEN
 
-                    if (it.dataLen.toInt() > chunkSize) {
-                        var i = 0
-                        while (i < byteArray.size) {
-                            val nameBytes = byteArray.copyOfRange(i, i + CONTACT_NAME_LEN)
-                            val numBytes = byteArray.copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
-                            val name = String(nameBytes).trim()
-                            val num = String(numBytes).trim()
-                            val contact = WmContact.create(name, num)
-                            sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
-                            contact?.let {
-                                mContacts.add(it)
+                        if (it.dataLen.toInt() > chunkSize) {
+                            var i = 0
+                            while (i < byteArray.size) {
+                                val nameBytes = byteArray.copyOfRange(i, i + CONTACT_NAME_LEN)
+                                val numBytes =
+                                    byteArray.copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
+                                val name = String(nameBytes).trim()
+                                val num = String(numBytes).trim()
+                                val contact = WmContact.create(name, num)
+                                sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
+                                contact?.let {
+                                    mContacts.add(it)
+                                }
+                                i += chunkSize
                             }
-                            i += chunkSize
                         }
-                    }
 
-                    msgBean?.let {
-                        if (!payload.hasNext()) {
-                            contactListEmitter?.onNext(mContacts)
-                            contactListEmitter?.onComplete()
+                        msgBean?.let {
+                            if (!payload.hasNext()) {
+                                contactListEmitter?.onNext(mContacts)
+                                contactListEmitter?.onComplete()
+                            }
                         }
+                    } else {
+//                        if (msgBean.divideType == DIVIDE_Y_F_2) {
+//                            contactByteBuffer.put(msgBean.originData)
+//                        }
                     }
                 }
 
