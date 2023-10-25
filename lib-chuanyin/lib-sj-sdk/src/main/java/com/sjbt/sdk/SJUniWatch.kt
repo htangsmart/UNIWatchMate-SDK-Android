@@ -623,16 +623,33 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         wmLog.logD(TAG, "应用层消息：" + msgBean.payloadLen)
                                         wmLog.logD(TAG, "应用层消息 DIVIDE TYPE：" + msgBean.divideType)
 
-                                        if (msgBean.divideType == DIVIDE_N_2) {
+                                        if (msgBean.divideType == DIVIDE_N_2) {//不分包消息
+                                            subPkObservableEmitter?.onComplete()
                                             var payloadPackage: PayloadPackage =
                                                 PayloadPackage.fromByteArray(msgBean.payload)
 
                                             parseNodePayload(true, msgBean, payloadPackage)
-                                        } else {
-                                            subPkObservableEmitter?.onNext(msgBean)
-                                            if (msgBean.divideType == DIVIDE_Y_E_2) {
-                                                subPkObservableEmitter?.onComplete()
+                                        } else {//分包消息
+
+                                            wmLog.logE(TAG, "分包类型：" + msgBean.divideType)
+
+                                            if (msgBean.divideType == DIVIDE_Y_F_2) {
+                                                val payloadPackage =
+                                                    PayloadPackage.fromByteArray(msgBean.payload)
+
+                                                wmLog.logE(TAG,"hasNext:"+payloadPackage.hasNext())
+
+                                                appContact.setHasNext(payloadPackage.hasNext())
                                             }
+
+                                            subPkObservableEmitter?.onNext(msgBean)
+
+                                            if (msgBean.divideType == DIVIDE_Y_E_2) {
+                                                if (!appContact.getHasNext()) {
+                                                    subPkObservableEmitter?.onComplete()
+                                                }
+                                            }
+
                                         }
 
                                     } else {//设备传输层回复

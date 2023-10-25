@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import android.text.TextUtils
 import com.base.sdk.entity.apps.WmContact
 import com.base.sdk.entity.settings.WmEmergencyCall
 import com.base.sdk.port.app.AbAppContact
@@ -11,8 +12,10 @@ import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.core.Observer
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
+import io.reactivex.rxjava3.disposables.Disposable
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
@@ -28,9 +31,19 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
     private val msgList = mutableSetOf<MsgBean>()
 
+    private var hasNext = false
+
     private val TAG = "AppContact"
     override fun isSupport(): Boolean {
         return true
+    }
+
+    fun setHasNext(hasNext: Boolean) {
+        this.hasNext = hasNext
+    }
+
+    fun getHasNext():Boolean{
+        return hasNext
     }
 
     override fun setContactCount(count: Int): Single<Boolean> {
@@ -43,10 +56,54 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     override var observableContactList: Observable<List<WmContact>> = Observable.create {
         mContacts.clear()
         contactListEmitter = it
-        sjUniWatch.sendReadSubPkObserveNode(CmdHelper.getReadContactListCmd()).subscribe {
-            msgList.add(it)
-            sjUniWatch.wmLog.logE(TAG, "返回消息个数：" + msgList.size)
-        }
+
+        sjUniWatch.sendReadSubPkObserveNode(CmdHelper.getReadContactListCmd())
+            .subscribe(object : Observer<MsgBean> {
+                override fun onSubscribe(d: Disposable) {
+                }
+
+                override fun onNext(t: MsgBean) {
+                    msgList.add(t)
+                    sjUniWatch.wmLog.logE(TAG, "返回消息个数：" + msgList.size)
+                }
+
+                override fun onError(e: Throwable) {
+
+                }
+
+                override fun onComplete() {
+                    var byteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE)
+
+                    msgList.forEachIndexed { index, msgBean ->
+                        byteBuffer.put(msgBean.payload)
+                    }
+
+                    val chunkSize = CONTACT_NAME_LEN + CONTACT_NUM_LEN
+
+                    var i = 17
+                    while ((i + chunkSize) < byteBuffer.array().size) {
+                        val nameBytes = byteBuffer.array().copyOfRange(i, i + CONTACT_NAME_LEN)
+                        val numBytes =
+                            byteBuffer.array().copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
+                        val name = String(nameBytes).trim()
+                        val num = String(numBytes).trim()
+
+                        if (!TextUtils.isEmpty(name) || !TextUtils.isEmpty(num)) {
+                            val contact = WmContact.create(name, num)
+                            sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
+                            mContacts.add(contact!!)
+                            i += chunkSize
+                        } else {
+                            break
+                        }
+
+                    }
+
+                    contactListEmitter?.onNext(mContacts)
+                    contactListEmitter?.onComplete()
+                }
+
+            })
     }
 
     override fun updateContactList(contactList: List<WmContact>): Single<Boolean> = Single.create {

@@ -1,5 +1,8 @@
 package com.sjbt.sdk.entity
 
+import android.util.Log
+import com.sjbt.sdk.TAG_SJ
+import com.sjbt.sdk.log.SJLog
 import java.nio.ByteBuffer
 
 class NodeData(
@@ -20,15 +23,20 @@ class NodeData(
     }
 
     companion object {
-        fun fromByteBuffer(bytes: ByteBuffer, type: Int): NodeData {
+        fun fromByteBuffer(byteBuffer: ByteBuffer, type: Int): NodeData {
             val nodeData = NodeData()
             nodeData.urn = ByteArray(4)
-            bytes.get(nodeData.urn)
+            byteBuffer.get(nodeData.urn)
             if (type != RequestType.REQ_TYPE_READ.type) {
-                nodeData.dataFmt = DataFormat.values()[bytes.get().toInt()]
-                nodeData.dataLen = bytes.short
-                nodeData.data = ByteArray(nodeData.dataLen.toInt())
-                bytes.get(nodeData.data)
+                val fmt = byteBuffer.get().toInt()
+//                Log.e(TAG_SJ, "fmt:$fmt")
+                nodeData.dataFmt = DataFormat.values()[fmt]
+//                Log.e(TAG_SJ, "dataFmt:${nodeData.dataFmt}")
+                nodeData.dataLen = byteBuffer.short
+//                Log.e(TAG_SJ, "dataLen:${byteBuffer.remaining()}")
+                nodeData.data = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(nodeData.data)
+//                Log.e(TAG_SJ, "nodeData:${nodeData}")
             }
             return nodeData
         }

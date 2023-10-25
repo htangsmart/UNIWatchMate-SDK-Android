@@ -1,6 +1,6 @@
 package com.sjbt.sdk.entity
 
-import com.sjbt.sdk.spp.cmd.DEFAULT_ITEM_MAX_LEN
+import com.sjbt.sdk.spp.cmd.MAX_BUSINESS_BUFFER_SIZE
 import java.nio.ByteBuffer
 
 class PayloadPackage {
@@ -112,7 +112,7 @@ class PayloadPackage {
     ): List<ByteArray> {
         //val limitation = DEFAULT_ITEM_MAX_LEN*3/2
         val payloadList = mutableListOf<ByteArray>() //payload列表
-        val bytes: ByteBuffer = ByteBuffer.allocate(DEFAULT_ITEM_MAX_LEN*3/2) //payload
+        val bytes: ByteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE*3/2) //payload
 //        var tempByteArray = ByteArray(0)
         actionType = requestType.type
 //        buildPackageHeader(bytes)
@@ -167,7 +167,7 @@ class PayloadPackage {
 
 
     fun toResponseByteArray(
-        mtu: Int = DEFAULT_ITEM_MAX_LEN,
+        mtu: Int = MAX_BUSINESS_BUFFER_SIZE,
         requestType: ResponseResultType
     ): List<ByteArray> {
         val limitation = mtu

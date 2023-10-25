@@ -69,9 +69,6 @@ object CmdHelper {
 
         // 低三位分包类型和数据类型  7 = 0b00000111
         val divideType = (data[1].toInt() and 7).toByte()
-
-        Log.e("SJ_SDK>>>>>", "divideType:" + divideType)
-
         return DivideInfo(divideType, value)
     }
 
@@ -1604,7 +1601,7 @@ object CmdHelper {
     fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
         val payloadPackage = PayloadPackage()
 
-        val count = DEFAULT_ITEM_MAX_LEN / (CONTACT_NAME_LEN + CONTACT_PHONE_LEN)
+        val count = MAX_BUSINESS_BUFFER_SIZE / (CONTACT_NAME_LEN + CONTACT_PHONE_LEN)
 
         val contactGroup = contacts.chunked(count)
 
