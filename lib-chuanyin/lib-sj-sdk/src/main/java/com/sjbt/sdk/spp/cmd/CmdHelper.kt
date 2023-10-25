@@ -1512,10 +1512,20 @@ object CmdHelper {
      */
     fun getWriteUpdateAlarmCmd(alarms: List<WmAlarm>): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
 
-        alarms.forEach {alarm->
-//            byteBuffer.put(alarm.alarmId.toByte())
+        val totalAlarms = mutableListOf<WmAlarm>()
+        totalAlarms.addAll(alarms)
+
+//        if (alarms.size < 10) {
+//            for (i in 0 until 10 - alarms.size) {
+//                totalAlarms.add(WmAlarm("", 0, 0, AlarmRepeatOption.fromValue(0)))
+//            }
+//        }
+
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25 * totalAlarms.size + 5)
+
+        totalAlarms.forEach { alarm ->
+            byteBuffer.put(0)
             val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
             byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
             byteBuffer.put(alarm.hour.toByte())
@@ -1537,7 +1547,7 @@ object CmdHelper {
     /**
      * 添加闹钟
      */
-    fun getWriteAddAlarmCmd(alarm:WmAlarm): PayloadPackage {
+    fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
 //        byteBuffer.put(alarm.alarmId.toByte())

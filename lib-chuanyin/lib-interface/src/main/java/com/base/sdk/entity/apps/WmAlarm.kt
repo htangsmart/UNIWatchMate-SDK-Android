@@ -11,7 +11,7 @@ class WmAlarm(
 ) {
     var isOn: Boolean = false
     override fun toString(): String {
-        return "WmAlarm(alarmId=alarmName='$alarmName', hour=$hour, minute=$minute, repeatOptions=$repeatOptions, isOn=$isOn)"
+        return "WmAlarm(alarmName='$alarmName', hour=$hour, minute=$minute, repeatOptions=$repeatOptions, isOn=$isOn)"
     }
 }
 

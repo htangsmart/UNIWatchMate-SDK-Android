@@ -1,5 +1,6 @@
 package com.sjbt.sdk.app
 
+import android.text.TextUtils
 import com.base.sdk.entity.apps.AlarmRepeatOption
 import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.port.app.AbAppAlarm
@@ -66,7 +67,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
                                 alarmArray.copyOfRange(1, 21).takeWhile { it.toInt() != 0 }
                                     .toByteArray()
                             val name = String(nameArray, StandardCharsets.UTF_8)
-                            sjUniWatch.wmLog.logD(TAG, "name:$name")
+                            sjUniWatch.wmLog.logD(TAG, "id$id name:$name")
 
                             val hour = alarmArray[21].toInt()
                             val minute = alarmArray[22].toInt()
@@ -83,9 +84,9 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
 
                             wmAlarm.isOn = isEnable == 1
 
-                            alarmIdStates.forEach {
-                                it.used = it.value== id
-                            }
+//                            alarmIdStates.forEach {
+//                                it.used = it.value== id
+//                            }
 
                             sjUniWatch.wmLog.logD(TAG, "Alarm INFO:$wmAlarm ")
 
