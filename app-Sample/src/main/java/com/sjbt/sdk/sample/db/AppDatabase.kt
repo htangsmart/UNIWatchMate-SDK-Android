@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asExecutor
 
 @Database(
-    version = 3,
+    version = 4,
     entities = [SportGoalEntity::class,UserEntity::class,DeviceBindEntity::class,UnitInfoEntity::class],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,12 +30,16 @@ abstract class AppDatabase : RoomDatabase() {
                 //Because this is a sample, version migration is not necessary. So use destructive recreate to avoid crash.
                 .fallbackToDestructiveMigration()
                 .addMigrations(MIGRATION_2_3)
+                .addMigrations(MIGRATION_3_4)
                 .build()
             return database
         }
 
         val  MIGRATION_2_3 =  Migration(2, 3) {
             it.execSQL("ALTER TABLE DeviceBindEntity ADD COLUMN deviceMode INTEGER NOT NULL DEFAULT 0");
+        }
+        val  MIGRATION_3_4 =  Migration(3, 4) {
+            it.execSQL("ALTER TABLE DeviceBindEntity ADD COLUMN deviceConnectState INTEGER NOT NULL DEFAULT 0");
         }
     }
 

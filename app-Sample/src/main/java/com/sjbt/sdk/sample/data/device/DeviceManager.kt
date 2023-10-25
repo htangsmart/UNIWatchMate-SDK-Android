@@ -323,7 +323,7 @@ internal class DeviceManagerImpl(
             UNIWatchMate.wmLog.logW(TAG, "bind error because no authed user")
             return
         }
-        deviceFromMemory.value = ConnectorDevice(address, name, wmDeviceMode, true)
+        deviceFromMemory.value = ConnectorDevice(address, name, wmDeviceMode, true,0)
         applicationScope.launchWithLog {
             settingDao.clearDeviceBind(userId)
         }
@@ -358,13 +358,14 @@ internal class DeviceManagerImpl(
             deviceFromMemory.value = null
         } else {
             deviceFromMemory.value = ConnectorDevice(
-                device.address, device.name, device.wmDeviceMode, false
+                device.address, device.name, device.wmDeviceMode, false,1
             )
             val entity = DeviceBindEntity(
                 userId,
                 device.address,
                 device.name,
-                device.deviceModeToInt()
+                device.deviceModeToInt(),
+                device.connectState
             )
             settingDao.insertDeviceBind(entity)
         }

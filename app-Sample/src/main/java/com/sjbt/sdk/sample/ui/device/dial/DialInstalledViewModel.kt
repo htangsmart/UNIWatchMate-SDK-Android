@@ -24,6 +24,7 @@ sealed class DialEvent {
     class RequestFail(val throwable: Throwable) : DialEvent()
 
     class DialRemoved(val position: Int) : DialEvent()
+    class DialRemovedFail(val throwable: Throwable) : DialEvent()
 }
 
 class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialState()) {
@@ -40,8 +41,9 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestDials = Success(it)).newState()
-                }else{
-                    state.copy(requestDials = Fail(Throwable("result is not a mutable list"))).newState()
+                } else {
+                    state.copy(requestDials = Fail(Throwable("result is not a mutable list")))
+                        .newState()
                 }
             }.onFailure {
                 state.copy(requestDials = Fail(it)).newState()
@@ -57,12 +59,13 @@ class DialInstalledViewModel : StateEventViewModel<DialState, DialEvent>(DialSta
         viewModelScope.launch {
             val alarms = state.requestDials()
             if (alarms != null && position < alarms.size) {
-                try {
+                runCatchingWithLog {
                     UNIWatchMate.wmApps.appDial.deleteDial(alarms[position]).await()
                     alarms.removeAt(position)
+                }.onSuccess {
                     DialEvent.DialRemoved(position).newEvent()
-                } catch (e: Exception) {
-                    ToastUtil.showToast(e.message)
+                }.onFailure {
+                    DialEvent.DialRemovedFail(it).newEvent()
                 }
             }
         }

@@ -39,6 +39,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
     private val sportLibraryViewModel: SportLibraryViewModel by viewModels()
     private val sportInstalledViewModel: SportInstalledViewModel by viewModels()
     private var wmSports: MutableList<LocalSportLibrary.LocalSport>? = mutableListOf()
+    private var wmIntalledSports: MutableList<WmSport>? = mutableListOf()
     private lateinit var adapter: SportlLibraryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,6 +92,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         }
 
                         is Success -> {
+                            wmIntalledSports=state.requestSports()
                             sportLibraryViewModel.requestLibrarySports(state.requestSports())
 
                         }
@@ -213,11 +215,12 @@ class SportLibraryViewModel(
                 val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
                 runCatchingWithLog {
                     val result = UNIWatchMate.wmApps.appSport.addSport(wmSport).await()
+                }.onSuccess {
                     localSport.installed = true
                     SportLibraryEvent.SportInstallSuccess(position)
+                }.onFailure {
+                    SportLibraryEvent.SportInstallFail(it.toString()).newEvent()
                 }
-
-//                SportLibraryEvent.SportInstallFail(e.message ?: "")
             }
         }
     }

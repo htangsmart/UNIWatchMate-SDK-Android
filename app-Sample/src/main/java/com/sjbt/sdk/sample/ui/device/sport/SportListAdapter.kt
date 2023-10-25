@@ -26,8 +26,8 @@ class SportListAdapter() :
         val sport = sources?.get(position) ?: return
 
         holder.viewBind.tvDialId.text = sport.id.toString()
-        holder.viewBind.imgDelete.visibility=if(sport.type==1) View.GONE else View.VISIBLE
-        holder.viewBind.tvDialBuiltIn.visibility=if(sport.type==1) View.VISIBLE else View.GONE
+        holder.viewBind.imgDelete.visibility=if(sport.buildIn) View.GONE else View.VISIBLE
+        holder.viewBind.tvDialBuiltIn.visibility=if(sport.buildIn) View.VISIBLE else View.GONE
         holder.viewBind.imgDelete.setOnClickListener {
             listener?.onItemDelete(holder.bindingAdapterPosition)
         }

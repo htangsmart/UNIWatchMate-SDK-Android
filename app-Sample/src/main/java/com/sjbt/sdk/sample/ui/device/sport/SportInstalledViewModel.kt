@@ -36,12 +36,18 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
             state.copy(requestSports = Loading()).newState()
             runCatchingWithLog {
 //                UNIWatchMate.wmApps.appSport.syncSportList.awaitFirst()
-                mutableListOf<WmSport>()
+                val mutableList = mutableListOf<WmSport>()
+                for (index in 0..19) {
+                    val sport = WmSport(index, 1, index < 8)
+                    mutableList.add(sport)
+                }
+                mutableList
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestSports = Success(it)).newState()
-                }else{
-                    state.copy(requestSports = Fail(Throwable("result is not a mutable list"))).newState()
+                } else {
+                    state.copy(requestSports = Fail(Throwable("result is not a mutable list")))
+                        .newState()
                 }
             }.onFailure {
                 state.copy(requestSports = Fail(it)).newState()

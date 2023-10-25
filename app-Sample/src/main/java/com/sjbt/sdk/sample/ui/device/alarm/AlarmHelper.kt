@@ -98,10 +98,10 @@ object AlarmHelper {
         return repeatString
     }
 
-//    fun sort(list: List<WmAlarm>): List<WmAlarm> {
-//        Collections.sort(list, comparator)
-//        return list
-//    }
+    fun sort(list: List<WmAlarm>): List<WmAlarm> {
+        Collections.sort(list, comparator)
+        return list
+    }
 
     fun repeatToBoolean(index: Int, repeats: Set<AlarmRepeatOption>): Boolean {
         var state = false
@@ -181,19 +181,19 @@ object AlarmHelper {
         return state
     }
 
-//    val comparator: Comparator<WmAlarm> by lazy {
-//        Comparator { o1, o2 ->
-//            //first sort by time ,and then by id
-//            val v1: Int = o1.hour * 60 + o1.minute
-//            val v2: Int = o2.hour * 60 + o2.minute
-//            if (v1 > v2) {
-//                1
-//            } else if (v1 < v2) {
-//                -1
-//            } else {
-//                o1.alarmId - o2.alarmId
-//            }
-//        }
-//    }
+    val comparator: Comparator<WmAlarm> by lazy {
+        Comparator { o1, o2 ->
+            //first sort by time ,and then by id
+            val v1: Int = o1.hour * 60 + o1.minute
+            val v2: Int = o2.hour * 60 + o2.minute
+            if (v1 > v2) {
+                1
+            } else if (v1 < v2) {
+                -1
+            } else {
+                0
+            }
+        }
+    }
 
 }

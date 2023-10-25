@@ -14,7 +14,6 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_notification"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_notification_config" />
 

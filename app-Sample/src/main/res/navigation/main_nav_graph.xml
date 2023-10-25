@@ -265,7 +265,17 @@
         android:id="@+id/notificationConfigFragment"
         android:name="com.sjbt.sdk.sample.ui.setting.notification.NotificationConfigFragment"
         android:label="@string/ds_notification_config"
-        tools:layout="@layout/fragment_notification_config" />
+        tools:layout="@layout/fragment_notification_config">
+        <action
+            android:id="@+id/toOtherNotification"
+            app:destination="@id/otherNotificationFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/otherNotificationFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.notification.OtherNotificationListFragment"
+        android:label="@string/ds_notification_others"
+        tools:layout="@layout/fragment_other_notification_list" />
 
     <fragment
         android:id="@+id/unitConfigFragment"
