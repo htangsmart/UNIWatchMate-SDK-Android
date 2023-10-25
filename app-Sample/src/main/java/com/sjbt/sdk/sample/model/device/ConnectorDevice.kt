@@ -22,10 +22,12 @@ class ConnectorDevice(
     /**
      * Is trying to bind
      */
-    val isTryingBind: Boolean
+    val isTryingBind: Boolean,
+    val connectState: Int
+
 ) {
     override fun toString(): String {
-        return "[address:$address name:$name isTryingBind:$isTryingBind]"
+        return "ConnectorDevice(address='$address', name='$name', wmDeviceMode=$wmDeviceMode, isTryingBind=$isTryingBind, connectState=$connectState)"
     }
 }
 fun ConnectorDevice.deviceModeToInt(): Int {

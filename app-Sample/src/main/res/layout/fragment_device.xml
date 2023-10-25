@@ -117,7 +117,6 @@ android:padding="@dimen/dp_15"
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sport_push"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_sport_push" />
 

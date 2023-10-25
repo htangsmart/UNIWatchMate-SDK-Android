@@ -11,89 +11,89 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_telephony"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_telephony"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_telephony"
+            android:visibility="gone"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sms"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_sms"/>
-
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
-            android:id="@+id/item_qq"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_qq"/>
-
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
-            android:id="@+id/item_wechat"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_wechat"/>
-
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_sms"
+            app:showSwitch="true" />
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_facebook"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_facebook"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_facebook"
+            app:showSwitch="true" />
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_qq"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_qq"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
+            android:id="@+id/item_wechat"
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_wechat"
+            app:showSwitch="true" />
+
+
+
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_twitter"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_twitter"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_twitter"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_instagram"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_instagram"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_instagram"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_whatsapp"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_whatsapp"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_whatsapp"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_line"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_line"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_line"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_messenger"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_messenger"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_messenger"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_kakao_talk"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_kakao_talk"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_kakao_talk"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_skype"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_skype"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_skype"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_email"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_email"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Switch"
+            app:preferenceTitle="@string/ds_notification_email"
+            app:showSwitch="true" />
 
-        <com.sjbt.sdk.sample.widget.PreferenceItemView
+        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_others"
-            style="@style/Widget.Item.Switch"
-            app:showSwitch="true"
-            app:name="@string/ds_notification_others"/>
+            style="@style/Widget.Sample.PreferenceView.Item.Text"
+            app:preferenceTitle="@string/ds_notification_others" />
 
     </LinearLayout>
 

@@ -73,7 +73,6 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         listener = object : ScanDevicesAdapter.Listener {
             override fun onItemClick(device: ScanDevice) {
                 tryingBind(device.address, device.name)
-
             }
 
             override fun onItemSizeChanged(oldSize: Int, newSize: Int) {
@@ -290,7 +289,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, "XS09 Ultra")?.asFlow()
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, "oraimoWatchNeo")?.asFlow()
                     ?.catch {
                         this::class.simpleName?.let { tag ->
                             UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")

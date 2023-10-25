@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sjbt.sdk.sample.R
@@ -24,14 +25,24 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
     private val viewBind: FragmentSportInstalledListBinding by viewBinding()
     private val viewModel: SportInstalledViewModel by viewModels()
     private lateinit var adapter: SportListAdapter
+//    private val quickDragAndSwipe = QuickDragAndSwipe()
+//        .setDragMoveFlags(
+//            ItemTouchHelper.UP or ItemTouchHelper.DOWN or
+//                    ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+//        )
+//        .setSwipeMoveFlags(ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        (requireActivity() as AppCompatActivity?)?.supportActionBar?.setTitle(R.string.ds_dial_installed)
+//      (requireActivity() as AppCompatActivity?)?.supportActionBar?.setTitle(R.string.ds_dial_installed)
 
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewBind.recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        viewBind.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
+            )
+        )
         adapter = SportListAdapter()
         adapter.listener = object : SportListAdapter.Listener {
 
@@ -39,7 +50,7 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                 if (adapter.sources?.get(position)?.type != 1) {
                     promptProgress.showProgress(getString(R.string.action_deling))
                     viewModel.deleteAlarm(position)
-                }else{
+                } else {
                     promptToast.showFailed(getString(R.string.tip_inner_sport_del_error))
                 }
             }
@@ -60,9 +71,11 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                         }
+
                         is Fail -> {
                             viewBind.loadingView.showError(R.string.tip_load_error)
                         }
+
                         is Success -> {
                             val alarms = state.requestSports()
                             if (alarms == null || alarms.isEmpty()) {
@@ -74,6 +87,7 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                             adapter.notifyDataSetChanged()
 
                         }
+
                         else -> {}
                     }
                 }
@@ -84,6 +98,7 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                         is SportEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
+
                         is SportEvent.DialRemoved -> {
                             promptProgress.dismiss()
                             viewBind.loadingView.visibility = View.GONE

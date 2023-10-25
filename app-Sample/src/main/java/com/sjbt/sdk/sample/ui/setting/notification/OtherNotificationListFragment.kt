@@ -13,6 +13,7 @@ import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.databinding.FragmentDialInstalledListBinding
+import com.sjbt.sdk.sample.databinding.FragmentOtherNotificationListBinding
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycle
@@ -20,27 +21,29 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 
-class OtherNotificationListFragment : BaseFragment(R.layout.fragment_dial_installed_list) {
+class OtherNotificationListFragment : BaseFragment(R.layout.fragment_other_notification_list) {
 
-    private val viewBind: FragmentDialInstalledListBinding by viewBinding()
+    private val viewBind: FragmentOtherNotificationListBinding by viewBinding()
     private val viewModel: OtherNotificationViewModel by viewModels()
     private lateinit var adapter: OtherNotificationAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (requireActivity() as AppCompatActivity?)?.supportActionBar?.setTitle(R.string.ds_dial_installed)
-
         viewBind.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        viewBind.recyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        viewBind.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
+            )
+        )
         adapter = OtherNotificationAdapter()
         adapter.listener = object : OtherNotificationAdapter.Listener {
 
-            override fun onItemDelete(position: Int) {
+            override fun onItemModify(position: Int, check: Boolean) {
                 if (adapter.sources?.get(position)?.status != 1) {
                     promptProgress.showProgress(getString(R.string.action_deling))
-                    viewModel.deleteAlarm(position)
-                }else{
+                } else {
                     promptToast.showFailed(getString(R.string.tip_inner_dial_del_error))
                 }
             }
@@ -61,9 +64,11 @@ class OtherNotificationListFragment : BaseFragment(R.layout.fragment_dial_instal
                         is Loading -> {
                             viewBind.loadingView.showLoading()
                         }
+
                         is Fail -> {
                             viewBind.loadingView.showError(R.string.tip_load_error)
                         }
+
                         is Success -> {
                             val alarms = state.requestDials()
                             if (alarms == null || alarms.isEmpty()) {
@@ -73,8 +78,8 @@ class OtherNotificationListFragment : BaseFragment(R.layout.fragment_dial_instal
                             }
                             adapter.sources = alarms
                             adapter.notifyDataSetChanged()
-
                         }
+
                         else -> {}
                     }
                 }
@@ -85,12 +90,12 @@ class OtherNotificationListFragment : BaseFragment(R.layout.fragment_dial_instal
                         is DialEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
+
                         is DialEvent.DialRemoved -> {
                             promptProgress.dismiss()
                             viewBind.loadingView.visibility = View.GONE
                             adapter.notifyItemRemoved(event.position)
                         }
-
                     }
                 }
             }
