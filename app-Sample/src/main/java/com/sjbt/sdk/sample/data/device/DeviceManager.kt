@@ -27,6 +27,7 @@ import com.sjbt.sdk.sample.model.device.ConnectorDevice
 import com.sjbt.sdk.sample.model.device.deviceModeToInt
 import com.sjbt.sdk.sample.model.user.UserInfo
 import com.sjbt.sdk.sample.utils.CacheDataHelper
+import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import io.reactivex.rxjava3.core.Completable
@@ -238,10 +239,14 @@ internal class DeviceManagerImpl(
                             .await()
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$deviceInfo")
                     CacheDataHelper.setCurrentDeviceInfo(deviceInfo)
+                }.onFailure {
+                    ToastUtil.showToast(it.message,true)
                 }
                 runCatchingWithLog {
                     val result = UNIWatchMate?.wmApps?.appDateTime?.setDateTime(null).await()
                     UNIWatchMate.wmLog.logI(TAG, "settingDateTime wmDateTime=${result}")
+                }.onFailure {
+                    ToastUtil.showToast(it.message,true)
                 }
                 runCatchingWithLog {
                     //first check has data,if not ,get from watch
@@ -259,6 +264,8 @@ internal class DeviceManagerImpl(
                             }
                         }
                     }
+                }.onFailure {
+                    ToastUtil.showToast(it.message,true)
                 }
                 runCatchingWithLog {
                     userInfoRepository.flowCurrent.value?.let {
@@ -276,6 +283,8 @@ internal class DeviceManagerImpl(
                         UNIWatchMate.wmLog.logI(TAG, "setUserInfo $wmPersonalInfo")
                         UNIWatchMate?.wmSettings?.settingPersonalInfo?.set(wmPersonalInfo)?.await()
                     }
+                }.onFailure {
+                    ToastUtil.showToast(it.message,true)
                 }
                 UNIWatchMate.wmLog.logI(TAG, "onConnected over")
                 hideLoadingDialog()

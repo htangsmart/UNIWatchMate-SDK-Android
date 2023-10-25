@@ -11,9 +11,10 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
-import kotlinx.coroutines.rx3.awaitFirst
 
 data class SportState(
     val requestSports: Async<MutableList<WmSport>> = Uninitialized,
@@ -34,6 +35,12 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
     fun requestInstallSports() {
         viewModelScope.launch {
             state.copy(requestSports = Loading()).newState()
+//            UNIWatchMate.wmApps.appSport.syncSportList.asFlow().catch {
+//                state.copy(requestSports = Fail(it)).newState()
+//                SportEvent.RequestFail(it).newEvent()
+//            }.collect{
+//
+//            }
             runCatchingWithLog {
 //                UNIWatchMate.wmApps.appSport.syncSportList.awaitFirst()
                 val mutableList = mutableListOf<WmSport>()
@@ -59,19 +66,35 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
     /**
      * @param position Delete position
      */
-    fun deleteAlarm(position: Int) {
+    fun deleteSport(position: Int) {
         viewModelScope.launch {
             val sports = state.requestSports()
             if (sports != null && position < sports.size) {
-                try {
+                runCatchingWithLog {
                     UNIWatchMate.wmApps.appSport.deleteSport(sports[position]).await()
+                }.onSuccess {
                     sports.removeAt(position)
                     SportEvent.DialRemoved(position).newEvent()
-                } catch (e: Exception) {
-                    ToastUtil.showToast(e.message)
+                }.onFailure {
+                    ToastUtil.showToast(it.message)
+
                 }
             }
         }
     }
 
+    fun sortFixedSportList() {
+        viewModelScope.launch {
+            val sports = state.requestSports()
+            if (sports != null) {
+                runCatchingWithLog {
+                    UNIWatchMate.wmApps.appSport.sortFixedSportList(sports).await()
+                }.onSuccess {
+
+                }.onFailure {
+                    ToastUtil.showToast(it.message)
+                }
+            }
+        }
+    }
 }

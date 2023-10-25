@@ -11,6 +11,7 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
@@ -22,7 +23,6 @@ data class AlarmState(
 
 sealed class AlarmEvent {
     class RequestFail(val throwable: Throwable) : AlarmEvent()
-
     class AlarmInserted(val position: Int) : AlarmEvent()
     class AlarmRemoved(val position: Int) : AlarmEvent()
     class AlarmMoved(val fromPosition: Int, val toPosition: Int) : AlarmEvent()
@@ -40,13 +40,11 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
     fun requestAlarms() {
         viewModelScope.launch {
             state.copy(requestAlarms = Loading()).newState()
-            runCatchingWithLog {
-                UNIWatchMate.wmApps.appAlarm.observeAlarmList.awaitFirst()
-            }.onSuccess {
-                state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
-            }.onFailure {
+            UNIWatchMate.wmApps.appAlarm.observeAlarmList.asFlow().catch {
                 state.copy(requestAlarms = Fail(it)).newState()
                 AlarmEvent.RequestFail(it).newEvent()
+            }.collect{
+                state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
             }
         }
     }
@@ -120,7 +118,6 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
             AlarmEvent.NavigateUp.newEvent()
         }
     }
-
 
     suspend fun action() {
         val alarms = state.requestAlarms()
