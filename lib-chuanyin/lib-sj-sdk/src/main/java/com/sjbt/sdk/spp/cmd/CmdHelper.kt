@@ -1782,9 +1782,9 @@ object CmdHelper {
         byteBuffer.put(second.toByte())
 
         //位置
-        byteBuffer.put(wmWeather.location.country.length.toByte())
+        byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
         byteBuffer.put(wmWeather.location.country.toByteArray())
-        byteBuffer.put(wmWeather.location.city.length.toByte())
+        byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
         byteBuffer.put(wmWeather.location.city.toByteArray())
 
         //当天
@@ -1821,7 +1821,7 @@ object CmdHelper {
             byteBuffer.putShort(it.humidity.toShort())
             byteBuffer.put(it.uvIndex.toByte())
             byteBuffer.put(it.weatherCode.toByte())
-            byteBuffer.put(it.weatherDesc.length.toByte())
+            byteBuffer.put(it.weatherDesc.toByteArray().size.toByte())
             byteBuffer.put(it.weatherDesc.toByteArray())
         }
 
@@ -1863,9 +1863,9 @@ object CmdHelper {
         byteBuffer.put(second.toByte())
 
         //位置
-        byteBuffer.put(wmWeather.location.country.length.toByte())
+        byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
         byteBuffer.put(wmWeather.location.country.toByteArray())
-        byteBuffer.put(wmWeather.location.city.length.toByte())
+        byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
         byteBuffer.put(wmWeather.location.city.toByteArray())
 
         wmWeather.weatherForecast.forEach {
@@ -1909,8 +1909,8 @@ object CmdHelper {
             byteBuffer.put(it.uvIndex.toByte())
             byteBuffer.put(it.dayCode.toByte())
             byteBuffer.put(it.nightCode.toByte())
-            byteBuffer.put(it.dayDesc.length.toByte())
-            byteBuffer.put(it.nightDesc.length.toByte())
+            byteBuffer.put(it.dayDesc.toByteArray().size.toByte())
+            byteBuffer.put(it.nightDesc.toByteArray().size.toByte())
 
             byteBuffer.put(it.dayDesc.toByteArray())
             byteBuffer.put(it.nightDesc.toByteArray())
