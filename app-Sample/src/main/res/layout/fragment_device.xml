@@ -144,7 +144,7 @@ android:padding="@dimen/dp_15"
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_test_weather"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
-            android:visibility="gone"
+            android:visibility="visible"
             app:preferenceTitle="@string/ds_test_weather" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
