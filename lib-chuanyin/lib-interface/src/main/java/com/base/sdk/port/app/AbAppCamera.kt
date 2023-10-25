@@ -8,17 +8,17 @@ import io.reactivex.rxjava3.core.Single
 /**
  * 应用模块-相机
  */
-abstract class AbAppCamera :IWmSupport {
+abstract class AbAppCamera : IWmSupport {
 
     /**
      * 监听设备端相机开启状态
      */
-    abstract var observeCameraOpenState : Observable<Boolean>
+    abstract val observeCameraOpenState: Observable<Boolean>
 
     /**
      * 监听拍照状态
      */
-    abstract var observeCameraTakePhoto : Observable<Boolean>
+    abstract val observeCameraTakePhoto: Observable<Any>
 
     /**
      * App打开/关闭相机
@@ -28,7 +28,7 @@ abstract class AbAppCamera :IWmSupport {
     /**
      * 监听相机端闪光灯状态
      */
-    abstract var observeCameraFlash : Observable<WMCameraFlashMode>
+    abstract val observeCameraFlash: Observable<WMCameraFlashMode>
 
     /**
      * 相机闪光灯设置
@@ -38,7 +38,7 @@ abstract class AbAppCamera :IWmSupport {
     /**
      * 相机前后摄像头监听
      */
-    abstract var observeCameraFrontBack : Observable<WMCameraPosition>
+    abstract val observeCameraFrontBack: Observable<WMCameraPosition>
 
     /**
      * 设置相机前后摄像头
@@ -66,12 +66,12 @@ abstract class AbAppCamera :IWmSupport {
 
 }
 
-enum class WMCameraPosition{
+enum class WMCameraPosition {
     WMCameraPositionFront,   /// 前置摄像头
     WMCameraPositionRear     /// 后置摄像头
 }
 
-enum class WMCameraFlashMode{
+enum class WMCameraFlashMode {
     WMCameraFlashModeOn,     /// 闪光灯开启
     WMCameraFlashModeOff,    /// 闪光灯关闭
     WMCameraFlashModeAuto    /// 闪光灯自动

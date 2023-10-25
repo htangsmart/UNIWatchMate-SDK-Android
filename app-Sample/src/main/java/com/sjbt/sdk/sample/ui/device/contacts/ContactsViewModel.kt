@@ -3,7 +3,6 @@ package com.sjbt.sdk.sample.ui.device.contacts
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmContact
-import com.base.sdk.entity.settings.WmEmergencyCall
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
@@ -14,9 +13,7 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
 
@@ -49,7 +46,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         viewModelScope.launch {
             state.copy(requestContacts = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appContact.observableContactList.awaitFirst()
+                UNIWatchMate.wmApps.appContact.getContactList.awaitFirst()
             }.onSuccess {
                 state.copy(requestContacts = Success(ArrayList(it))).newState()
             }.onFailure {

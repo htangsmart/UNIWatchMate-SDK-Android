@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets
 class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     private var contactListEmitter: ObservableEmitter<List<WmContact>>? = null
     private var updateContactEmitter: SingleEmitter<Boolean>? = null
-    private var contactCountSetEmitter: SingleEmitter<Boolean>? = null
+//    private var contactCountSetEmitter: SingleEmitter<Boolean>? = null
     private var updateEmergencyEmitter: SingleEmitter<WmEmergencyCall>? = null
     private var emergencyNumberEmitter: ObservableEmitter<WmEmergencyCall>? = null
 
@@ -43,18 +43,18 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         this.hasNext = hasNext
     }
 
-    fun getHasNext():Boolean{
+    fun getHasNext(): Boolean {
         return hasNext
     }
 
-    override fun setContactCount(count: Int): Single<Boolean> {
-        return Single.create {
-            contactCountSetEmitter = it
-            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getReadContactCountCmd(count.toByte()))
-        }
-    }
+//    override fun setContactCount(count: Int): Single<Boolean> {
+//        return Single.create {
+//            contactCountSetEmitter = it
+//            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getReadContactCountCmd(count.toByte()))
+//        }
+//    }
 
-    override var observableContactList: Observable<List<WmContact>> = Observable.create {
+    override var getContactList: Observable<List<WmContact>> = Observable.create {
         mContacts.clear()
         contactListEmitter = it
         msgList.clear()
@@ -84,13 +84,15 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                     var i = 17
                     while ((i + chunkSize) < byteBuffer.array().size) {
-                        val nameBytes = byteBuffer.array().copyOfRange(i, i + CONTACT_NAME_LEN).takeWhile { it.toInt() != 0 }.toByteArray()
-                        val numBytes = byteBuffer.array().copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
+                        val nameBytes = byteBuffer.array().copyOfRange(i, i + CONTACT_NAME_LEN)
+                            .takeWhile { it.toInt() != 0 }.toByteArray()
+                        val numBytes =
+                            byteBuffer.array().copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
 
                         val name = String(nameBytes, StandardCharsets.UTF_8)
                         val num = String(numBytes, StandardCharsets.UTF_8)
 
-                        sjUniWatch.wmLog.logE(TAG, "name:" + name +" num:"+num)
+                        sjUniWatch.wmLog.logE(TAG, "name:" + name + " num:" + num)
 
                         if (!TextUtils.isEmpty(name)) {
                             val contact = WmContact.create(name, num)
@@ -218,22 +220,10 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                 if (k == 0 && i == 0) {
                     firstPkOrder = msgBean.cmdOrder.toInt()
-                    sjUniWatch.wmLog.logE(TAG, "第一包序号：" + firstPkOrder)
+                    sjUniWatch.wmLog.logE(TAG, "first Order Id：" + firstPkOrder)
                 }
-
-//                sjUniWatch.sendNormalMsg(msgBean.originData)
-//                Thread.sleep(100)
             }
-//            businessMap.put(k, msgPkMap)
         }
-
-        sjUniWatch.wmLog.logE(TAG, "总分包个数：" + msgPkMap.size)
-
-//        msgPkMap.get(firstPkOrder)?.let { msgBean ->
-//            sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
-//                sjUniWatch.wmLog.logE(TAG, "成功返回序号：" + order)
-//            }
-//        }
 
         sendObserveNode(firstPkOrder)
     }
@@ -241,7 +231,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     private fun sendObserveNode(order: Int) {
         msgPkMap.get(order)?.let { msgBean ->
             sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
-                sjUniWatch.wmLog.logE(TAG, "成功返回序号：" + order)
+                sjUniWatch.wmLog.logE(TAG, "success order id：" + order)
                 sendObserveNode(order % 255 + 1)
             }
         }
@@ -255,7 +245,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         when (it.urn[2]) {
 
             URN_APP_CONTACT_COUNT -> {
-                contactCountSetEmitter?.onSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
+//                contactCountSetEmitter?.onSuccess(it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal)
             }
 
             URN_APP_CONTACT_LIST -> {
@@ -277,33 +267,28 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         if (it.dataLen.toInt() > chunkSize) {
                             var i = 0
                             while (i < byteArray.size) {
+
                                 val nameBytes = byteArray.copyOfRange(i, i + CONTACT_NAME_LEN)
+                                    .takeWhile { it.toInt() != 0 }.toByteArray()
                                 val numBytes =
                                     byteArray.copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
-                                val name = String(nameBytes).trim()
-                                val num = String(numBytes).trim()
-                                val contact = WmContact.create(name, num)
-                                sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
-                                contact?.let {
-                                    mContacts.add(it)
+
+                                val name = String(nameBytes, StandardCharsets.UTF_8)
+                                val num = String(numBytes, StandardCharsets.UTF_8)
+
+                                if (!TextUtils.isEmpty(name)) {
+                                    val contact = WmContact.create(name, num)
+                                    mContacts.add(contact!!)
                                 }
+
                                 i += chunkSize
                             }
                         }
 
-                        msgBean?.let {
-                            if (!payload.hasNext()) {
-                                contactListEmitter?.onNext(mContacts)
-                                contactListEmitter?.onComplete()
-                            }
-                        }
-                    } else {
-//                        if (msgBean.divideType == DIVIDE_Y_F_2) {
-//                            contactByteBuffer.put(msgBean.originData)
-//                        }
+                        contactListEmitter?.onNext(mContacts)
+                        contactListEmitter?.onComplete()
                     }
                 }
-
             }
 
             URN_APP_CONTACT_EMERGENCY -> {

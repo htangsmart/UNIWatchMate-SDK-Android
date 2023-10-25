@@ -14,12 +14,12 @@ abstract class AbAppContact : IWmSupport {
     /**
      * 从设备端获取通讯录列表
      */
-    abstract var observableContactList: Observable<List<WmContact>>
+    abstract var getContactList: Observable<List<WmContact>>
 
     /**
      * 设置联系人个数
      */
-    abstract fun setContactCount(count: Int): Single<Boolean>
+//    abstract fun setContactCount(count: Int): Single<Boolean>
 
     /**
      * App同步通讯录到设备

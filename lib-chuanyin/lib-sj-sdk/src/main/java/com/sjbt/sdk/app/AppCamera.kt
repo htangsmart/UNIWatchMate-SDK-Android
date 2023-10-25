@@ -21,7 +21,7 @@ import java.nio.ByteOrder
 class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     var cameraSingleOpenEmitter: SingleEmitter<Boolean>? = null
-    var cameraObserveTakePhotoEmitter: ObservableEmitter<Boolean>? = null
+    var cameraObserveTakePhotoEmitter: ObservableEmitter<Any>? = null
     var cameraObserveFlashEmitter: ObservableEmitter<WMCameraFlashMode>? = null
     var cameraObserveFrontBackEmitter: ObservableEmitter<WMCameraPosition>? = null
     var cameraBackSwitchEmitter: ObservableEmitter<WMCameraPosition>? = null
@@ -116,7 +116,7 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     override var observeCameraOpenState: Observable<Boolean> = cameraStateObserver
 
-    override var observeCameraTakePhoto: Observable<Boolean> =
+    override var observeCameraTakePhoto: Observable<Any> =
         Observable.create { emitter -> cameraObserveTakePhotoEmitter = emitter }
 
     override var observeCameraFlash: Observable<WMCameraFlashMode> =
