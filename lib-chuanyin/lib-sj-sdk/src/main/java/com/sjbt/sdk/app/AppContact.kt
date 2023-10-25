@@ -17,6 +17,7 @@ import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 import io.reactivex.rxjava3.disposables.Disposable
 import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
@@ -56,6 +57,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     override var observableContactList: Observable<List<WmContact>> = Observable.create {
         mContacts.clear()
         contactListEmitter = it
+        msgList.clear()
 
         sjUniWatch.sendReadSubPkObserveNode(CmdHelper.getReadContactListCmd())
             .subscribe(object : Observer<MsgBean> {
@@ -82,21 +84,22 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                     var i = 17
                     while ((i + chunkSize) < byteBuffer.array().size) {
-                        val nameBytes = byteBuffer.array().copyOfRange(i, i + CONTACT_NAME_LEN)
-                        val numBytes =
-                            byteBuffer.array().copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
-                        val name = String(nameBytes).trim()
-                        val num = String(numBytes).trim()
+                        val nameBytes = byteBuffer.array().copyOfRange(i, i + CONTACT_NAME_LEN).takeWhile { it.toInt() != 0 }.toByteArray()
+                        val numBytes = byteBuffer.array().copyOfRange(i + CONTACT_NUM_LEN, i + chunkSize)
 
-                        if (!TextUtils.isEmpty(name) || !TextUtils.isEmpty(num)) {
+                        val name = String(nameBytes, StandardCharsets.UTF_8)
+                        val num = String(numBytes, StandardCharsets.UTF_8)
+
+                        sjUniWatch.wmLog.logE(TAG, "name:" + name +" num:"+num)
+
+                        if (!TextUtils.isEmpty(name)) {
                             val contact = WmContact.create(name, num)
-                            sjUniWatch.wmLog.logE(TAG, "contact:" + contact)
+
                             mContacts.add(contact!!)
                             i += chunkSize
                         } else {
                             break
                         }
-
                     }
 
                     contactListEmitter?.onNext(mContacts)
