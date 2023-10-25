@@ -17,6 +17,16 @@ abstract class AbAppFind : IWmSupport {
     abstract val observeFindMobile : Observable<WmFind>
 
     /**
+     * 监听来自手表 停止查找手机 的消息
+     */
+    abstract val observeStopFindMobile: Observable<Any>
+
+    /**
+     * 监听来自手表 停止查找手表 的消息
+     */
+    abstract val observeStopFindWatch: Observable<Any>
+
+    /**
      * stop find mobile(停止查找手机)
      */
     abstract fun stopFindMobile(): Observable<Boolean>

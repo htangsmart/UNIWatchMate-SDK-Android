@@ -6,7 +6,6 @@ import com.base.sdk.entity.apps.WmAlarm
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
-import com.sjbt.sdk.sample.base.SingleAsyncAction
 import com.sjbt.sdk.sample.base.StateEventViewModel
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
@@ -15,7 +14,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
-import kotlinx.coroutines.rx3.awaitSingle
 
 data class AlarmState(
     val requestAlarms: Async<ArrayList<WmAlarm>> = Uninitialized,
@@ -50,10 +48,10 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
         viewModelScope.launch {
             state.copy(requestAlarms = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appAlarm.syncAlarmList.awaitFirst()
+//                UNIWatchMate.wmApps.appAlarm.updateAlarmList.awaitFirst()
 //                mutableListOf<WmAlarm>()
             }.onSuccess {
-                state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
+//                state.copy(requestAlarms = Success(ArrayList(AlarmHelper.sort(it)))).newState()
             }.onFailure {
                 state.copy(requestAlarms = Fail(it)).newState()
                 AlarmEvent.RequestFail(it).newEvent()
@@ -63,12 +61,12 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
 
     private fun findAlarmAddPosition(alarm: WmAlarm, list: List<WmAlarm>): Int {
         var addPosition: Int? = null
-        for (i in list.indices) {
-            if (AlarmHelper.comparator.compare(alarm, list[i]) < 0) {
-                addPosition = i
-                break
-            }
-        }
+//        for (i in list.indices) {
+//            if (AlarmHelper.comparator.compare(alarm, list[i]) < 0) {
+//                addPosition = i
+//                break
+//            }
+//        }
         if (addPosition == null) {
             addPosition = list.size
         }
@@ -142,18 +140,18 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
         setAlarm?.let {
             when (alarmAction) {
                 AlarmAction.ADD -> {
-                    val result = UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
-                    it.alarmId=result.alarmId
+//                    val result = UNIWatchMate.wmApps.appAlarm.addAlarm(it).await()
+//                    it.alarmId=result.alarmId
                 }
 
                 AlarmAction.UPDATE -> {
-                    UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
+//                    UNIWatchMate.wmApps.appAlarm.updateAlarm(it).await()
                 }
 
                 AlarmAction.DELETE -> {
                     val list= mutableListOf<WmAlarm>()
                     list.add(it)
-                    UNIWatchMate.wmApps.appAlarm.deleteAlarm(list).await()
+//                    UNIWatchMate.wmApps.appAlarm.deleteAlarm(list).await()
                 }
 
                 else -> {

@@ -10,22 +10,13 @@ import io.reactivex.rxjava3.core.Single
  */
 abstract class AbAppAlarm : IWmSupport {
     /**
-     * syncAlarmList 同步闹钟列表
+     * updateAlarmList 更新闹钟列表
      */
-    abstract var syncAlarmList: Observable<List<WmAlarm>>
+    abstract fun updateAlarmList(alarms:List<WmAlarm>): Single<Boolean>
 
     /**
-     * addAlarm 添加闹钟
+     *  从设备端获取闹钟列表，并监听闹钟列表变化
      */
-    abstract fun addAlarm(alarm: WmAlarm): Single<WmAlarm>
+    abstract var observeAlarmList: Observable<List<WmAlarm>>
 
-    /**
-     * deleteAlarm 删除闹钟
-     */
-    abstract fun deleteAlarm(alarms: List<WmAlarm>): Single<Boolean>
-
-    /**
-     * updateAlarm 更新闹钟
-     */
-    abstract fun updateAlarm(alarm: WmAlarm): Single<WmAlarm>
 }

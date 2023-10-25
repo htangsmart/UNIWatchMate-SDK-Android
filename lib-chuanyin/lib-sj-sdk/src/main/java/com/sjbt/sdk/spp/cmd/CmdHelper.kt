@@ -1510,10 +1510,37 @@ object CmdHelper {
     /**
      * 添加闹钟
      */
-    fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
+    fun getWriteUpdateAlarmCmd(alarms: List<WmAlarm>): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
-        byteBuffer.put(alarm.alarmId.toByte())
+
+        alarms.forEach {alarm->
+//            byteBuffer.put(alarm.alarmId.toByte())
+            val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
+            byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
+            byteBuffer.put(alarm.hour.toByte())
+            byteBuffer.put(alarm.minute.toByte())
+            byteBuffer.put(AlarmRepeatOption.toValue(alarm.repeatOptions).toByte())
+            byteBuffer.put(
+                if (alarm.isOn) {
+                    1.toByte()
+                } else {
+                    0.toByte()
+                }
+            )
+        }
+
+        payloadPackage.putData(getUrnId(URN_4, URN_1, URN_1), byteBuffer.array())
+        return payloadPackage
+    }
+
+    /**
+     * 添加闹钟
+     */
+    fun getWriteAddAlarmCmd(alarm:WmAlarm): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
+//        byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
         byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
         byteBuffer.put(alarm.hour.toByte())
@@ -1546,7 +1573,7 @@ object CmdHelper {
     fun getWriteModifyAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
-        byteBuffer.put(alarm.alarmId.toByte())
+//        byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
 
 //        Log.e(">>>>>>>>","alarm name："+String(originNameArray))

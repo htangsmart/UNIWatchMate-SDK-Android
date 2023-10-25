@@ -169,10 +169,10 @@ const val URN_SETTING_DEVICE_INFO: Byte = URN_B
 
 const val URN_APP: Byte = URN_4
 const val URN_APP_ALARM: Byte = URN_1
-const val URN_APP_ALARM_ADD: Byte = URN_2
+//const val URN_APP_ALARM_ADD: Byte = URN_2
 const val URN_APP_ALARM_LIST: Byte = URN_1
-const val URN_APP_ALARM_UPDATE: Byte = URN_3
-const val URN_APP_ALARM_DELETE: Byte = URN_4
+//const val URN_APP_ALARM_UPDATE: Byte = URN_3
+//const val URN_APP_ALARM_DELETE: Byte = URN_4
 
 const val URN_APP_SPORT: Byte = URN_2
 
