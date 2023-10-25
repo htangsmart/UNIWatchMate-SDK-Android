@@ -204,4 +204,5 @@ const val URN_SPORT: Byte = URN_6
 const val CHANGE_CAMERA = 0.toByte()
 const val CHANGE_FLASH = 1.toByte()
 
+//设备端支持的最大业务单元大小
 const val MAX_BUSINESS_BUFFER_SIZE = 2048

@@ -1,6 +1,5 @@
 package com.sjbt.sdk.spp.cmd
 
-import android.util.Log
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.apps.WmContact.Companion.NAME_BYTES_LIMIT
@@ -1838,7 +1837,7 @@ object CmdHelper {
      * 获取当天天气命令
      * 摄氏度 = (华氏度 - 32°F) ÷ 1.8；华氏度 = 32°F+ 摄氏度 × 1.8
      */
-    fun getWriteSevenTodayWeatherCmd(
+    fun getWriteSevenDaysWeatherCmd(
         totalLen: Int,
         temperatureUnit: WmUnitInfo.TemperatureUnit,
         wmWeather: WmWeather
@@ -1919,7 +1918,7 @@ object CmdHelper {
         }
 
         payloadPackage.putData(
-            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_TODAY),
+            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_SIX_DAYS),
             byteBuffer.array()
         )
 

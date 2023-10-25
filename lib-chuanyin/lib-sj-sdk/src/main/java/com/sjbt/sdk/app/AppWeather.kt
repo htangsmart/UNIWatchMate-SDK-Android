@@ -32,36 +32,31 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         return Single.create {
             pushWeatherEmitter = it
 
-            sjUniWatch.observableMtu.subscribe { mtu ->
-                var totalLen = 0
+            var cityLen = weather.location.city?.let { it.toByteArray().size }
+            var countryLen = weather.location.country?.let { it.toByteArray().size }
 
-                weather.todayWeather.forEach {
-                    totalLen += it.weatherDesc.length + 14
-                }
+            var totalLen = 7 + cityLen + countryLen + 2
+            sjUniWatch.wmLog.logD(TAG, "today weather payload_len:" + totalLen)
 
-                sjUniWatch.wmLog.logD(TAG, "today weather payload_len:" + totalLen)
-
-                if (totalLen == 0) {
-                    pushWeatherEmitter?.onError(RuntimeException("error weather data!"))
-                } else {
-                    val payloadPackage = CmdHelper.getWriteTodayWeatherCmd(
-                        totalLen,
-                        temperatureUnit,
-                        weather
-                    )
-
-                    sjUniWatch.wmLog.logD(
-                        TAG,
-                        "today weather package count:" + payloadPackage.itemCount
-                    )
-
-//                    sjUniWatch.sendWriteSubpackageNodeCmdList(
-//                        (totalLen + 10).toShort(),//当天天气总长度
-//                        mtu,
-//                        payloadPackage
-//                    )
-                }
+            weather.todayWeather.forEach {
+                totalLen += it.weatherDesc.toByteArray().size + 13
             }
+
+            sjUniWatch.wmLog.logD(TAG, "today weather payload_len:" + totalLen)
+            val payloadPackage = CmdHelper.getWriteTodayWeatherCmd(
+                totalLen,
+                temperatureUnit,
+                weather
+            )
+
+            sjUniWatch.wmLog.logD(
+                TAG,
+                "today weather package count:" + payloadPackage.itemCount
+            )
+
+            sjUniWatch.sendWriteNodeCmdList(
+                payloadPackage
+            )
         }
     }
 
@@ -72,35 +67,35 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         return Single.create {
             pushWeatherEmitter = it
 
+            sjUniWatch.wmLog.logD(TAG, "weather_len:" + weather)
+
             sjUniWatch.observableMtu.subscribe { mtu ->
-                var sevenDayLen = 0
+                var cityLen = weather.location.city?.let { it.toByteArray().size }
+                var countryLen = weather.location.country?.let { it.toByteArray().size }
+
+                var sevenDayLen = 7 + cityLen + countryLen + 2
+                sjUniWatch.wmLog.logD(TAG, "7 days weather payload_len:" + sevenDayLen)
 
                 weather.weatherForecast.forEach {
-                    sevenDayLen += it.dayDesc.length + it.nightDesc.length + 18
+                    sevenDayLen += it.dayDesc.toByteArray().size + it.nightDesc.toByteArray().size + 18
                 }
 
                 sjUniWatch.wmLog.logD(TAG, "7 days weather total bytes:" + sevenDayLen)
 
-                if (sevenDayLen == 0) {
-                    pushWeatherEmitter?.onError(RuntimeException("error weather data!"))
-                } else {
-                    val payloadPackage = CmdHelper.getWriteSevenTodayWeatherCmd(
-                        sevenDayLen,
-                        temperatureUnit,
-                        weather
-                    )
+                val payloadPackage = CmdHelper.getWriteSevenDaysWeatherCmd(
+                    sevenDayLen,
+                    temperatureUnit,
+                    weather
+                )
 
-                    sjUniWatch.wmLog.logD(
-                        TAG,
-                        "7 days weather package count:" + payloadPackage.itemCount
-                    )
+                sjUniWatch.wmLog.logD(
+                    TAG,
+                    "7 days weather package count:" + payloadPackage.itemCount
+                )
 
-//                    sjUniWatch.sendWriteSubpackageNodeCmdList(
-//                        (sevenDayLen + 10).toShort(),//7天天气总长度
-//                        mtu,
-//                        payloadPackage
-//                    )
-                }
+                sjUniWatch.sendWriteNodeCmdList(
+                    payloadPackage
+                )
 
             }
         }
