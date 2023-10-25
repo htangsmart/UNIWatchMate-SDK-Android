@@ -3,12 +3,12 @@ package com.sjbt.sdk.spp.cmd
 import android.util.Log
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
+import com.base.sdk.entity.apps.WmContact.Companion.NAME_BYTES_LIMIT
+import com.base.sdk.entity.apps.WmContact.Companion.NUMBER_BYTES_LIMIT
 import com.base.sdk.entity.settings.*
 import com.base.sdk.port.FileType
 import com.google.gson.Gson
 import com.sjbt.sdk.ALARM_NAME_LEN
-import com.sjbt.sdk.CONTACT_NAME_LEN
-import com.sjbt.sdk.CONTACT_NUM_LEN
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
@@ -1628,22 +1628,22 @@ object CmdHelper {
     fun getWriteContactListCmd(contacts: List<WmContact>): PayloadPackage {
         val payloadPackage = PayloadPackage()
 
-        val count = MAX_BUSINESS_BUFFER_SIZE / (CONTACT_NAME_LEN + CONTACT_PHONE_LEN)
+        val count = MAX_BUSINESS_BUFFER_SIZE / (NAME_BYTES_LIMIT + NUMBER_BYTES_LIMIT)
 
         val contactGroup = contacts.chunked(count)
 
         for (i in 0 until contactGroup.size) {
 
             val byteBuffer: ByteBuffer =
-                ByteBuffer.allocate(contactGroup[i].size * (CONTACT_NAME_LEN + CONTACT_NUM_LEN))
+                ByteBuffer.allocate(contactGroup[i].size * (NAME_BYTES_LIMIT + NUMBER_BYTES_LIMIT))
 
             contactGroup[i].forEach {
                 byteBuffer.put(
-                    it.name.toByteArray().copyOf(CONTACT_NAME_LEN)
+                    it.name.toByteArray().copyOf(NAME_BYTES_LIMIT)
                 )
 
                 byteBuffer.put(
-                    it.number.toByteArray().copyOf(CONTACT_NUM_LEN)
+                    it.number.toByteArray().copyOf(NUMBER_BYTES_LIMIT)
                 )
             }
 
@@ -1659,7 +1659,7 @@ object CmdHelper {
     fun getWriteEmergencyNumberCmd(number: WmEmergencyCall): PayloadPackage {
         val payloadPackage = PayloadPackage()
         val byteBuffer: ByteBuffer =
-            ByteBuffer.allocate(1 + (CONTACT_NAME_LEN + CONTACT_NUM_LEN) * number.emergencyContacts.size)
+            ByteBuffer.allocate(1 + (NAME_BYTES_LIMIT + NUMBER_BYTES_LIMIT) * number.emergencyContacts.size)
         byteBuffer.put(
             if (number.isEnabled) {
                 1
@@ -1669,8 +1669,8 @@ object CmdHelper {
         )
 
         number.emergencyContacts.forEach {
-            byteBuffer.put(it.name.toByteArray().copyOf(CONTACT_NAME_LEN))
-            byteBuffer.put(it.number.toByteArray().copyOf(CONTACT_NUM_LEN))
+            byteBuffer.put(it.name.toByteArray().copyOf(NAME_BYTES_LIMIT))
+            byteBuffer.put(it.number.toByteArray().copyOf(NUMBER_BYTES_LIMIT))
         }
 
         payloadPackage.putData(getUrnId(URN_4, URN_3, URN_3), byteBuffer.array())
