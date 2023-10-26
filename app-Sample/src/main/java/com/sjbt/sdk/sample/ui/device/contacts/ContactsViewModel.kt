@@ -6,7 +6,6 @@ import com.base.sdk.entity.apps.WmContact
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
-import com.sjbt.sdk.sample.base.SingleAsyncAction
 import com.sjbt.sdk.sample.base.StateEventViewModel
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
@@ -16,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
+import timber.log.Timber
 
 data class ContactsState(
     val requestContacts: Async<ArrayList<WmContact>> = Uninitialized,
@@ -25,11 +25,10 @@ data class ContactsState(
 sealed class ContactsEvent {
     class RequestFail(val throwable: Throwable) : ContactsEvent()
     class RequestEmergencyFail(val throwable: Throwable) : ContactsEvent()
-    class Inserted(val position: Int) : ContactsEvent()
-    class TestAdd100() : ContactsEvent()
+    class Inserted(val pos: Int) : ContactsEvent()
+    class Update100Success() : ContactsEvent()
     class Removed(val position: Int) : ContactsEvent()
-    class Moved(val fromPosition: Int, val toPosition: Int) : ContactsEvent()
-
+    class UpdateFail() : ContactsEvent()
     object NavigateUp : ContactsEvent()
 }
 
@@ -39,7 +38,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
     private val deviceManager = Injector.getDeviceManager()
 
     init {
-        requestContacts()
+//        requestContacts()
     }
 
     fun requestContacts() {
@@ -57,21 +56,26 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
 
     }
 
-    fun addContacts(contacts: WmContact) {
+    fun addContacts(contact: WmContact) {
         viewModelScope.launch {
             val list = state.requestContacts()
             if (list != null) {
                 var exist = false
                 for (item in list) {
-                    if (item.number == contacts.number && item.name == contacts.name) {
+                    if (item.number == contact.number && item.name == contact.name) {
                         exist = true
                         break
                     }
                 }
                 if (!exist) {
-                    list.add(contacts)
-                    ContactsEvent.Inserted(list.size).newEvent()
-                    setContactsAction.execute()
+                    list.add(contact)
+                    runCatchingWithLog {
+                        action(list)
+                    }.onSuccess {
+                        ContactsEvent.Inserted(list.size).newEvent()
+                    }.onFailure {
+                        ContactsEvent.UpdateFail().newEvent()
+                    }
                 }
             }
         }
@@ -83,8 +87,13 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
             if (list != null) {
                 list.clear()
                 list.addAll(contacts)
-                ContactsEvent.TestAdd100().newEvent()
-                setContactsAction.execute()
+                runCatchingWithLog {
+                    action(list)
+                }.onSuccess {
+                    ContactsEvent.Update100Success().newEvent()
+                }.onFailure {
+                    ContactsEvent.UpdateFail().newEvent()
+                }
             }
         }
     }
@@ -97,8 +106,13 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
             val list = state.requestContacts()
             if (list != null && position < list.size) {
                 list.removeAt(position)
-                ContactsEvent.Removed(position).newEvent()
-                setContactsAction.execute()
+                runCatchingWithLog {
+                    action(list)
+                }.onSuccess {
+                    ContactsEvent.Removed(position).newEvent()
+                }.onFailure {
+                    ContactsEvent.UpdateFail().newEvent()
+                }
             }
         }
     }
@@ -110,13 +124,8 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         }
     }
 
-    val setContactsAction = object : SingleAsyncAction<Unit>(
-        viewModelScope,
-        Uninitialized
-    ) {
-        override suspend fun action() {
-            state.requestContacts()
-                ?.let { UNIWatchMate.wmApps.appContact.updateContactList(it).await() }
-        }
+    suspend fun action(list: ArrayList<WmContact>) {
+        val result = UNIWatchMate.wmApps.appContact.updateContactList(list).await()
+        Timber.i("setContactsAction result=$result ")
     }
 }
