@@ -37,7 +37,7 @@ class AppLanguage(val sjUniWatch: SJUniWatch) : AbAppLanguage() {
         }
     }
 
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean,nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 

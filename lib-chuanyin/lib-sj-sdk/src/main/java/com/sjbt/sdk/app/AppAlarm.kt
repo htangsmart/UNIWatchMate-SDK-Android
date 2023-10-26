@@ -6,6 +6,7 @@ import com.base.sdk.entity.apps.WmAlarm
 import com.base.sdk.port.app.AbAppAlarm
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.Observable
@@ -43,7 +44,7 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             observeAlarmListEmitter?.onNext(it)
         }
     }
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 

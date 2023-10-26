@@ -7,6 +7,7 @@ import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.app.AbAppWeather
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SIX_DAYS
@@ -101,7 +102,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         }
     }
 
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 

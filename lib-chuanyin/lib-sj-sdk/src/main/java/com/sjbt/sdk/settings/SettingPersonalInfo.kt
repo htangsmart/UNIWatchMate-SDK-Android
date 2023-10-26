@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmPersonalInfo
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_0
@@ -38,7 +39,7 @@ class SettingPersonalInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalIn
         }
     }
 
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 

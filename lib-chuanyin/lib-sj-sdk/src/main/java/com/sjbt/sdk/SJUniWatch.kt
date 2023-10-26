@@ -1114,23 +1114,23 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_SETTING_PERSONAL -> {//健康信息
-                            settingPersonalInfo.onTimeOut(it)
+                            settingPersonalInfo.onTimeOut(msgBean, it)
                         }
 
                         URN_SETTING_UNIT -> {//单位同步
-                            settingUnitInfo.unitInfoBusiness(it)
+                            settingUnitInfo.onTimeOut(msgBean, it)
                         }
 
                         URN_SETTING_LANGUAGE -> {//语言设置
-                            appLanguage.languageBusiness(it, msgBean)
+                            appLanguage.onTimeOut(msgBean, it)
                         }
 
                         URN_SETTING_SEDENTARY -> {//久坐提醒
-                            settingSedentaryReminder.sedentaryReminderBusiness(it)
+                            settingSedentaryReminder.onTimeOut(msgBean, it)
                         }
 
                         URN_SETTING_DRINK -> {//喝水提醒
-                            settingDrinkWaterReminder.drinkWaterBusiness(it)
+                            settingDrinkWaterReminder.onTimeOut(msgBean, it)
                         }
 
                         URN_SETTING_DATE_TIME -> {//时间同步
@@ -1160,7 +1160,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                     when (it.urn[1]) {
                         URN_APP_ALARM -> {
-                            appAlarm.alarmBusiness(it)
+                            appAlarm.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_SPORT -> {
@@ -1170,16 +1170,20 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_CONTACT -> {
-                            appContact.contactBusiness(payloadPackage, it, msgBean!!)
+                            appContact.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_WEATHER -> {
 
-                            appWeather.weatherBusiness(it)
+                            appWeather.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_RATE -> {
 
+                        }
+
+                        URN_APP_FIND_DEVICE, URN_APP_FIND_PHONE -> {
+                            appFind.onTimeOut(msgBean, it)
                         }
                     }
                 }
@@ -1187,11 +1191,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 URN_APP_CONTROL -> {
                     when (it.urn[1]) {
                         URN_APP_FIND_PHONE, URN_APP_FIND_DEVICE -> {
-                            appFind.appFindBusiness(it)
+                            appFind.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_MUSIC_CONTROL -> {
-                            appMusicControl.musicControlBusiness(it)
+                            appMusicControl.onTimeOut(msgBean, it)
                         }
                     }
                 }

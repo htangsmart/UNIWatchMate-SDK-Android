@@ -3,6 +3,7 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.port.app.AbAppMusicControl
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import io.reactivex.rxjava3.subjects.PublishSubject
 
@@ -16,7 +17,7 @@ class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
 
     override var observableMusicControl: PublishSubject<WmMusicControlType> = musicControlSub
 
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 

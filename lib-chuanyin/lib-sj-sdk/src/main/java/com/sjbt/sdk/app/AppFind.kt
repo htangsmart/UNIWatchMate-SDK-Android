@@ -4,6 +4,7 @@ import com.base.sdk.entity.apps.WmFind
 import com.base.sdk.port.app.AbAppFind
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
@@ -17,7 +18,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
     private var startFindWatchEmitter: SingleEmitter<Boolean>? = null
     private var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
-    var stopFindMobileEmitter :SingleEmitter<Boolean>?= null
+    var stopFindMobileEmitter: SingleEmitter<Boolean>? = null
     private val TAG = "AppFind"
 
     override fun isSupport(): Boolean {
@@ -57,35 +58,61 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStopFindDevice())
         }
     }
-    fun onTimeOut(nodeData: NodeData) {
-        TODO("Not yet implemented")
-    }
 
-    fun appFindBusiness(it: NodeData) {
-
-        when (it.urn[1]) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
+        when (nodeData.urn[1]) {
             URN_APP_FIND_DEVICE -> {
-                when (it.urn[2]) {
+                when (nodeData.urn[2]) {
 
                     URN_APP_FIND_DEVICE_START -> {
-                        val startResult = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                        startFindWatchEmitter?.onSuccess(false)
+                    }
+
+                    URN_APP_FIND_DEVICE_STOP -> {
+                        stopFindWatchEmitter?.onSuccess(false)
+                    }
+                }
+            }
+
+            URN_APP_FIND_PHONE -> {
+                when (nodeData.urn[2]) {
+                    URN_APP_FIND_PHONE_START -> {
+
+                    }
+
+                    URN_APP_FIND_PHONE_STOP -> {
+                        stopFindMobileEmitter?.onSuccess(false)
+                    }
+                }
+            }
+        }
+    }
+
+    fun appFindBusiness(nodeData: NodeData) {
+
+        when (nodeData.urn[1]) {
+            URN_APP_FIND_DEVICE -> {
+                when (nodeData.urn[2]) {
+
+                    URN_APP_FIND_DEVICE_START -> {
+                        val startResult = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                         startFindWatchEmitter?.onSuccess(startResult)
                     }
 
                     URN_APP_FIND_DEVICE_STOP -> {
-                        val stopResult = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                        val stopResult = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                         stopFindWatchEmitter?.onSuccess(stopResult)
                     }
                 }
             }
 
             URN_APP_FIND_PHONE -> {
-                when (it.urn[2]) {
+                when (nodeData.urn[2]) {
                     URN_APP_FIND_PHONE_START -> {
                         val byteBuffer =
-                            ByteBuffer.wrap(it.data)
+                            ByteBuffer.wrap(nodeData.data)
                         val count = byteBuffer.get().toInt()
-                        val timeSeconds = BtUtils.byte2short(it.data.copyOfRange(1, 3)).toInt()
+                        val timeSeconds = BtUtils.byte2short(nodeData.data.copyOfRange(1, 3)).toInt()
                         val wmFind = WmFind(count, timeSeconds)
                         sjUniWatch.wmLog.logD(TAG, "findMobile: $wmFind")
                         observeFindMobile.onNext(wmFind)
@@ -93,7 +120,6 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
                     URN_APP_FIND_PHONE_STOP -> {
                         stopFindMobileEmitter?.onSuccess(true)
-
                         mObserveStopFindMobile.onNext(true)
                     }
                 }

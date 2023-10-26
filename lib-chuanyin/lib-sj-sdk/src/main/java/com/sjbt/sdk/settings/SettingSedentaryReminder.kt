@@ -6,6 +6,7 @@ import com.base.sdk.entity.data.WmTimeRange
 import com.base.sdk.entity.settings.WmSedentaryReminder
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_0
@@ -47,7 +48,7 @@ class SettingSedentaryReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSeden
         })
     }
 
-    fun onTimeOut(nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 
