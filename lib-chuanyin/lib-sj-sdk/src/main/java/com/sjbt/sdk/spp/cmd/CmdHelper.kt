@@ -1521,7 +1521,7 @@ object CmdHelper {
 //            }
 //        }
 
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25 * totalAlarms.size + 5)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25 * totalAlarms.size)
 
         totalAlarms.forEach { alarm ->
             byteBuffer.put(0)
