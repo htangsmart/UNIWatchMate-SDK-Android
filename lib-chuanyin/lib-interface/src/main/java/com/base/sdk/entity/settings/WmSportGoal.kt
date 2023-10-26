@@ -9,11 +9,11 @@ data class WmSportGoal(
      */
     val steps: Int,
     /**
-     * Calories(卡路里)
+     * Calories(卡路里 卡)
      */
     val calories: Int,
     /**
-     * Distance(距离)
+     * Distance(距离（米）)
      */
     val distance: Int,
     /**

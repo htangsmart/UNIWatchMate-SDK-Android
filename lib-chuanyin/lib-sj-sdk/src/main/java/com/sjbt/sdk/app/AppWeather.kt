@@ -103,7 +103,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
     }
 
     fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
-        TODO("Not yet implemented")
+        sjUniWatch.wmLog.logE(TAG, "msg time out:" + msgBean)
     }
 
     private val requestWeather: PublishSubject<WmWeatherRequest> = PublishSubject.create()

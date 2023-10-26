@@ -11,14 +11,6 @@ data class WmDateTime(
      */
     val timeZone: String?,
     /**
-     * The time format, 12-hour or 24-hour
-     */
-    val timeFormat: WmUnitInfo.TimeFormat?,
-    /**
-     * The date format
-     */
-    val dateFormat: WmUnitInfo.DateFormat?,
-    /**
      * The timestamp, the milliseconds since January 1, 1970, 00:00:00 GMT. Optional.
      */
     val timestamp: Long?,
@@ -32,6 +24,6 @@ data class WmDateTime(
     val currentDate: String?
 ) {
     override fun toString(): String {
-        return "WmDateTime(timeZone='$timeZone', timeFormat=$timeFormat, dateFormat=$dateFormat, timestamp=$timestamp, currentTime='$currentTime', currentDate='$currentDate')"
+        return "WmDateTime(timeZone='$timeZone', timestamp=$timestamp, currentTime='$currentTime', currentDate='$currentDate')"
     }
 }

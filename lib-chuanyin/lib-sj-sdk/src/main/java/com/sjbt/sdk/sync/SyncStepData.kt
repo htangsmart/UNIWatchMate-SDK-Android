@@ -5,10 +5,7 @@ import com.base.sdk.port.sync.AbSyncData
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
-import com.sjbt.sdk.entity.PayloadPackage
-import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.CmdHelper.getReadSportSyncData
-import com.sjbt.sdk.spp.cmd.URN_SPORT
 import com.sjbt.sdk.spp.cmd.URN_SPORT_STEP
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter

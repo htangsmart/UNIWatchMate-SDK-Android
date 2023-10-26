@@ -622,7 +622,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                             parseResponseNodePayload(msgBean, payloadPackage)
                                         } else {//分包消息
 
-
                                             if (msgBean.divideType == DIVIDE_Y_F_2) {
                                                 val payloadPackage =
                                                     PayloadPackage.fromByteArray(msgBean.payload)
@@ -1156,7 +1155,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
 
-                URN_APP -> {//应用
+                URN_APP_SETTING -> {//应用
 
                     when (it.urn[1]) {
                         URN_APP_ALARM -> {
@@ -1164,9 +1163,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_SPORT -> {
-                            when (it.urn[2]) {
-
-                            }
+                            appSport.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_CONTACT -> {
@@ -1174,12 +1171,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_WEATHER -> {
-
                             appWeather.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_RATE -> {
-
+                            settingHeartRateAlerts.onTimeOut(msgBean, it)
                         }
 
                         URN_APP_FIND_DEVICE, URN_APP_FIND_PHONE -> {
@@ -1200,7 +1196,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
 
-                URN_SPORT -> {//运动同步
+                URN_SPORT_DATA -> {//运动同步
                 }
             }
         }
@@ -1264,7 +1260,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
 
-                URN_APP -> {//应用
+                URN_APP_SETTING -> {//应用
 
                     when (it.urn[1]) {
                         URN_APP_ALARM -> {
@@ -1282,12 +1278,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_WEATHER -> {
-
                             appWeather.weatherBusiness(it)
                         }
 
                         URN_APP_RATE -> {
-
+                            settingHeartRateAlerts.settingHeartRateBusiness(it)
                         }
                     }
                 }
@@ -1304,7 +1299,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
 
-                URN_SPORT -> {//运动同步
+                URN_SPORT_DATA -> {//运动同步
                 }
             }
         }

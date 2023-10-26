@@ -1835,7 +1835,7 @@ object CmdHelper {
         }
 
         payloadPackage.putData(
-            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_TODAY),
+            getUrnId(URN_APP_SETTING, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_TODAY),
             byteBuffer.array()
         )
 
@@ -1927,7 +1927,7 @@ object CmdHelper {
         }
 
         payloadPackage.putData(
-            getUrnId(URN_APP, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_SIX_DAYS),
+            getUrnId(URN_APP_SETTING, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_SIX_DAYS),
             byteBuffer.array()
         )
 
@@ -1941,7 +1941,7 @@ object CmdHelper {
         val payloadPackage = PayloadPackage()
 
         payloadPackage.putData(
-            CmdHelper.getUrnId(URN_SPORT, childUrn, grandSon),
+            CmdHelper.getUrnId(URN_SPORT_DATA, childUrn, grandSon),
             ByteArray(0)
         )
 

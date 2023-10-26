@@ -26,13 +26,15 @@ class WmHeartRateAlerts(
     val age: Int
 ) {
     constructor(age: Int) : this(
-        false, DEFAULT_MAX_HEART_RATE, HeartRateThresholdAlert(), HeartRateThresholdAlert(), age)
+        false, DEFAULT_MAX_HEART_RATE, HeartRateThresholdAlert(), HeartRateThresholdAlert(), age
+    )
 
     companion object {
         /**
          * Default max heart rate(默认最大心率)
          */
         const val DEFAULT_MAX_HEART_RATE = 200
+
         /**
          * Heart rate thresholds, 0  (心率阈值列表，0表示关闭)
          */
@@ -43,7 +45,8 @@ class WmHeartRateAlerts(
 
     // 内部类，用于表示心率过高提醒的设置
     data class HeartRateThresholdAlert(
-        var threshold: Int = THRESHOLDS[0]  // 默认值为阈值列表的第一个值
+        var threshold: Int = THRESHOLDS[0],  // 默认值为阈值列表的第一个值
+        var isEnable: Boolean = false
     )
 
     init {

@@ -18,6 +18,6 @@ class SJSettings(val sjUniWatch: SJUniWatch) : AbWmSettings() {
     override val settingAppView: AbWmSetting<WmAppView> = SettingAppView(sjUniWatch)
     override val settingDrinkWater: AbWmSetting<WmSedentaryReminder> =
         SettingDrinkWaterReminder(sjUniWatch)
-    override val settingHeartRate: AbWmSetting<WmHeartRateAlerts> = SettingHeartRateAlerts()
+    override val settingHeartRate: AbWmSetting<WmHeartRateAlerts> = SettingHeartRateAlerts(sjUniWatch)
     override val settingSleepSettings: AbWmSetting<WmSleepSettings> = SettingSleepSet(sjUniWatch)
 }

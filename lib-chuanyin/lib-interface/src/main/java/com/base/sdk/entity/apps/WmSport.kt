@@ -5,7 +5,7 @@ package com.base.sdk.entity.apps
  * type 可以作为二级分类标识
  * buildIn 是否内置运动
  */
-data class WmSport(val id: Int, val type: Int,val buildIn:Boolean) {
+data class WmSport(val id: Int, val type: Int, val buildIn: Boolean) {
     override fun toString(): String {
         return "WmSport(id=$id, type=$type, buildIn=$buildIn)"
     }

@@ -152,7 +152,6 @@ const val URN_H: Byte = 'H'.code.toByte()
 const val URN_CONNECT: Byte = URN_1
 const val URN_SETTING: Byte = URN_2
 const val URN_SETTING_SPORT: Byte = URN_1
-const val URN_SETTING_SPORT_STEP: Byte = URN_1
 const val URN_SETTING_PERSONAL: Byte = URN_2
 const val URN_SETTING_UNIT: Byte = URN_3
 const val URN_SETTING_LANGUAGE: Byte = URN_4
@@ -167,14 +166,12 @@ const val URN_SETTING_ARM: Byte = URN_9
 const val URN_SETTING_APP_VIEW: Byte = URN_A
 const val URN_SETTING_DEVICE_INFO: Byte = URN_B
 
-const val URN_APP: Byte = URN_4
+const val URN_APP_SETTING: Byte = URN_4
 const val URN_APP_ALARM: Byte = URN_1
-//const val URN_APP_ALARM_ADD: Byte = URN_2
 const val URN_APP_ALARM_LIST: Byte = URN_1
-//const val URN_APP_ALARM_UPDATE: Byte = URN_3
-//const val URN_APP_ALARM_DELETE: Byte = URN_4
 
 const val URN_APP_SPORT: Byte = URN_2
+const val URN_APP_SPORT_LIST: Byte = URN_1
 
 const val URN_APP_CONTACT: Byte = URN_3
 const val URN_APP_CONTACT_COUNT: Byte = URN_1
@@ -184,8 +181,8 @@ const val URN_APP_CONTACT_EMERGENCY: Byte = URN_3
 const val URN_APP_WEATHER: Byte = URN_4
 const val URN_APP_WEATHER_PUSH_TODAY: Byte = URN_1
 const val URN_APP_WEATHER_PUSH_SIX_DAYS: Byte = URN_2
-const val URN_APP_RATE: Byte = URN_5
 
+const val URN_APP_RATE: Byte = URN_5
 
 const val URN_APP_CONTROL: Byte = URN_5
 
@@ -199,7 +196,7 @@ const val URN_APP_FIND_DEVICE_STOP: Byte = URN_2
 
 const val URN_APP_MUSIC_CONTROL: Byte = URN_4
 
-const val URN_SPORT: Byte = URN_6
+const val URN_SPORT_DATA: Byte = URN_6
 const val URN_SPORT_STEP: Byte = URN_1
 const val URN_SPORT_CALORIES: Byte = URN_2
 const val URN_SPORT_ACTIVITY_LEN: Byte = URN_3

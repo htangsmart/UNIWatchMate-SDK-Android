@@ -11,9 +11,7 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 
 data class SportState(
@@ -88,7 +86,7 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
             val sports = state.requestSports()
             if (sports != null) {
                 runCatchingWithLog {
-                    UNIWatchMate.wmApps.appSport.sortFixedSportList(sports).await()
+                    UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
 
                 }.onFailure {
