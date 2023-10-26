@@ -5,6 +5,7 @@ import com.sjbt.sdk.sample.di.internal.SingleInstance
 import com.sjbt.sdk.sample.base.storage.InternalStorage
 import com.sjbt.sdk.sample.data.auth.AuthManager
 import com.sjbt.sdk.sample.data.device.DeviceManager
+import com.sjbt.sdk.sample.data.device.SyncDataRepository
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance
 import com.sjbt.sdk.sample.data.user.UserInfoRepository
 import kotlinx.coroutines.CoroutineScope
@@ -73,8 +74,8 @@ object Injector {
     fun getExerciseGoalRepository(): SportGoalRepository {
         return SingleInstance.sportGoalRepository
     }
-//
-//    fun getSyncDataRepository(): SyncDataRepository {
-//        return SingleInstance.syncDataRepository
-//    }
+
+    fun getSyncDataRepository(): SyncDataRepository {
+        return SingleInstance.syncDataRepository
+    }
 }

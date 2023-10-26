@@ -153,7 +153,7 @@ class MyApplication : Application() {
                         topActivity.showFindPhoneDialogWithCallback(
                             getString(R.string.ds_find_phone_found),
                             getString(R.string.ds_find_phone_stop)
-                        ) {
+                        ) {//if Synchronizing data
                             applicationScope.launch {
                                 val result = UNIWatchMate.wmApps.appFind.stopFindMobile().await()
                                 ToastUtil.showToast("reply observeFindMobile result: $result", true)
