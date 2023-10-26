@@ -2,12 +2,18 @@ package com.sjbt.sdk.sync
 
 import com.base.sdk.entity.data.WmStepData
 import com.base.sdk.port.sync.AbSyncData
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.PayloadPackage
+import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.CmdHelper.getReadSportSyncData
+import com.sjbt.sdk.spp.cmd.URN_SPORT
+import com.sjbt.sdk.spp.cmd.URN_SPORT_STEP
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncStepData : AbSyncData<List<WmStepData>>() {
+class SyncStepData(val sjUniWatch: SJUniWatch) : AbSyncData<List<WmStepData>>() {
 
     var isActionSupport: Boolean = true
     var lastSyncTime: Long = 0
@@ -22,11 +28,15 @@ class SyncStepData : AbSyncData<List<WmStepData>>() {
     }
 
     override fun syncData(startTime: Long): Single<List<WmStepData>> {
-        return Single.create { emitter -> activityObserveEmitter = emitter }
+        return Single.create { emitter ->
+            activityObserveEmitter = emitter
+            sjUniWatch.sendReadSubPkObserveNode(getReadSportSyncData(URN_SPORT_STEP))
+        }
     }
 
     override var observeSyncData: Observable<List<WmStepData>> =
         Observable.create { emitter -> observeChangeEmitter = emitter }
+
 
 
 }

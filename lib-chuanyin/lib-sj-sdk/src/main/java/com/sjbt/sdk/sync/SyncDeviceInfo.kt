@@ -6,12 +6,11 @@ import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
-class SyncDeviceInfo(uniWatch: SJUniWatch) : AbSyncData<WmDeviceInfo>() {
+class SyncDeviceInfo(val sjUniWatch: SJUniWatch) : AbSyncData<WmDeviceInfo>() {
 
     var deviceEmitter: SingleEmitter<WmDeviceInfo>? = null
     var observeDeviceEmitter: ObservableEmitter<WmDeviceInfo>? = null
     private var lastSyncTime: Long = 0
-    private var uniWatch = uniWatch
 
     override fun isSupport(): Boolean {
         return true
@@ -33,7 +32,7 @@ class SyncDeviceInfo(uniWatch: SJUniWatch) : AbSyncData<WmDeviceInfo>() {
      * @param
      */
     private fun getBasicInfo() {
-        uniWatch.sendNormalMsg(CmdHelper.baseInfoCmd)
+        sjUniWatch.sendNormalMsg(CmdHelper.baseInfoCmd)
     }
 
     override var observeSyncData: Observable<WmDeviceInfo> =

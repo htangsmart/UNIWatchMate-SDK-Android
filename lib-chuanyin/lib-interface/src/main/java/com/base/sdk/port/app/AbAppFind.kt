@@ -29,7 +29,7 @@ abstract class AbAppFind : IWmSupport {
     /**
      * stop find mobile(停止查找手机,上报给手表)
      */
-    abstract fun stopFindMobile(): Observable<Boolean>
+    abstract fun stopFindMobile(): Single<Boolean>
 
     /**
      * find watch(查找手表)

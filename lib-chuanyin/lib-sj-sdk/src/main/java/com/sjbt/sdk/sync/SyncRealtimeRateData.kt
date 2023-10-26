@@ -2,12 +2,17 @@ package com.sjbt.sdk.sync
 
 import com.base.sdk.entity.data.WmRealtimeRateData
 import com.base.sdk.port.sync.AbSyncData
+import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.spp.cmd.CmdHelper
+import com.sjbt.sdk.spp.cmd.URN_SPORT_RATE
+import com.sjbt.sdk.spp.cmd.URN_SPORT_RATE_REALTIME
+import com.sjbt.sdk.spp.cmd.URN_SPORT_SLEEP
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
-class SyncRealtimeRateData : AbSyncData<List<WmRealtimeRateData>>() {
+class SyncRealtimeRateData(val sjUniWatch: SJUniWatch) : AbSyncData<List<WmRealtimeRateData>>() {
 
     var isActionSupport: Boolean = true
     var lastSyncTime: Long = 0
@@ -22,7 +27,12 @@ class SyncRealtimeRateData : AbSyncData<List<WmRealtimeRateData>>() {
     }
 
     override fun syncData(startTime: Long): Single<List<WmRealtimeRateData>> {
-        return Single.create { emitter -> activityObserveEmitter = emitter }
+
+        return Single.create { emitter ->
+            activityObserveEmitter = emitter
+            sjUniWatch.sendReadSubPkObserveNode(CmdHelper.getReadSportSyncData(URN_SPORT_RATE,
+                URN_SPORT_RATE_REALTIME))
+        }
     }
 
     override var observeSyncData: Observable<List<WmRealtimeRateData>> =

@@ -32,7 +32,6 @@ class SyncBatteryInfo(val sjUniWatch: SJUniWatch) : AbSyncData<WmBatteryInfo>() 
 
     /**
      * 获取电池信息
-     * @param batteryInfoListener
      */
     private fun getBatteryInfo() {
         sjUniWatch.sendNormalMsg(CmdHelper.batteryInfo)

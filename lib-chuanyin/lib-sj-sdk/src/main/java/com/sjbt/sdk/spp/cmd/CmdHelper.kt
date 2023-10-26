@@ -1935,6 +1935,20 @@ object CmdHelper {
     }
 
     /**
+     * 获取运动数据
+     */
+    fun getReadSportSyncData(childUrn: Byte, grandSon: Byte = URN_0): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+
+        payloadPackage.putData(
+            CmdHelper.getUrnId(URN_SPORT, childUrn, grandSon),
+            ByteArray(0)
+        )
+
+        return payloadPackage
+    }
+
+    /**
      * 获取MTU
      *
      * @return

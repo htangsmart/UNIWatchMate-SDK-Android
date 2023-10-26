@@ -25,13 +25,16 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
     private val findMobile = PublishSubject.create<WmFind>()
     private val mObserveStopFindMobile = PublishSubject.create<Any>()
-    private val stopFindMobile = PublishSubject.create<Boolean>()
+    var stopFindMobile :SingleEmitter<Boolean>?= null
     private val mObserveStopFindWatch = PublishSubject.create<Any>()
     override val observeFindMobile: PublishSubject<WmFind> = findMobile
 
-    override fun stopFindMobile(): Observable<Boolean> {
-        sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStopFindMobile())
-        return stopFindMobile
+    override fun stopFindMobile(): Single<Boolean> {
+
+        return Single.create {
+            sjUniWatch.sendWriteNodeCmdList(CmdHelper.getExecuteStopFindMobile())
+            stopFindMobile = it
+        }
     }
 
     override fun findWatch(wmFind: WmFind): Single<Boolean> {
