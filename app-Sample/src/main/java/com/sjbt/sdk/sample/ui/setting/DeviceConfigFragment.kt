@@ -27,7 +27,6 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewBind.itemNotification.setOnClickListener(blockClick)
         viewBind.itemUnitConfig.setOnClickListener(blockClick)
         viewBind.itemSedentary.setOnClickListener(blockClick)
         viewBind.itemDrinkWater.setOnClickListener(blockClick)
@@ -87,10 +86,6 @@ class DeviceConfigFragment : BaseFragment(R.layout.fragment_device_config) {
 
             viewBind.itemHeartRate -> {
                 findNavController().navigate(DeviceConfigFragmentDirections.toHeartRate())
-            }
-
-            viewBind.itemNotification -> {
-                findNavController().navigate(DeviceConfigFragmentDirections.toNotificationConfig())
             }
 
             viewBind.itemSleep -> {

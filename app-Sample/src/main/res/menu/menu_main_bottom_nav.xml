@@ -17,7 +17,7 @@
     <item
         android:id="@+id/combineFragment"
         android:icon="@mipmap/ic_combine_black_18dp"
-        android:title="@string/module_combine"
+        android:title="@string/module_user"
         app:showAsAction="ifRoom" />
 
 </menu>

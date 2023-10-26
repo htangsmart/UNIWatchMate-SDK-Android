@@ -68,7 +68,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         promptToast.showInfo(R.string.ds_sport_installed)
                     } else {
                         promptProgress.showProgress(getString(R.string.ds_sport_installing))
-                        sportLibraryViewModel.installContactContain(pos)
+                        sportInstalledViewModel.installContactContain(pos, packet)
                     }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
@@ -92,7 +92,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         }
 
                         is Success -> {
-                            wmIntalledSports=state.requestSports()
+                            wmIntalledSports = state.requestSports()
                             sportLibraryViewModel.requestLibrarySports(state.requestSports())
 
                         }
@@ -133,18 +133,13 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         is SportEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
-                    }
-                }
-            }
-            launch {
-                sportLibraryViewModel.flowEvent.collect { event ->
-                    when (event) {
-                        is SportLibraryEvent.SportInstallSuccess -> {
+
+                        is SportEvent.SportInstallSuccess -> {
                             promptProgress.dismiss()
                             adapter.notifyItemChanged(event.position)
                         }
 
-                        is SportLibraryEvent.SportInstallFail -> {
+                        is SportEvent.SportInstallFail -> {
                             promptProgress.dismiss()
                             ToastUtil.showToast(event.msg)
                         }
@@ -161,8 +156,7 @@ data class SportLibraryState(
 
 sealed class SportLibraryEvent {
     class RequestFail(val throwable: Throwable) : SportLibraryEvent()
-    class SportInstallSuccess(val position: Int) : SportLibraryEvent()
-    class SportInstallFail(val msg: String) : SportLibraryEvent()
+
 }
 
 /**
@@ -206,23 +200,6 @@ class SportLibraryViewModel(
             }
         }
         return localSportLibrary.sports
-    }
-
-    fun installContactContain(position: Int) {
-        viewModelScope.launch {
-            val localSport = state.requestSports()?.get(position)
-            localSport?.let {
-                val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
-                runCatchingWithLog {
-                    val result = UNIWatchMate.wmApps.appSport.addSport(wmSport).await()
-                }.onSuccess {
-                    localSport.installed = true
-                    SportLibraryEvent.SportInstallSuccess(position)
-                }.onFailure {
-                    SportLibraryEvent.SportInstallFail(it.toString()).newEvent()
-                }
-            }
-        }
     }
 
 }

@@ -9,6 +9,7 @@ import com.sjbt.sdk.sample.base.Loading
 import com.sjbt.sdk.sample.base.StateEventViewModel
 import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
+import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.launch
@@ -22,6 +23,9 @@ sealed class SportEvent {
     class RequestFail(val throwable: Throwable) : SportEvent()
 
     class DialRemoved(val position: Int) : SportEvent()
+
+    class SportInstallSuccess(val position: Int) : SportEvent()
+    class SportInstallFail(val msg: String) : SportEvent()
 }
 
 class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(SportState()) {
@@ -40,13 +44,13 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
 //
 //            }
             runCatchingWithLog {
-//                UNIWatchMate.wmApps.appSport.syncSportList.awaitFirst()
-                val mutableList = mutableListOf<WmSport>()
-                for (index in 0..19) {
-                    val sport = WmSport(index, 1, index < 8)
-                    mutableList.add(sport)
-                }
-                mutableList
+                UNIWatchMate.wmApps.appSport.getSportList.await()
+//                val mutableList = mutableListOf<WmSport>()
+//                for (index in 0..19) {
+//                    val sport = WmSport(index, 1, index < 8)
+//                    mutableList.add(sport)
+//                }
+//                mutableList
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestSports = Success(it)).newState()
@@ -67,11 +71,12 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
     fun deleteSport(position: Int) {
         viewModelScope.launch {
             val sports = state.requestSports()
-            if (sports != null && position < sports.size) {
+
+            if (sports != null && position+8 < sports.size) {
+                sports.removeAt(position+8)
                 runCatchingWithLog {
-                    UNIWatchMate.wmApps.appSport.deleteSport(sports[position]).await()
+                    UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
-                    sports.removeAt(position)
                     SportEvent.DialRemoved(position).newEvent()
                 }.onFailure {
                     ToastUtil.showToast(it.message)
@@ -91,6 +96,25 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
 
                 }.onFailure {
                     ToastUtil.showToast(it.message)
+                }
+            }
+        }
+    }
+
+    fun installContactContain(position:Int,localSport: LocalSportLibrary.LocalSport) {
+        viewModelScope.launch {
+            val wmSports = state.requestSports()
+            wmSports?.let {
+                val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
+                wmSports.add(wmSport)
+                runCatchingWithLog {
+                    val result = UNIWatchMate.wmApps.appSport.updateSportList(wmSports).await()
+                }.onSuccess {
+                    localSport.installed = true
+                    SportEvent.SportInstallSuccess(position).newEvent()
+                }.onFailure {
+                    wmSports.removeAt(wmSports.size-1)
+                    SportEvent.SportInstallFail(it.toString()).newEvent()
                 }
             }
         }

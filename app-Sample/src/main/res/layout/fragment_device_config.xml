@@ -13,11 +13,6 @@
         android:showDividers="middle|end">
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_notification"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_notification_config" />
-
-        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_unit_config"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_unit_config" />

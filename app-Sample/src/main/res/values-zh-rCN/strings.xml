@@ -69,7 +69,7 @@
     <string name="sync_data_failed">同步失败</string>
     <string name="sync_data_ongoing">Syncing data</string>
 
-    <string name="module_combine">结合</string>
+    <string name="module_user">用户</string>
 
     <!--Device-->
     <string name="device_module">设备</string>

@@ -82,7 +82,7 @@
     <string name="sync_data_failed">Sync fail</string>
     <string name="sync_data_ongoing">Syncing data</string>
 
-    <string name="module_combine">Combine</string>
+    <string name="module_user">User</string>
 
 
     <!--Action-->
