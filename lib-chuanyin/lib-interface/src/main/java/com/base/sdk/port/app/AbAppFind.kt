@@ -11,7 +11,7 @@ import io.reactivex.rxjava3.core.Single
 abstract class AbAppFind : IWmSupport {
 
     /**
-     * find mobile(查找手机)
+     * find mobile(监听来自手表，查找手机)
      * @return 0:连续响 其它：响铃次数
      */
     abstract val observeFindMobile : Observable<WmFind>
@@ -27,7 +27,7 @@ abstract class AbAppFind : IWmSupport {
     abstract val observeStopFindWatch: Observable<Any>
 
     /**
-     * stop find mobile(停止查找手机)
+     * stop find mobile(停止查找手机,上报给手表)
      */
     abstract fun stopFindMobile(): Observable<Boolean>
 
@@ -38,7 +38,7 @@ abstract class AbAppFind : IWmSupport {
     abstract fun findWatch(ring_count: WmFind): Single<Boolean>
 
     /**
-     * stop find watch(停止查找手表)
+     * stop find watch(停止查找手表，向手表发送命令)
      *
      * @return
      */

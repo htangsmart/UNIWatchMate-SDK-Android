@@ -1709,6 +1709,15 @@ object CmdHelper {
         return payloadPackage
     }
 
+    /**
+     * 停止查找手机
+     */
+    fun getExecuteStopFindMobile(): PayloadPackage {
+        val payloadPackage = PayloadPackage()
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(0)
+        payloadPackage.putData(getUrnId(URN_5, URN_1, URN_2), byteBuffer.array())
+        return payloadPackage
+    }
 
     /**
      * 停止查找手表

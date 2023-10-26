@@ -24,12 +24,13 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
     }
 
     private val findMobile = PublishSubject.create<WmFind>()
-    private val stopFindMobile = PublishSubject.create<Boolean>()
     private val mObserveStopFindMobile = PublishSubject.create<Any>()
+    private val stopFindMobile = PublishSubject.create<Boolean>()
     private val mObserveStopFindWatch = PublishSubject.create<Any>()
     override val observeFindMobile: PublishSubject<WmFind> = findMobile
 
     override fun stopFindMobile(): Observable<Boolean> {
+        sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStopFindMobile())
         return stopFindMobile
     }
 
@@ -73,9 +74,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
             URN_APP_FIND_PHONE -> {
                 when (it.urn[2]) {
-
                     URN_APP_FIND_PHONE_START -> {
-//                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStartFindPhone())
                         val byteBuffer =
                             ByteBuffer.wrap(it.data)
                         val count = byteBuffer.get().toInt()
@@ -86,13 +85,12 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
                     }
 
                     URN_APP_FIND_PHONE_STOP -> {
-//                        sjUniWatch.sendResponseNodeCmdList(CmdHelper.getResponseStopFindPhone())
-                        stopFindMobile.onNext(true)
+                        mObserveStopFindMobile.onNext(true)
                     }
                 }
             }
-        }
 
+        }
     }
 }
 
