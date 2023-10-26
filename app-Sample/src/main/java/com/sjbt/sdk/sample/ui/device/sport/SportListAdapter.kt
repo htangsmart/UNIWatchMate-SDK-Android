@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.base.sdk.entity.apps.WmSport
-import com.sjbt.sdk.sample.databinding.ItemSportInstalledListBinding
+import com.sjbt.sdk.sample.databinding.ItemSportInstalledBinding
 
 class SportListAdapter() :
     RecyclerView.Adapter<SportListAdapter.ItemViewHolder>() {
@@ -16,7 +16,7 @@ class SportListAdapter() :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         return ItemViewHolder(
-            ItemSportInstalledListBinding.inflate(
+            ItemSportInstalledBinding.inflate(
                 LayoutInflater.from(parent.context), parent, false
             )
         )
@@ -25,7 +25,7 @@ class SportListAdapter() :
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val sport = sources?.get(position) ?: return
 
-        holder.viewBind.tvDialId.text = sport.id.toString()
+        holder.viewBind.tvSportId.text = sport.id.toString()
         holder.viewBind.imgDelete.visibility=if(sport.buildIn) View.GONE else View.VISIBLE
         holder.viewBind.tvDialBuiltIn.visibility=if(sport.buildIn) View.VISIBLE else View.GONE
         holder.viewBind.imgDelete.setOnClickListener {
@@ -42,7 +42,7 @@ class SportListAdapter() :
         fun onItemDelete(position: Int)
     }
 
-    class ItemViewHolder(val viewBind: ItemSportInstalledListBinding) :
+    class ItemViewHolder(val viewBind: ItemSportInstalledBinding) :
         RecyclerView.ViewHolder(viewBind.root)
 
 }

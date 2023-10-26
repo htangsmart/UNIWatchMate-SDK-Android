@@ -132,7 +132,6 @@ class AlarmListFragment : BaseFragment(R.layout.fragment_alarm_list) {
 
                             viewBind.fabAdd.show()
                         }
-
                         else -> {}
                     }
                 }
