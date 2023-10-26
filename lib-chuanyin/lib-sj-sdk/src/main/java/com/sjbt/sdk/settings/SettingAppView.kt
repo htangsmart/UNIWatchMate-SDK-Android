@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmAppView
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
@@ -46,6 +47,10 @@ class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
                 sjUniWatch.sendNormalMsg(CmdHelper.appViewList)
             }
         })
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     fun setAppViewResult(isSuccess: Boolean) {

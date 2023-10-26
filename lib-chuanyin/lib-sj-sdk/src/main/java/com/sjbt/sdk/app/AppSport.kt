@@ -3,6 +3,7 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmSport
 import com.base.sdk.port.app.AbAppSport
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 
@@ -24,6 +25,10 @@ class AppSport(val sjUniWatch: SJUniWatch) : AbAppSport() {
     }
 
     override fun sortFixedSportList(list: List<WmSport>): Single<Boolean> {
+        TODO("Not yet implemented")
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
         TODO("Not yet implemented")
     }
 }

@@ -38,6 +38,10 @@ class SettingPersonalInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalIn
         }
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     fun personalInfoBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {

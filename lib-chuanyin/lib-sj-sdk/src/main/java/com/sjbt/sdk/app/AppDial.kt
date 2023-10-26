@@ -4,6 +4,7 @@ import com.base.sdk.entity.apps.WmDial
 import com.base.sdk.port.app.AbAppDial
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.DIAL_MSG_LEN
 import com.sjbt.sdk.uparser.model.JpgInfo
@@ -54,6 +55,10 @@ class AppDial(sjUniWatch: SJUniWatch) : AbAppDial() {
                 it.onError(java.lang.RuntimeException("delete fail"))
             }
         }
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     fun addDialList(msgBean: MsgBean) {

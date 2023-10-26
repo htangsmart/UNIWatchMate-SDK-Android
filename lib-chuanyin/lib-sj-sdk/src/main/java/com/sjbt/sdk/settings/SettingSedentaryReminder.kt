@@ -47,6 +47,10 @@ class SettingSedentaryReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSeden
         })
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     fun sedentaryReminderBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {

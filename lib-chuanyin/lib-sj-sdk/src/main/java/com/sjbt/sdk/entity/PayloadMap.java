@@ -2,8 +2,6 @@ package com.sjbt.sdk.entity;
 
 import android.os.Build;
 
-import com.base.sdk.entity.apps.WmCameraFrameInfo;
-
 import java.util.LinkedHashMap;
 
 public class PayloadMap extends LinkedHashMap<Short, PayloadPackage> {
@@ -26,20 +24,20 @@ public class PayloadMap extends LinkedHashMap<Short, PayloadPackage> {
         }
     }
 
-    public PayloadPackage getFrame(Short payLoadId) {
+    public PayloadPackage getPayload(Short payLoadId) {
         synchronized (this) {
             return (PayloadPackage) this.get(payLoadId);
         }
     }
 
-    public void putFrame(PayloadPackage payloadPackage) {
+    public void putPayload(PayloadPackage payloadPackage) {
         synchronized (this) {
             this.put(payloadPackage.get_id(), payloadPackage);
         }
 
     }
 
-    public void removeOldFrames(long payLoadId) {
+    public void removeOldPayloads(long payLoadId) {
         synchronized (this) {
             // 删除小于frameId的帧
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

@@ -4,6 +4,7 @@ import com.base.sdk.entity.settings.WmSportGoal
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.ErrorCode
+import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.*
@@ -22,33 +23,29 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
     }
 
     override fun observeChange(): Observable<WmSportGoal> {
-        return Observable.create(object : ObservableOnSubscribe<WmSportGoal> {
-            override fun subscribe(emitter: ObservableEmitter<WmSportGoal>) {
-                observeEmitter = emitter
-            }
-        })
+        return Observable.create { emitter -> observeEmitter = emitter }
     }
 
     override fun set(obj: WmSportGoal): Single<WmSportGoal> {
         wmSportGoal = obj
-        return Single.create(object : SingleOnSubscribe<WmSportGoal> {
-            override fun subscribe(emitter: SingleEmitter<WmSportGoal>) {
-                setEmitter = emitter
-                val payloadPackage = CmdHelper.getUpdateSportGoalAllCmd(obj)
+        return Single.create { emitter ->
+            setEmitter = emitter
+            val payloadPackage = CmdHelper.getUpdateSportGoalAllCmd(obj)
 
-                sjUniWatch.sendWriteNodeCmdList(payloadPackage)
-            }
-        })
+            sjUniWatch.sendWriteNodeCmdList(payloadPackage)
+        }
     }
 
     override fun get(): Single<WmSportGoal> {
-        return Single.create(object : SingleOnSubscribe<WmSportGoal> {
-            override fun subscribe(emitter: SingleEmitter<WmSportGoal>) {
-                getEmitter = emitter
+        return Single.create { emitter ->
+            getEmitter = emitter
 
-                sjUniWatch.sendReadNodeCmdList(CmdHelper.getDeviceSportGoalCmd())
-            }
-        })
+            sjUniWatch.sendReadNodeCmdList(CmdHelper.getDeviceSportGoalCmd())
+        }
+    }
+
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     fun sportInfoBusiness(it: NodeData) {

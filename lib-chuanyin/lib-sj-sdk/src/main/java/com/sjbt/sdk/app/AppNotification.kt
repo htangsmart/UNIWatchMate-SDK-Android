@@ -3,6 +3,7 @@ package com.sjbt.sdk.app
 import com.base.sdk.entity.apps.WmNotification
 import com.base.sdk.port.app.AbAppNotification
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
@@ -50,6 +51,9 @@ class AppNotification(sjUniWatch: SJUniWatch) : AbAppNotification() {
         "com.oppo.mms"
     )
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
 
     override fun isSupport(): Boolean {
         return true

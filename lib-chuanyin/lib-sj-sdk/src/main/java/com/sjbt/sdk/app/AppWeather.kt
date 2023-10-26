@@ -101,6 +101,10 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         }
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     private val requestWeather: PublishSubject<WmWeatherRequest> = PublishSubject.create()
 
     override val observeWeather: PublishSubject<WmWeatherRequest> = requestWeather

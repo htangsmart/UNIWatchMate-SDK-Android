@@ -2,6 +2,7 @@ package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmHeartRateAlerts
 import com.base.sdk.port.setting.AbWmSetting
+import com.sjbt.sdk.entity.NodeData
 import io.reactivex.rxjava3.core.*
 
 class SettingHeartRateAlerts: AbWmSetting<WmHeartRateAlerts>() {
@@ -35,5 +36,9 @@ class SettingHeartRateAlerts: AbWmSetting<WmHeartRateAlerts>() {
                 getEmitter = emitter
             }
         })
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 }

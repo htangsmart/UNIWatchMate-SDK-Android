@@ -125,6 +125,9 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         }
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
     private fun updateContactListBack(success: Boolean) {
         updateContactEmitter?.onSuccess(success)
     }

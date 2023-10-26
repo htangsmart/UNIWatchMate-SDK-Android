@@ -16,6 +16,10 @@ class AppMusicControl(val sjUniWatch: SJUniWatch) : AbAppMusicControl() {
 
     override var observableMusicControl: PublishSubject<WmMusicControlType> = musicControlSub
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     fun musicControlBusiness(it: NodeData) {
         when (it.data[0]) {
             WmMusicControlType.PREV_SONG.type -> {

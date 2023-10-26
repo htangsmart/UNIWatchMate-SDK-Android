@@ -3,6 +3,7 @@ package com.sjbt.sdk.sync
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.port.sync.AbSyncData
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
@@ -23,6 +24,9 @@ class SyncBatteryInfo(val sjUniWatch: SJUniWatch) : AbSyncData<WmBatteryInfo>() 
         return lastSyncTime
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
     override fun syncData(startTime: Long): Single<WmBatteryInfo> {
         return Single.create {
             batteryEmitter = it

@@ -3,6 +3,8 @@ package com.sjbt.sdk.sync
 import com.base.sdk.entity.data.WmOxygenData
 import com.base.sdk.port.sync.AbSyncData
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_SPORT_ACTIVITY_LEN
 import com.sjbt.sdk.spp.cmd.URN_SPORT_OXYGEN
@@ -24,6 +26,9 @@ class SyncOxygenData(val sjUniWatch: SJUniWatch) : AbSyncData<List<WmOxygenData>
         return lastSyncTime
     }
 
+    fun onTimeOut(msg: MsgBean, nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
     override fun syncData(startTime: Long): Single<List<WmOxygenData>> {
         return Single.create { emitter ->
             activityObserveEmitter = emitter

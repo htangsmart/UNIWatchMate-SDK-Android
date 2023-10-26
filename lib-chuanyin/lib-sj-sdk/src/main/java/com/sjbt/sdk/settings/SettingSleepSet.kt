@@ -4,6 +4,7 @@ import com.base.sdk.entity.settings.WmSleepSettings
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CMD_ID_800C
 import com.sjbt.sdk.spp.cmd.CMD_ID_800D
 import com.sjbt.sdk.spp.cmd.CMD_ID_800E
@@ -68,7 +69,11 @@ class SettingSleepSet(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSleepSettings>
         return Single.create { emitter ->
             getSleepSettingEmitter = emitter
             sjUniWatch.sendNormalMsg(CmdHelper.getSleepSetCmd)
-        };
+        }
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     fun sleepSetBusiness(msgBean: MsgBean) {

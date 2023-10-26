@@ -47,6 +47,10 @@ class SettingDrinkWaterReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSede
         })
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     fun drinkWaterBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {

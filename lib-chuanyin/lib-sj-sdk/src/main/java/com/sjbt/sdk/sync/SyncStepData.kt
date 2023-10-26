@@ -3,6 +3,8 @@ package com.sjbt.sdk.sync
 import com.base.sdk.entity.data.WmStepData
 import com.base.sdk.port.sync.AbSyncData
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.PayloadPackage
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.CmdHelper.getReadSportSyncData
@@ -25,6 +27,10 @@ class SyncStepData(val sjUniWatch: SJUniWatch) : AbSyncData<List<WmStepData>>() 
 
     override fun latestSyncTime(): Long {
         return lastSyncTime
+    }
+
+    fun onTimeOut(msg: MsgBean, nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     override fun syncData(startTime: Long): Single<List<WmStepData>> {

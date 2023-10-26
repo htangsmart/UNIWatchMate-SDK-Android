@@ -3,6 +3,8 @@ package com.sjbt.sdk.sync
 import com.base.sdk.entity.data.WmSportSummaryData
 import com.base.sdk.port.sync.AbSyncData
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_SPORT_SUMMARY
 import io.reactivex.rxjava3.core.Observable
@@ -21,6 +23,10 @@ class SyncSportSummaryData(val sjUniWatch: SJUniWatch) : AbSyncData<List<WmSport
 
     override fun latestSyncTime(): Long {
         return lastSyncTime
+    }
+
+    fun onTimeOut(msg: MsgBean, nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     override fun syncData(startTime: Long): Single<List<WmSportSummaryData>> {

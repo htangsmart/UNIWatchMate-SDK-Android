@@ -40,6 +40,10 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
         }
     }
 
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
+
     fun unitInfoBusiness(it: NodeData) {
         when (it.urn[2]) {
             URN_0 -> {

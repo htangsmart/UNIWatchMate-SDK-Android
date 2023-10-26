@@ -17,6 +17,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
     private var startFindWatchEmitter: SingleEmitter<Boolean>? = null
     private var stopFindWatchEmitter: SingleEmitter<Boolean>? = null
+    var stopFindMobileEmitter :SingleEmitter<Boolean>?= null
     private val TAG = "AppFind"
 
     override fun isSupport(): Boolean {
@@ -25,7 +26,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
     private val findMobile = PublishSubject.create<WmFind>()
     private val mObserveStopFindMobile = PublishSubject.create<Any>()
-    var stopFindMobile :SingleEmitter<Boolean>?= null
+
     private val mObserveStopFindWatch = PublishSubject.create<Any>()
     override val observeFindMobile: PublishSubject<WmFind> = findMobile
 
@@ -33,7 +34,7 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
 
         return Single.create {
             sjUniWatch.sendWriteNodeCmdList(CmdHelper.getExecuteStopFindMobile())
-            stopFindMobile = it
+            stopFindMobileEmitter = it
         }
     }
 
@@ -55,6 +56,9 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
             stopFindWatchEmitter = it
             sjUniWatch.sendExecuteNodeCmdList(CmdHelper.getExecuteStopFindDevice())
         }
+    }
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     fun appFindBusiness(it: NodeData) {
@@ -88,11 +92,12 @@ class AppFind(val sjUniWatch: SJUniWatch) : AbAppFind() {
                     }
 
                     URN_APP_FIND_PHONE_STOP -> {
+                        stopFindMobileEmitter?.onSuccess(true)
+
                         mObserveStopFindMobile.onNext(true)
                     }
                 }
             }
-
         }
     }
 }

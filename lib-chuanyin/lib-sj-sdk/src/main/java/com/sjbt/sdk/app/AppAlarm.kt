@@ -43,6 +43,9 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
             observeAlarmListEmitter?.onNext(it)
         }
     }
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
+    }
 
     fun alarmBusiness(nodeData: NodeData) {
         when (nodeData.urn[2]) {
@@ -103,18 +106,6 @@ class AppAlarm(val sjUniWatch: SJUniWatch) : AbAppAlarm() {
         }
     }
 
-    val alarmIdStates: Array<AlarmIdState> = arrayOf(
-        AlarmIdState(1, false),
-        AlarmIdState(2, false),
-        AlarmIdState(3, false),
-        AlarmIdState(4, false),
-        AlarmIdState(5, false),
-        AlarmIdState(6, false),
-        AlarmIdState(7, false),
-        AlarmIdState(8, false),
-        AlarmIdState(9, false),
-        AlarmIdState(10, false)
-    )
 
-    data class AlarmIdState(val value: Int, var used: Boolean)
+
 }

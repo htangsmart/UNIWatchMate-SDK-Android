@@ -10,6 +10,7 @@ import com.sjbt.sdk.MSG_INTERVAL_FRAME
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.H264FrameMap
 import com.sjbt.sdk.entity.MsgBean
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.utils.BtUtils
@@ -96,6 +97,10 @@ class AppCamera(val sjUniWatch: SJUniWatch) : AbAppCamera() {
 
     override fun isSupport(): Boolean {
         return true
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
     override fun openCloseCamera(open: Boolean): Single<Boolean> {

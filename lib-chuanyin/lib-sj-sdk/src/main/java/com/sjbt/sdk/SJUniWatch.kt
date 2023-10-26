@@ -590,28 +590,17 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                             when (msgBean.cmdId.toShort()) {
                                 CMD_ID_8001 -> {//请求
 
-//                                    1B000280F8001F00000000008EE800000700FFFFFFFF6480000132313030000E00000013880000010E0000005A001E
-                                    if (msgBean.payload.size > 10) {//设备应用层回复
-//                                        wmLog.logD(
-//                                            TAG,
-//                                            "应用层消息：" + msgBean.payload.size
-//                                        )
+                                    if (msgBean.payload.size > 10) {//设备请求的消息
 
                                         var payloadPackage: PayloadPackage =
                                             PayloadPackage.fromByteArray(msgBean.payload)
 
-                                        parseNodePayload(true, msgBean, payloadPackage)
-
+                                        parseResponseNodePayload(msgBean, payloadPackage)
                                     } else {//设备传输层回复
                                         wmLog.logD(
                                             TAG,
-                                            "传输层消息：" + msgBean.payload.size
+                                            "No Node Msg：" + msgBean.payload.size
                                         )
-                                        mPayloadPackage?.let {
-                                            it.itemList[0].data = msgBean.payload
-
-                                            parseNodePayload(false, msgBean, it)
-                                        }
                                     }
                                 }
 
@@ -620,24 +609,27 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     sendCommunityResponse()
 
                                     if (msgBean.payloadLen >= 10) {//设备应用层回复
-                                        wmLog.logD(TAG, "应用层消息：" + msgBean.payloadLen)
-                                        wmLog.logD(TAG, "应用层消息 DIVIDE TYPE：" + msgBean.divideType)
+                                        wmLog.logD(
+                                            TAG,
+                                            "Node Message DIVIDE TYPE：" + msgBean.divideType
+                                        )
 
                                         if (msgBean.divideType == DIVIDE_N_2) {//不分包消息
                                             subPkObservableEmitter?.onComplete()
                                             var payloadPackage: PayloadPackage =
                                                 PayloadPackage.fromByteArray(msgBean.payload)
 
-                                            parseNodePayload(true, msgBean, payloadPackage)
+                                            parseResponseNodePayload(msgBean, payloadPackage)
                                         } else {//分包消息
 
-                                            wmLog.logE(TAG, "分包类型：" + msgBean.divideType)
 
                                             if (msgBean.divideType == DIVIDE_Y_F_2) {
                                                 val payloadPackage =
                                                     PayloadPackage.fromByteArray(msgBean.payload)
 
-                                                wmLog.logE(TAG,"hasNext:"+payloadPackage.hasNext())
+                                                wmLog.logE(
+                                                    TAG, "hasNext:" + payloadPackage.hasNext()
+                                                )
 
                                                 appContact.setHasNext(payloadPackage.hasNext())
                                             }
@@ -649,13 +641,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                                     subPkObservableEmitter?.onComplete()
                                                 }
                                             }
-
                                         }
 
                                     } else {//设备传输层回复
-                                        wmLog.logD(TAG, "传输层消息：" + msgBean.payloadLen)
+                                        wmLog.logD(TAG, "No Node MSg：" + msgBean.payloadLen)
                                     }
-//                                    wmLog.logD(TAG, "响应消息：" + msgBean.payload.size)
                                 }
 
                                 CMD_ID_8003 -> {
@@ -938,6 +928,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                 }
             }
+
+            HEAD_NODE_TYPE -> {
+                when (msgBean.cmdId.toShort()) {
+                    CMD_ID_8001 -> {//请求
+                        if (msgBean.payload.size > 10) {//设备应用层回复
+
+                            var payloadPackage: PayloadPackage =
+                                PayloadPackage.fromByteArray(msgBean.payload)
+                            parseTimeOutNode(payloadPackage, msgBean)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -974,7 +977,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
      * 发送写入类型Node节点消息
      */
     fun sendWriteNodeCmdList(payloadPackage: PayloadPackage) {
-        mPayloadMap.putFrame(payloadPackage)
+        mPayloadMap.putPayload(payloadPackage)
 
         payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_WRITE).forEach {
             var payload: ByteArray = it
@@ -994,14 +997,13 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
      * 发送读取类型Node节点消息
      */
     fun sendReadNodeCmdList(payloadPackage: PayloadPackage) {
-        mPayloadMap.putFrame(payloadPackage)
+        mPayloadMap.putPayload(payloadPackage)
 
         payloadPackage.toByteArray(requestType = RequestType.REQ_TYPE_READ).forEach {
             var payload: ByteArray = it
@@ -1021,7 +1023,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1046,7 +1047,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-//        parseNodePayload(false, null, payloadPackage)
     }
 
     /**
@@ -1072,34 +1072,134 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
         mPayloadPackage = payloadPackage
 
-//        parseNodePayload(false, null, payloadPackage)
     }
 
-    private fun parseNodePayload(
-        fromDevice: Boolean, msgBean: MsgBean? = null, payloadPackage: PayloadPackage
+    private fun parseResponseNodePayload(
+        msgBean: MsgBean,
+        payloadPackage: PayloadPackage
     ) {
 
-        if (fromDevice) {
-//            if (mPayloadMap.getFrame(payloadPackage._id) != null) {
-            if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
-                wmLog.logD(TAG, "All OK:" + mPayloadMap.getFrame(payloadPackage._id).packageSeq)
+        if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type) {
+            wmLog.logD(TAG, "All OK:" + mPayloadMap.getPayload(payloadPackage._id).packageSeq)
 
-            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
-                wmLog.logD(TAG, "All Fail" + mPayloadMap.getFrame(payloadPackage._id).packageSeq)
+        } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_FAIL.type) {
+            wmLog.logD(TAG, "All Fail" + mPayloadMap.getPayload(payloadPackage._id).packageSeq)
 
-            } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type
-                || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type
-                || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type
-            ) {
-
-                wmLog.logD(TAG, "Each node msg")
-                parseResponseEachNode(payloadPackage, msgBean)
-            }
-
-        } else {
-//            parseResponseEachNode(payloadPackage, msgBean)
+        } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type
+            || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type
+            || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type
+        ) {
+            wmLog.logD(TAG, "Each node msg")
+            parseResponseEachNode(payloadPackage, msgBean)
         }
 
+    }
+
+    /**
+     * 解析超时的节点消息
+     */
+    private fun parseTimeOutNode(
+        payloadPackage: PayloadPackage, msgBean: MsgBean
+    ) {
+        payloadPackage.itemList.forEach {
+            when (it.urn[0]) {
+                URN_CONNECT -> {//蓝牙连接 暂用旧协议格式
+
+                }
+
+                URN_SETTING -> {//设置同步
+                    when (it.urn[1]) {
+                        URN_SETTING_SPORT -> {//运动目标
+                            settingSportGoal.onTimeOut(msgBean, it)
+                        }
+
+                        URN_SETTING_PERSONAL -> {//健康信息
+                            settingPersonalInfo.onTimeOut(it)
+                        }
+
+                        URN_SETTING_UNIT -> {//单位同步
+                            settingUnitInfo.unitInfoBusiness(it)
+                        }
+
+                        URN_SETTING_LANGUAGE -> {//语言设置
+                            appLanguage.languageBusiness(it, msgBean)
+                        }
+
+                        URN_SETTING_SEDENTARY -> {//久坐提醒
+                            settingSedentaryReminder.sedentaryReminderBusiness(it)
+                        }
+
+                        URN_SETTING_DRINK -> {//喝水提醒
+                            settingDrinkWaterReminder.drinkWaterBusiness(it)
+                        }
+
+                        URN_SETTING_DATE_TIME -> {//时间同步
+
+                        }
+
+                        URN_SETTING_SOUND -> {//声音和触感
+
+                        }
+
+                        URN_SETTING_ARM -> {//抬腕亮屏
+
+                        }
+
+                        URN_SETTING_APP_VIEW -> {//AppView
+
+                        }
+
+                        URN_SETTING_DEVICE_INFO -> {//DeviceInfo
+
+                        }
+
+                    }
+                }
+
+                URN_APP -> {//应用
+
+                    when (it.urn[1]) {
+                        URN_APP_ALARM -> {
+                            appAlarm.alarmBusiness(it)
+                        }
+
+                        URN_APP_SPORT -> {
+                            when (it.urn[2]) {
+
+                            }
+                        }
+
+                        URN_APP_CONTACT -> {
+                            appContact.contactBusiness(payloadPackage, it, msgBean!!)
+                        }
+
+                        URN_APP_WEATHER -> {
+
+                            appWeather.weatherBusiness(it)
+                        }
+
+                        URN_APP_RATE -> {
+
+                        }
+                    }
+                }
+
+                URN_APP_CONTROL -> {
+                    when (it.urn[1]) {
+                        URN_APP_FIND_PHONE, URN_APP_FIND_DEVICE -> {
+                            appFind.appFindBusiness(it)
+                        }
+
+                        URN_APP_MUSIC_CONTROL -> {
+                            appMusicControl.musicControlBusiness(it)
+                        }
+                    }
+                }
+
+                URN_SPORT -> {//运动同步
+                }
+            }
+        }
     }
 
     private fun parseResponseEachNode(

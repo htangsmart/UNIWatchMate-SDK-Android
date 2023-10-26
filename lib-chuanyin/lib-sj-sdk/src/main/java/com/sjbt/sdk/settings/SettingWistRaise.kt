@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmWistRaise
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
@@ -75,6 +76,10 @@ class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
             getEmitter = emitter
             sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
         }
+    }
+
+    fun onTimeOut(nodeData: NodeData) {
+        TODO("Not yet implemented")
     }
 
 }
