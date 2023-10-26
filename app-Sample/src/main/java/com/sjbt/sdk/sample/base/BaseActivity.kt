@@ -16,6 +16,7 @@ import com.sjbt.sdk.sample.utils.promptProgress
 
 abstract class BaseActivity : AppCompatActivity() {
     protected var mConfirmDialog: ConfirmDialog? = null
+    protected var mFindPhoneDialog: ConfirmDialog? = null
     private var loading_Dialog: LoadingDialog? = null
     protected var mHandler = Handler(Looper.getMainLooper())
     protected var isFront = false
@@ -67,6 +68,24 @@ abstract class BaseActivity : AppCompatActivity() {
         hideDialog(mConfirmDialog)
     }
 
+
+    fun showFindPhoneDialogWithCallback(tip: String?, btnName: String?, callBack: CallBack<String>?) {
+        runOnUiThread(Runnable {
+            if (mConfirmDialog != null && mFindPhoneDialog!!.isShowing) {
+                return@Runnable
+            }
+            mFindPhoneDialog = ConfirmDialog(this@BaseActivity, tip, btnName, callBack)
+            try {
+                mFindPhoneDialog!!.show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        })
+    }
+
+    fun hideStopFindPhonemDialog() {
+        hideDialog(mFindPhoneDialog)
+    }
     protected fun hideDialog(dialog: Dialog?) {
         runOnUiThread {
             if (dialog != null && dialog.isShowing) {

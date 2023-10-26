@@ -12,7 +12,9 @@ import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.blankj.utilcode.util.ActivityUtils
 import com.blankj.utilcode.util.Utils
+import com.sjbt.sdk.sample.base.BaseActivity
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
 import com.sjbt.sdk.sample.utils.*
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +22,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import kotlinx.coroutines.rx3.await
+import kotlinx.coroutines.rx3.awaitFirst
 
 
 class MyApplication : Application() {
@@ -131,6 +135,7 @@ class MyApplication : Application() {
                     }
                 }
             }
+
             launchWithLog {
                 UNIWatchMate.wmApps.appFind.observeFindMobile.asFlow().catch {
                     it.message?.let { it1 ->
@@ -139,22 +144,27 @@ class MyApplication : Application() {
                             it1
                         )
                     }
+
                     ToastUtil.showToast(it.toString(), false)
                 }.collect {
                     ToastUtil.showToast("FindMobile $it", true)
+                    val topActivity = ActivityUtils.getTopActivity()
+                    if (topActivity != null && topActivity is BaseActivity) {
+                        topActivity.showFindPhoneDialogWithCallback(
+                            getString(R.string.ds_find_phone_found),
+                            getString(R.string.ds_find_phone_stop)
+                        ) {
+                            applicationScope.launch {
+                                val result = UNIWatchMate.wmApps.appFind.stopFindMobile().await()
+                                ToastUtil.showToast("reply observeFindMobile result: $result", true)
+                            }
+                        }
+                    }
                 }
             }
+
             launchWithLog {
-                UNIWatchMate.wmApps.appMusicControl.observableMusicControl.asFlow().collect {
-                    simulateMediaButton(it)
-                    UNIWatchMate.wmLog.logE(
-                        TAG,
-                        "receive music control type= $it"
-                    )
-                }
-            }
-            launchWithLog {
-                UNIWatchMate.wmApps.appFind.stopFindMobile().asFlow().onCompletion {
+                UNIWatchMate.wmApps.appFind.observeStopFindMobile.asFlow().onCompletion {
                     UNIWatchMate.wmLog.logE(
                         TAG,
                         "onCompletion"
@@ -168,7 +178,20 @@ class MyApplication : Application() {
                     }
                     ToastUtil.showToast(it.toString(), false)
                 }.collect {
+                    val topActivity = ActivityUtils.getTopActivity()
+                    if (topActivity != null && topActivity is BaseActivity) {
+                        (topActivity as BaseActivity).hideStopFindPhonemDialog()
+                    }
                     ToastUtil.showToast("stopFindMobile $it", true)
+                }
+            }
+            launchWithLog {
+                UNIWatchMate.wmApps.appMusicControl.observableMusicControl.asFlow().collect {
+                    simulateMediaButton(it)
+                    UNIWatchMate.wmLog.logE(
+                        TAG,
+                        "receive music control type= $it"
+                    )
                 }
             }
         }
