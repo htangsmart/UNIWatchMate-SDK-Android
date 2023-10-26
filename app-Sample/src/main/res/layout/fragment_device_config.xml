@@ -41,7 +41,6 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_heart_rate"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_heart_rate_config" />
 

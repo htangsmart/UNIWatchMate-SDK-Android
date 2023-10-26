@@ -495,7 +495,7 @@
     <!--Device Settings:Find Phone-->
     <string name="ds_basic_device_info">设备基本信息</string>
     <string name="ds_transfer_file">传输文件</string>
-    <string name="ds_find_phone_found">找到手机</string>
+    <string name="ds_find_phone_found">查找手机</string>
     <string name="ds_find_phone_stop">点击停止查找</string>
 
     <!--Others Feature-->
