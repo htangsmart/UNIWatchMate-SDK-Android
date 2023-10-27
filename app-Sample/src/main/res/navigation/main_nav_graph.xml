@@ -25,7 +25,9 @@
         <action
             android:id="@+id/toContacts"
             app:destination="@id/contactsFragment" />
-
+        <action
+            android:id="@+id/toEmergencyContacts"
+            app:destination="@id/toEmergencyContacts" />
         <action
             android:id="@+id/toDialHomePage"
             app:destination="@id/dialHomePageFragment" />
@@ -359,7 +361,11 @@
         android:label="@string/ds_contacts"
         tools:layout="@layout/fragment_contacts" />
 
-
+    <fragment
+        android:id="@+id/toEmergencyContacts"
+        android:name="com.sjbt.sdk.sample.ui.device.contacts.EmergencyContactFragment"
+        android:label="@string/ds_emergency_contacts"
+        tools:layout="@layout/fragment_emergency_contacts" />
     <fragment
         android:id="@+id/dialHomePageFragment"
         android:name="com.sjbt.sdk.sample.ui.device.dial.DialHomePageFragment"

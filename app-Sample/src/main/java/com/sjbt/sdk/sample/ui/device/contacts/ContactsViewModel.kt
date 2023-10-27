@@ -33,7 +33,7 @@ sealed class ContactsEvent {
 }
 
 
-class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(ContactsState()) {
+class ContactsViewModel() : StateEventViewModel<ContactsState, ContactsEvent>(ContactsState()) {
 
     private val deviceManager = Injector.getDeviceManager()
 
@@ -43,8 +43,12 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
 
     fun requestContacts() {
         viewModelScope.launch {
+            Timber.i("requestContacts: start")
+
             state.copy(requestContacts = Loading()).newState()
+
             runCatchingWithLog {
+                Timber.i("requestContacts: awaitFirst")
                 UNIWatchMate.wmApps.appContact.getContactList.awaitFirst()
             }.onSuccess {
                 state.copy(requestContacts = Success(ArrayList(it))).newState()
@@ -52,12 +56,15 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                 state.copy(requestContacts = Fail(it)).newState()
                 ContactsEvent.RequestFail(it).newEvent()
             }
+            Timber.i("requestContacts: end")
+
         }
 
     }
 
     fun addContacts(contact: WmContact) {
         viewModelScope.launch {
+            Timber.i("addContacts: start")
             val list = state.requestContacts()
             if (list != null) {
                 var exist = false
@@ -70,6 +77,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                 if (!exist) {
                     list.add(contact)
                     runCatchingWithLog {
+                        Timber.i("addContacts: action")
                         action(list)
                     }.onSuccess {
                         ContactsEvent.Inserted(list.size).newEvent()
@@ -77,6 +85,8 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
                         ContactsEvent.UpdateFail().newEvent()
                     }
                 }
+                Timber.i("addContacts: end")
+
             }
         }
     }
@@ -124,8 +134,9 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
         }
     }
 
-    suspend fun action(list: ArrayList<WmContact>) {
+    suspend fun action(list: ArrayList<WmContact>):Boolean {
         val result = UNIWatchMate.wmApps.appContact.updateContactList(list).await()
         Timber.i("setContactsAction result=$result ")
+        return result
     }
 }

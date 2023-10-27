@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
+import timber.log.Timber
 
 data class EmergencyContactsState(
     val requestEmergencyCall: Async<WmEmergencyCall> = Uninitialized,
@@ -35,7 +36,7 @@ class EmergencyContactViewModel :
     StateEventViewModel<EmergencyContactsState, EmergencyCallEvent>(EmergencyContactsState()) {
 
     init {
-//        requestEmegencyCall()
+        requestEmegencyCall()
     }
 
     fun requestEmegencyCall() {
@@ -63,6 +64,7 @@ class EmergencyContactViewModel :
             val call = state.requestEmergencyCall()
             call?.let {
                 it.isEnabled = enable
+                Timber.d("setEmergencyEnbalbe $it")
                 setEmergencyCall(it)
             }
         }
@@ -74,6 +76,7 @@ class EmergencyContactViewModel :
             call?.let {
                 it.emergencyContacts.clear()
                 it.emergencyContacts.add(contact)
+                Timber.d("setEmergencyContact $contact")
                 setEmergencyCall(it)
 
             }
@@ -83,6 +86,9 @@ class EmergencyContactViewModel :
     suspend fun setEmergencyCall(call: WmEmergencyCall) {
         runCatchingWithLog {
             val result = UNIWatchMate.wmApps.appContact.updateEmergencyContact(call).await()
+//            call.isEnabled = result.isEnabled
+//            call.emergencyContacts.clear()
+//            call.emergencyContacts.addAll(result.emergencyContacts)
             UNIWatchMate.wmLog.logD(this.javaClass.simpleName, "result=$result")
         }.onSuccess {
             EmergencyCallEvent.setEmergencyContactSuccess(call).newEvent()
