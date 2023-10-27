@@ -46,6 +46,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
     private val applicationScope = Injector.getApplicationScope()
 
     private val deviceManager = Injector.getDeviceManager()
+    private val userManager = Injector.getUserInfoRepository()
     private var isLengthMetric: Boolean = true
     private var wmHeartRateAlerts: WmHeartRateAlerts? = null
 
@@ -84,17 +85,17 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                         "-${WmHeartRateAlerts.HEART_RATE_INTERVALS[2]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[3]}-${WmHeartRateAlerts.HEART_RATE_INTERVALS[4]}"
 
             viewBind.itemExerciseHeartRateHighAlertSwitch.getSwitchView().isChecked =
-                it.exerciseHeartRateAlert.threshold > 0
+                it.exerciseHeartRateAlert.isEnable
             viewBind.itemExerciseHeartRateHighAlert.getTextView().text =
                 it.exerciseHeartRateAlert.threshold.toString() + getString(R.string.unit_bmp)
             viewBind.itemExerciseHeartRateHighAlert.isEnabled =
-                it.exerciseHeartRateAlert.threshold > 0
+                it.exerciseHeartRateAlert.isEnable
 
             viewBind.itemQuietHeartRateHighAlertSwitch.getSwitchView().isChecked =
-                it.restingHeartRateAlert.threshold > 0
+                it.restingHeartRateAlert.isEnable
             viewBind.itemQuietHeartRateHighAlert.getTextView().text =
                 it.restingHeartRateAlert.threshold.toString() + getString(R.string.unit_bmp)
-            viewBind.itemQuietHeartRateHighAlert.isEnabled = it.restingHeartRateAlert.threshold > 0
+            viewBind.itemQuietHeartRateHighAlert.isEnabled = it.restingHeartRateAlert.isEnable
         }
     }
 
@@ -143,6 +144,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.exerciseHeartRateAlert.threshold = 0
                     }
+                    it.exerciseHeartRateAlert.isEnable=isChecked
                     it.save()
                     updateUi()
                 }
@@ -156,6 +158,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.restingHeartRateAlert.threshold = 0
                     }
+                    it.restingHeartRateAlert.isEnable=isChecked
                     it.save()
                     updateUi()
 
@@ -173,6 +176,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         if (DIALOG_MAX_HEART_RATE == tag) {
             wmHeartRateAlerts?.let {
                 it.maxHeartRate = selectValue
+                it.refreshIntervals()
                 it.save()
             }
             updateUi()

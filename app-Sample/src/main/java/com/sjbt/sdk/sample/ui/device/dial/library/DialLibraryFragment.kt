@@ -145,9 +145,11 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         is DfuViewModel.DfuEvent.OnSuccess -> {
                             wmDials?.let {
                                 val intalledDialMock = event.installed
-                                it.add(WmDial(intalledDialMock.id, 0))
-                                adapter.items = dialLibraryViewModel.refreshInternal(it)
-                                adapter.notifyDataSetChanged()
+                                if (intalledDialMock.dialCoverRes >= 0) {
+                                    it.add(WmDial(intalledDialMock.id, 0))
+                                    adapter.items = dialLibraryViewModel.refreshInternal(it)
+                                    adapter.notifyDataSetChanged()
+                                }
                             }
                         }
 

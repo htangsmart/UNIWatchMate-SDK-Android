@@ -244,7 +244,6 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 }
             }
 
-
             launch {
                 emergencyModel.flowState.collect { state ->
                     when (state.requestEmergencyCall) {

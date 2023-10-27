@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
+import timber.log.Timber
 
 data class AlarmState(
     val requestAlarms: Async<ArrayList<WmAlarm>> = Uninitialized,
@@ -122,7 +123,8 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
     suspend fun action() {
         val alarms = state.requestAlarms()
         if (alarms != null) {
-            UNIWatchMate.wmApps.appAlarm.updateAlarmList(alarms).await()
+           val actionResult = UNIWatchMate.wmApps.appAlarm.updateAlarmList(alarms).await()
+            Timber.d("actionResult=$actionResult")
         }
     }
 
