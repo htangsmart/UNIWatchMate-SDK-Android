@@ -105,7 +105,12 @@ class SettingDrinkWaterReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSede
                 val sedentaryReminder =
                     WmSedentaryReminder(enabled, timeRange, timeFrequency, noDisturb)
 
-                getEmitter?.onSuccess(sedentaryReminder)
+                getEmitter?.let {
+                    if(!it.isDisposed){
+                        it.onSuccess(sedentaryReminder)
+                    }
+                }
+
                 observeEmitter?.onNext(sedentaryReminder)
 
             }

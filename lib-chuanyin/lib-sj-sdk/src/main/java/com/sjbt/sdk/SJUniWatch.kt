@@ -1641,6 +1641,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             manuData?.let {
                 if (BtUtils.bytesToHexString(manuData).startsWith("A1")) {
+                    wmLog.logD(TAG,"scanResult bluetoothDevice:"+bleDevice.bluetoothDevice)
                     discoveryObservableEmitter.onNext(WmDiscoverDevice(bleDevice.bluetoothDevice,bleScanResult.rssi))
                 }
             }
