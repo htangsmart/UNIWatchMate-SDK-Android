@@ -22,10 +22,12 @@ data class SportState(
 sealed class SportEvent {
     class RequestFail(val throwable: Throwable) : SportEvent()
 
-    class DialRemoved(val position: Int) : SportEvent()
+    class SportRemoved(val position: Int) : SportEvent()
 
     class SportInstallSuccess(val position: Int) : SportEvent()
+    class SportSortSuccess() : SportEvent()
     class SportInstallFail(val msg: String) : SportEvent()
+    class SportUpdateFail(val msg: String?) : SportEvent()
 }
 
 class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(SportState()) {
@@ -77,10 +79,10 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
                 runCatchingWithLog {
                     UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
-                    SportEvent.DialRemoved(position).newEvent()
+                    SportEvent.SportRemoved(position).newEvent()
                 }.onFailure {
                     ToastUtil.showToast(it.message)
-
+                    SportEvent.SportUpdateFail(it.message).newEvent()
                 }
             }
         }
@@ -93,9 +95,11 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
                 runCatchingWithLog {
                     UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
-
+                    SportEvent.SportSortSuccess().newEvent()
                 }.onFailure {
                     ToastUtil.showToast(it.message)
+                    SportEvent.SportUpdateFail(it.message).newEvent()
+
                 }
             }
         }
