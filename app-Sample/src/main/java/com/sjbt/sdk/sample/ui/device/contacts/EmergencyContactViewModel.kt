@@ -25,15 +25,14 @@ data class EmergencyContactsState(
 
 sealed class EmergencyCallEvent {
     class RequestFail(val throwable: Throwable) : EmergencyCallEvent()
-
+    class setEmergencyContactSuccess(val wmEmergencyCall: WmEmergencyCall) : EmergencyCallEvent()
+    class setEmergencyContactFail(val throwable: Throwable) : EmergencyCallEvent()
     object NavigateUp : EmergencyCallEvent()
 }
 
 
 class EmergencyContactViewModel :
     StateEventViewModel<EmergencyContactsState, EmergencyCallEvent>(EmergencyContactsState()) {
-
-    private val deviceManager = Injector.getDeviceManager()
 
     init {
         requestEmegencyCall()
@@ -43,11 +42,14 @@ class EmergencyContactViewModel :
         viewModelScope.launch {
             state.copy(requestEmergencyCall = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts")
+                UNIWatchMate.wmLog.logI("EmergencyContactViewModel", "observableEmergencyContacts")
                 UNIWatchMate.wmApps.appContact.observableEmergencyContacts().awaitFirst()
 //                WmEmergencyCall(false, mutableListOf<WmContact>())
             }.onSuccess {
-                UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts result$it")
+                UNIWatchMate.wmLog.logI(
+                    "EmergencyContactViewModel",
+                    "observableEmergencyContacts result$it"
+                )
                 state.copy(requestEmergencyCall = Success(it)).newState()
             }.onFailure {
                 state.copy(requestEmergencyCall = Fail(it)).newState()
@@ -73,13 +75,22 @@ class EmergencyContactViewModel :
                 it.emergencyContacts.clear()
                 it.emergencyContacts.add(contact)
                 setEmergencyCall(it)
+
             }
         }
     }
 
     suspend fun setEmergencyCall(call: WmEmergencyCall) {
-        val result = UNIWatchMate.wmApps.appContact.updateEmergencyContact(call).await()
-        UNIWatchMate.wmLog.logD(this.javaClass.simpleName, "result=$result")
+        runCatchingWithLog {
+            val result = UNIWatchMate.wmApps.appContact.updateEmergencyContact(call).await()
+            UNIWatchMate.wmLog.logD(this.javaClass.simpleName, "result=$result")
+        }.onSuccess {
+            EmergencyCallEvent.setEmergencyContactSuccess(call).newEvent()
+        }.onFailure {
+            EmergencyCallEvent.setEmergencyContactFail(it).newEvent()
+
+        }
+
     }
 
 }

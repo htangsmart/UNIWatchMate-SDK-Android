@@ -82,17 +82,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 val newContact = WmContact.create(name, number)
                 newContact?.let {
                     if (emergency) {
+                        promptProgress.showProgress("")
                         emergencyModel.setEmergencyContact(it)
-                        viewBind.itemEmergencyContact.getTitleView()?.text =
-                            it.name
-                        viewBind.itemEmergencyContact.getTextView()?.text =
-                            it.number
                     } else {
+                        promptProgress.showProgress("")
                         viewModel.addContacts(it)
                     }
                 }
             }
-
         }
     }
 
@@ -116,6 +113,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 return false
             }
         }, viewLifecycleOwner)
+
         requireActivity().onBackPressedDispatcher.addCallback(
             viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -132,7 +130,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             )
         )
 //        if (BuildConfig.DEBUG) {
-            viewBind.itemAddTest100.visibility=View.VISIBLE
+        viewBind.itemAddTest100.visibility = View.VISIBLE
 //        }
         viewBind.itemAddTest100.setOnClickListener {
             promptProgress.showProgress("")
@@ -140,6 +138,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         }
         adapter.listener = object : ContactsAdapter.Listener {
             override fun onItemDelete(position: Int) {
+                promptProgress.showProgress("")
                 viewModel.deleteContacts(position)
             }
         }
@@ -152,6 +151,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
         viewBind.itemEmergencyContactSwitch.getSwitchView()
             ?.setOnCheckedChangeListener { buttonView, isChecked ->
+                promptProgress.showProgress("")
                 emergencyModel.setEmergencyEnbalbe(isChecked)
             }
 
@@ -207,6 +207,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             adapter.sources = contacts
                             adapter.notifyDataSetChanged()
                             viewBind.fabAdd.show()
+
                         }
 
                         else -> {}
@@ -218,23 +219,22 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     when (event) {
                         is ContactsEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
+                            promptProgress.dismiss()
                         }
 
                         is ContactsEvent.Inserted -> {
-                            adapter.notifyItemInserted(event.position)
+                            adapter.notifyItemInserted(event.pos)
+                            promptProgress.dismiss()
                         }
 
-                        is ContactsEvent.TestAdd100 -> {
+                        is ContactsEvent.Update100Success -> {
                             adapter.notifyDataSetChanged()
                             promptProgress.dismiss()
                         }
 
                         is ContactsEvent.Removed -> {
                             adapter.notifyItemRemoved(event.position)
-                        }
-
-                        is ContactsEvent.Moved -> {
-                            adapter.notifyItemMoved(event.fromPosition, event.toPosition)
+                            promptProgress.dismiss()
                         }
 
                         is ContactsEvent.NavigateUp -> {
@@ -250,6 +250,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     when (state.requestEmergencyCall) {
                         is Fail -> {
                             viewBind.llEmergency.setAllChildEnabled(false)
+                            promptProgress.dismiss()
                         }
 
                         is Success -> {
@@ -267,6 +268,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                                         emergencyCall.emergencyContacts[0].number
                                 }
                             }
+                            viewModel.requestContacts()
                         }
 
                         else -> {}
@@ -278,6 +280,19 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                     when (event) {
                         is EmergencyCallEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
+                        }
+
+                        is EmergencyCallEvent.setEmergencyContactFail -> {
+                            promptToast.showFailed(event.throwable)
+                            promptProgress.dismiss()
+                        }
+
+                        is EmergencyCallEvent.setEmergencyContactSuccess -> {
+                            promptProgress.dismiss()
+                            viewBind.itemEmergencyContact.getTitleView()?.text =
+                                event.wmEmergencyCall.emergencyContacts[0].name
+                            viewBind.itemEmergencyContact.getTextView()?.text =
+                                event.wmEmergencyCall.emergencyContacts[0].number
                         }
                     }
                 }
@@ -330,10 +345,6 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
     }
 
     private fun onBackPressed() {
-        if (viewModel.setContactsAction.isSuccess()) {
-            findNavController().navigateUp()
-        } else {
-            SetContactsDialogFragment().show(childFragmentManager, null)
-        }
+        findNavController().navigateUp()
     }
 }

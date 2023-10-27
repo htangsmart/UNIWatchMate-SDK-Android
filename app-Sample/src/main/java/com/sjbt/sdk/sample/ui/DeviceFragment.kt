@@ -197,6 +197,8 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             }
 
             viewBind.itemTestWeather -> {
+//                showChooseWeatherDialog()
+
                 applicationScope.launchWithLog {
                     val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
                         getTestWeatherdata(WmWeatherTime.TODAY),
