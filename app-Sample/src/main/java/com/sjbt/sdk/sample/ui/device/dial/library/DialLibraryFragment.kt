@@ -1,15 +1,28 @@
 package com.sjbt.sdk.sample.ui.device.dial.library
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.Settings
+import android.text.TextUtils
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmDial
+import com.base.sdk.port.FileType
+import com.blankj.utilcode.util.FileUtils
 import com.github.kilnn.tool.ui.DisplayUtil
+import com.obsez.android.lib.filechooser.ChooserDialog
+import com.sjbt.sdk.sample.BuildConfig
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.AsyncViewModel
+import com.sjbt.sdk.sample.base.BTConfig
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
@@ -18,17 +31,25 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.data.device.isConnected
 import com.sjbt.sdk.sample.databinding.FragmentDialLibraryBinding
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.di.internal.SingleInstance.deviceManager
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.ui.device.dial.DialEvent
 import com.sjbt.sdk.sample.ui.device.dial.DialInstalledViewModel
+import com.sjbt.sdk.sample.utils.CacheDataHelper
+import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.launchWithLog
+import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import com.sjbt.sdk.sample.utils.showFailed
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.GridSpacingItemDecoration
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
+import java.io.File
 
 class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
@@ -38,6 +59,8 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
     private val dialLibraryViewModel: DialLibraryViewModel by viewModels()
     private var wmDials: MutableList<WmDial>? = mutableListOf()
     private lateinit var adapter: DialLibraryAdapter
+    private var dialFile: File? = null
+    private val applicationScope = Injector.getApplicationScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,6 +96,16 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
         viewBind.recyclerView.adapter = adapter
         viewBind.loadingView.listener = LoadingView.Listener {
             dialInstalledViewModel.requestInstallDials()
+        }
+        viewBind.btnLocalDial.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                // Access to all files
+                val uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID)
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                startActivity(intent)
+            } else {
+                localDialSelect()
+            }
         }
         viewLifecycle.launchRepeatOnStarted {
             launch {
@@ -118,6 +151,90 @@ class DialLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                             }
                         }
 
+                    }
+                }
+            }
+        }
+    }
+
+    private fun localDialSelect() {
+        //choose a file
+        activity?.let { ctx ->
+            val chooserDialog = ChooserDialog(ctx, R.style.FileChooserStyle)
+            chooserDialog
+                .withResources(
+                    R.string.choose_file,
+                    R.string.title_choose, R.string.dialog_cancel
+                )
+                .disableTitle(false)
+                .withFilter(false, false, BTConfig.DIAL)
+                .enableOptions(false)
+                .titleFollowsDir(false)
+                .cancelOnTouchOutside(false)
+                .displayPath(true)
+                .enableDpad(true)
+
+            chooserDialog.withNegativeButtonListener { dialog, which ->
+            }
+
+            chooserDialog.withChosenListener { dir, dirFile ->
+//            Toast.makeText(ctx, (dirFile.isDirectory() ? "FOLDER: " : "FILE: ") + dir,
+//                    Toast.LENGTH_SHORT).show();
+                if (!dirFile.isFile) {
+                    return@withChosenListener
+                }
+                val file: File = dirFile
+                startLocalUpdate(file)
+            }
+
+            chooserDialog.withOnBackPressedListener { dialog -> chooserDialog.goBack() }
+            chooserDialog.show()
+        }
+    }
+
+    private fun startLocalUpdate(file: File?) {
+        if (file == null || !file.exists()) {
+            ToastUtil.showToast(getString(R.string.error_up_file))
+            return
+        }
+        if (file.length() < 100) { //长度小于100
+            ToastUtil.showToast(getString(R.string.error_up_file))
+            return
+        }
+        val extension = FileUtils.getFileExtension(file)
+        try {
+            if (!TextUtils.isEmpty(extension)) {
+                if (extension != BTConfig.DIAL ) {
+                    ToastUtil.showToast(getString(R.string.error_up_file))
+                    return
+                }
+            }
+            dialFile = file
+            CacheDataHelper.setTransferring(true)
+            startOta()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ToastUtil.showToast(getString(R.string.error_up_file))
+            CacheDataHelper.setTransferring(false)
+            return
+        }
+    }
+
+    private fun startOta() {
+        applicationScope.launchWithLog {
+            runCatchingWithLog {
+                if (deviceManager.flowConnectorState.value != WmConnectState.VERIFIED) {
+                    ToastUtil.showToast(getString(R.string.device_state_disconnected))
+                    return@launchWithLog
+                }
+                val fileList = mutableListOf<File>()
+                dialFile?.let { file ->
+                    fileList.add(file)
+                    val extension: String = FileUtils.getFileExtension(file)
+                    if (extension == BTConfig.DIAL) {
+                        val dialMock = DialMock(-1,file.absolutePath,-1,"")
+                        DialLibraryDfuDialogFragment.newInstance(dialMock)
+                            .show(childFragmentManager, null)
                     }
                 }
             }
