@@ -10,6 +10,7 @@ import com.base.api.UNIWatchMate
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.State
 import com.base.sdk.port.WmTransferState
+import com.blankj.utilcode.util.FileUtils
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
@@ -58,9 +59,11 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
         _viewBind = DialogDialLibraryDfuBinding.inflate(LayoutInflater.from(context))
 
         viewBind.tvName.text = dialPacket.dialAssert
-
-        glideShowMipmapImage(viewBind.imgView, dialPacket.dialCoverRes, false)
-
+        if (dialPacket.dialCoverRes > 0) {
+            glideShowMipmapImage(viewBind.imgView, dialPacket.dialCoverRes, false)
+        }else{
+            viewBind.tvName.text = FileUtils.getFileName(dialPacket.dialAssert)
+        }
 
         resetStateView()
 

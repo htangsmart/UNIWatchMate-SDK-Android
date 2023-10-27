@@ -14,10 +14,10 @@ public class BTConfig {
     public static final int CONNECT_STATE_CONNECT_FAIL = 3;
 
     public static final int CONNECT_FAIL_NO_RESPOND = 1;
-    public static final int CONNECT_FAIL_BAD_ADDRESS =CONNECT_FAIL_NO_RESPOND + 1;
-    public static final int CONNECT_FAIL_BT_DISABLE =CONNECT_FAIL_BAD_ADDRESS + 1;
-    public static final int CONNECT_FAIL_VERIFY_TIMEOUT =CONNECT_FAIL_BT_DISABLE + 1;
-    public static final int CONNECT_FAIL_OTHER =CONNECT_FAIL_VERIFY_TIMEOUT + 1;
+    public static final int CONNECT_FAIL_BAD_ADDRESS = CONNECT_FAIL_NO_RESPOND + 1;
+    public static final int CONNECT_FAIL_BT_DISABLE = CONNECT_FAIL_BAD_ADDRESS + 1;
+    public static final int CONNECT_FAIL_VERIFY_TIMEOUT = CONNECT_FAIL_BT_DISABLE + 1;
+    public static final int CONNECT_FAIL_OTHER = CONNECT_FAIL_VERIFY_TIMEOUT + 1;
 
     public static final int CONNECT_RETRY_COUNT = 2;
 
@@ -44,6 +44,6 @@ public class BTConfig {
     public static final int OTA_STEP_MAIN_PROCESS = 200;
     public static final int OTA_STEP_VICE_PROCESS = 201;
 
-    public static final String UP = "up", UP_EX = "upex",JPG="jpg";
+    public static final String UP = "up", UP_EX = "upex", JPG = "jpg", DIAL = "dial";
 
 }

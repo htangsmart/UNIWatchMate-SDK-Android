@@ -39,16 +39,22 @@ class DfuViewModel : ViewModel() {
         dfuJob?.cancel()
         dfuJob = viewModelScope.launch {
             try {
-                val inputStream = MyApplication.instance.assets.open(dialMock.dialAssert!!)
                 val curMillis = System.currentTimeMillis()
-                val dialPath =
+                var dialPath =
                     MyApplication.instance.filesDir.absolutePath + "/" + curMillis + ".dial"
-                val coverPath =
+                var coverPath =
                     MyApplication.instance.filesDir.absolutePath + "/" + curMillis + ".jpg"
-                FileIOUtils.writeFileFromIS(dialPath, inputStream)
-                val dialCoverArray = UNIWatchMate.wmApps.appDial.parseDialThumpJpg(dialPath)
+                if (dialMock.dialCoverRes >= 0) {
+                    val inputStream = MyApplication.instance.assets.open(dialMock.dialAssert!!)
+                    FileIOUtils.writeFileFromIS(dialPath, inputStream)
+                    val dialCoverArray = UNIWatchMate.wmApps.appDial.parseDialThumpJpg(dialPath)
+                    FileIOUtils.writeFileFromBytesByChannel(coverPath, dialCoverArray, true)
+                }else{
+                    dialPath=dialMock.dialAssert!!
+                    val dialCoverArray = UNIWatchMate.wmApps.appDial.parseDialThumpJpg(dialPath)
+                    FileIOUtils.writeFileFromBytesByChannel(coverPath, dialCoverArray, true)
+                }
 
-                FileIOUtils.writeFileFromBytesByChannel(coverPath, dialCoverArray, true)
                 val coverList = mutableListOf<File>()
                 val dialList = mutableListOf<File>()
                 coverList.add(File(coverPath))
