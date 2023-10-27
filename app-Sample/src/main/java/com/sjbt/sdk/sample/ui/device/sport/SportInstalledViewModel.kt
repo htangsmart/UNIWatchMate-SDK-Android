@@ -3,6 +3,10 @@ package com.sjbt.sdk.sample.ui.device.sport
 import androidx.lifecycle.viewModelScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmSport
+import com.blankj.utilcode.util.GsonUtils
+import com.blankj.utilcode.util.ResourceUtils
+import com.sjbt.sdk.sample.MyApplication
+import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.Async
 import com.sjbt.sdk.sample.base.Fail
 import com.sjbt.sdk.sample.base.Loading
@@ -12,6 +16,7 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 
@@ -31,6 +36,7 @@ sealed class SportEvent {
 }
 
 class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(SportState()) {
+    var localSportLibrary: LocalSportLibrary? = null
 
     init {
         requestInstallSports()
@@ -46,13 +52,13 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
 //
 //            }
             runCatchingWithLog {
-                UNIWatchMate.wmApps.appSport.getSportList.await()
-//                val mutableList = mutableListOf<WmSport>()
-//                for (index in 0..19) {
-//                    val sport = WmSport(index, 1, index < 8)
-//                    mutableList.add(sport)
-//                }
-//                mutableList
+                val sportsData = ResourceUtils.readAssets2String("sports_data.json")
+                localSportLibrary =
+                    GsonUtils.fromJson<LocalSportLibrary>(sportsData, LocalSportLibrary::class.java)
+                refreshInstallState(
+                    UNIWatchMate.wmApps.appSport.getSportList.await(),
+                    localSportLibrary
+                )
             }.onSuccess {
                 if (it is MutableList) {
                     state.copy(requestSports = Success(it)).newState()
@@ -67,15 +73,59 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
         }
     }
 
+    private fun refreshInstallState(
+        wmSports: List<WmSport>?,
+        localSportLibrary: LocalSportLibrary?,
+    ): List<WmSport>? {
+        wmSports?.let {
+            for (bean in wmSports) {
+                localSportLibrary?.let {
+                    for (localSport in localSportLibrary!!.sports) {
+                        if (bean.id == localSport.id) {
+                            localSport.installed = true
+                        }
+                    }
+                }
+            }
+        }
+
+        return wmSports
+    }
+
+    fun getNameById(id: Int): String {
+        localSportLibrary?.let {
+            val locale = MyApplication.instance.resources.configuration.locale;
+            val language = locale.language;
+            for (bean in it.sports) {
+                if (bean.id == id) {
+                    if (bean.names.contains(language)) {
+                        return bean.names[language] ?: ""
+                    }
+                    val iterator = bean.names.iterator()
+                    while (iterator.hasNext()) {
+                        val entity = iterator.next()
+                        if (entity.key.lowercase() == language.lowercase() || entity.key.lowercase() == locale.toLanguageTag()
+                                .lowercase()
+                        ) {
+                            return entity.value
+                        }
+                    }
+//        如果没有的话，就去获取en的
+                    return bean.names["en"] ?: ""
+                }
+            }
+        }
+        return ""
+    }
+
     /**
      * @param position Delete position
      */
     fun deleteSport(position: Int) {
         viewModelScope.launch {
             val sports = state.requestSports()
-
-            if (sports != null && position+8 < sports.size) {
-                sports.removeAt(position+8)
+            if (sports != null && position + 8 < sports.size) {
+                sports.removeAt(position + 8)
                 runCatchingWithLog {
                     UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
@@ -88,10 +138,11 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
         }
     }
 
-    fun sortFixedSportList() {
+    fun sortFixedSportList(fromOnStart: Int, to: Int) {
         viewModelScope.launch {
             val sports = state.requestSports()
             if (sports != null) {
+                sports.add(to, sports.removeAt(fromOnStart))
                 runCatchingWithLog {
                     UNIWatchMate.wmApps.appSport.updateSportList(sports).await()
                 }.onSuccess {
@@ -105,10 +156,15 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
         }
     }
 
-    fun installContactContain(position:Int,localSport: LocalSportLibrary.LocalSport) {
+    fun installContactContain(position: Int, localSport: LocalSportLibrary.LocalSport) {
         viewModelScope.launch {
             val wmSports = state.requestSports()
+
             wmSports?.let {
+                if (it.size >= 12) {
+                    SportEvent.SportInstallFail(MyApplication.instance.resources.getString(R.string.ds_sport_at_most)).newEvent()
+                    return@launch
+                }
                 val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
                 wmSports.add(wmSport)
                 runCatchingWithLog {
@@ -117,7 +173,8 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
                     localSport.installed = true
                     SportEvent.SportInstallSuccess(position).newEvent()
                 }.onFailure {
-                    wmSports.removeAt(wmSports.size-1)
+                    localSport.installed = false
+                    wmSports.removeAt(wmSports.size - 1)
                     SportEvent.SportInstallFail(it.toString()).newEvent()
                 }
             }

@@ -33,9 +33,10 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
     private val applicationScope = Injector.getApplicationScope()
     private lateinit var adapter: SportListAdapter
     private val dragAdapter by lazy {
-        SportDragAdapter(buildInDatas)
+        SportDragAdapter(buildInDatas,viewModel)
     }
     private var buildInDatas: MutableList<WmSport> = mutableListOf()
+    private var installDatas: MutableList<WmSport> = mutableListOf()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -61,12 +62,13 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                 DividerItemDecoration.VERTICAL
             )
         )
-        adapter = SportListAdapter()
+        adapter = SportListAdapter(viewModel)
         adapter.listener = object : SportListAdapter.Listener {
 
             override fun onItemDelete(position: Int) {
                 if (adapter.sources?.get(position)?.buildIn != true) {
                     promptProgress.showProgress(getString(R.string.action_deling))
+                    installDatas.removeAt(position)
                     viewModel.deleteSport(position)
                 } else {
                     promptToast.showFailed(getString(R.string.tip_inner_sport_del_error))
@@ -101,10 +103,10 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                                 viewBind.loadingView.showError(R.string.ds_no_data)
                             } else {
                                 if (alarms!!.size > 8) {
-                                    adapter.sources = alarms.subList(8, alarms!!.size)
+                                    installDatas.addAll(alarms.subList(8, alarms!!.size))
+                                    adapter.sources =installDatas
                                     adapter.notifyDataSetChanged()
 
-                                    buildInDatas.clear()
                                     buildInDatas.addAll(alarms.subList(0, 8))
                                     dragAdapter.notifyDataSetChanged()
                                 } else {
@@ -130,8 +132,9 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                         is SportEvent.SportRemoved -> {
                             promptProgress.dismiss()
                             viewBind.loadingView.visibility = View.GONE
-                            adapter.notifyItemRemoved(event.position)
+                            adapter.notifyDataSetChanged()
                         }
+
                         is SportEvent.SportSortSuccess -> {
                             promptProgress.dismiss()
                             adapter.notifyDataSetChanged()
@@ -141,10 +144,11 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
             }
         }
     }
-
+    private var fromOnStart = 0
     var listener: OnItemDragListener = object : OnItemDragListener {
         override fun onItemDragStart(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
-            Log.d(TAG, "drag start")
+            Log.d(TAG, "drag start pos=$pos")
+            fromOnStart = pos
             val holder = viewHolder as BaseViewHolder?
             context?.apply {
                 holder?.itemView?.setBackgroundColor(resources.getColor(R.color.color_25000000))
@@ -159,22 +163,25 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
         ) {
             Log.d(
                 TAG,
-                "move from: " + source.adapterPosition + " to: " + target.adapterPosition
+                "move from: " + from + " to: " + to
             )
+
         }
 
         override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
             Log.d(
                 TAG,
-                "drag end"
+                "drag end pos=$pos"
             )
             val holder = viewHolder as BaseViewHolder?
             context?.apply {
                 holder?.itemView?.setBackgroundColor(resources.getColor(R.color.white))
             }
+            val remove = buildInDatas.removeAt(fromOnStart)
+            buildInDatas.add(pos,remove)
             promptProgress.showProgress("")
             applicationScope.launch {
-                viewModel.sortFixedSportList()
+                viewModel.sortFixedSportList(fromOnStart,pos)
             }
             //                holder.setTextColor(R.id.tv, Color.BLACK);
         }
@@ -184,6 +191,7 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
             if (adapter.itemCount <= 0) {
                 viewBind.loadingView.showError(R.string.ds_no_data)
             }
+
         }
     }
 

@@ -35,7 +35,7 @@ class EmergencyContactViewModel :
     StateEventViewModel<EmergencyContactsState, EmergencyCallEvent>(EmergencyContactsState()) {
 
     init {
-        requestEmegencyCall()
+//        requestEmegencyCall()
     }
 
     fun requestEmegencyCall() {

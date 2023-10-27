@@ -44,6 +44,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
     private val viewModel: ContactsViewModel by viewModels()
     private val emergencyModel: EmergencyContactViewModel by viewModels()
     private lateinit var adapter: ContactsAdapter
+    private var selfCheck = false
 
     private val pickContact =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -151,8 +152,11 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
         viewBind.itemEmergencyContactSwitch.getSwitchView()
             ?.setOnCheckedChangeListener { buttonView, isChecked ->
-                promptProgress.showProgress("")
-                emergencyModel.setEmergencyEnbalbe(isChecked)
+                if (!selfCheck) {
+//                    promptProgress.showProgress("")
+//                    emergencyModel.setEmergencyEnbalbe(isChecked)
+                }
+                selfCheck = false
             }
 
         viewBind.itemEmergencyContact.setOnClickListener {
@@ -204,9 +208,11 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             } else {
                                 viewBind.loadingView.visibility = View.GONE
                             }
+
                             adapter.sources = contacts
                             adapter.notifyDataSetChanged()
-                            viewBind.fabAdd.show()
+
+                            emergencyModel.requestEmegencyCall()
 
                         }
 
@@ -259,15 +265,18 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                                 viewBind.loadingView.visibility = View.GONE
                                 viewBind.llEmergency.setAllChildEnabled(true)
                                 if (emergencyCall.emergencyContacts.size > 0) {
-                                    viewBind.itemEmergencyContactSwitch.getSwitchView()?.isChecked =
-                                        emergencyCall.isEnabled
+                                    selfCheck = true
+//                                    viewBind.itemEmergencyContactSwitch.getSwitchView()?.isChecked =
+//                                        emergencyCall.isEnabled
                                     viewBind.itemEmergencyContact.getTitleView()?.text =
                                         emergencyCall.emergencyContacts[0].name
                                     viewBind.itemEmergencyContact.getTextView()?.text =
                                         emergencyCall.emergencyContacts[0].number
                                 }
                             }
-                            viewModel.requestContacts()
+                            promptProgress.dismiss()
+                            viewBind.fabAdd.show()
+//                            viewModel.requestContacts()
                         }
 
                         else -> {}
@@ -288,16 +297,18 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
                         is EmergencyCallEvent.setEmergencyContactSuccess -> {
                             promptProgress.dismiss()
-                            viewBind.itemEmergencyContact.getTitleView()?.text = if(event.wmEmergencyCall.emergencyContacts.isNotEmpty()){
-                                event.wmEmergencyCall.emergencyContacts[0].name
-                            }else{
-                                ""
-                            }
-                            viewBind.itemEmergencyContact.getTextView()?.text = if(event.wmEmergencyCall.emergencyContacts.isNotEmpty()){
-                                event.wmEmergencyCall.emergencyContacts[0].number
-                            }else{
-                                ""
-                            }
+                            viewBind.itemEmergencyContact.getTitleView()?.text =
+                                if (event.wmEmergencyCall.emergencyContacts.isNotEmpty()) {
+                                    event.wmEmergencyCall.emergencyContacts[0].name
+                                } else {
+                                    ""
+                                }
+                            viewBind.itemEmergencyContact.getTextView()?.text =
+                                if (event.wmEmergencyCall.emergencyContacts.isNotEmpty()) {
+                                    event.wmEmergencyCall.emergencyContacts[0].number
+                                } else {
+                                    ""
+                                }
 
                         }
                     }

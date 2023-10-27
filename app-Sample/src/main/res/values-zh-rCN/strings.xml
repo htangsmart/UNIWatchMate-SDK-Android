@@ -612,5 +612,6 @@
     <string name="tip_inner_sport_del_error">内置运动不能被移除</string>
 
     <string name="local_dial">安装本地表盘</string>
+    <string name="ds_sport_at_most">最多12个</string>
 
 </resources>
