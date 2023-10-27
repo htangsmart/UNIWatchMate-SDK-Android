@@ -45,7 +45,6 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
     }
 
     fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
-        TODO("Not yet implemented")
     }
 
     fun sportInfoBusiness(it: NodeData) {

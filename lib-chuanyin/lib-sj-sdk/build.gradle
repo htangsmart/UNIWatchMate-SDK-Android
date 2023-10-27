@@ -119,5 +119,6 @@ dependencies {
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
     implementation "io.reactivex.rxjava3:rxandroid:$rx_android_version"
+    implementation "com.polidea.rxandroidble3:rxandroidble:$rx_android_ble"
 
 }

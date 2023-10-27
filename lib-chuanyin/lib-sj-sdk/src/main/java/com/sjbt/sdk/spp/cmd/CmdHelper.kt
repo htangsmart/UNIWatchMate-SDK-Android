@@ -56,7 +56,7 @@ object CmdHelper {
     }
 
     /**
-     *
+     * 获取divideType和业务单元总包长度
      */
     fun readShortFromBytes(data: ByteArray): DivideInfo {
         require(data.size == 2) { "Invalid byte array length" }
@@ -71,9 +71,9 @@ object CmdHelper {
         return DivideInfo(divideType, value)
     }
 
-    data class DivideInfo(val divideType: Byte, val value: Short) {
+    data class DivideInfo(val divideType: Byte, val payloadPackTotalLen: Short) {
         override fun toString(): String {
-            return "DivideInfo(divideType=$divideType, value=$value)"
+            return "DivideInfo(divideType=$divideType, value=$payloadPackTotalLen)"
         }
     }
 
@@ -165,8 +165,11 @@ object CmdHelper {
             divideArray[0] = byteBuffer[4]
             divideArray[1] = byteBuffer[5]
 
-            val divideType = readShortFromBytes(divideArray.reversedArray()).divideType
+             val divideInfo=readShortFromBytes(divideArray.reversedArray())
+            val divideType = divideInfo.divideType
+
             msgBean.divideType = divideType
+            msgBean.payloadPackTotalLen = divideInfo.payloadPackTotalLen
 
             val payLoadLength = msg.size - 16
 

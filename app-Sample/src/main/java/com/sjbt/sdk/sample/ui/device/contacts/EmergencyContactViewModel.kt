@@ -45,6 +45,7 @@ class EmergencyContactViewModel :
             runCatchingWithLog {
                 UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts")
                 UNIWatchMate.wmApps.appContact.observableEmergencyContacts().awaitFirst()
+//                WmEmergencyCall(false, mutableListOf<WmContact>())
             }.onSuccess {
                 UNIWatchMate.wmLog.logI("EmergencyContactViewModel","observableEmergencyContacts result$it")
                 state.copy(requestEmergencyCall = Success(it)).newState()

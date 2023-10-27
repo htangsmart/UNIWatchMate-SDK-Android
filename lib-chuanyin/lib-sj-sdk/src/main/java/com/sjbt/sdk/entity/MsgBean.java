@@ -23,6 +23,7 @@ public class MsgBean {
     public int cmdId;
 
     public byte divideType;
+    public short payloadPackTotalLen;
     public int payloadLen;
 
     public int offset;

@@ -74,7 +74,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 }
 
                 override fun onComplete() {
-                    var byteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE)
+                    var byteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE*10)
 
                     msgList.forEachIndexed { index, msgBean ->
                         byteBuffer.put(msgBean.payload)
@@ -126,7 +126,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     }
 
     fun onTimeOut(msgBean: MsgBean,nodeData: NodeData) {
-        TODO("Not yet implemented")
+
     }
     private fun updateContactListBack(success: Boolean) {
         updateContactEmitter?.onSuccess(success)
@@ -179,7 +179,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             sjUniWatch.wmLog.logE(
                 TAG,
-                "业务分包数据 长度：" + businessArray.size + "->" + BtUtils.bytesToHexString(businessArray)
+                "业务分包数据 长度：" + businessArray.size + "->" + String(businessArray,StandardCharsets.UTF_8)
             )
 
             //每一个单元再做数据分包
@@ -235,6 +235,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         msgPkMap.get(order)?.let { msgBean ->
             sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
                 sjUniWatch.wmLog.logE(TAG, "success order id：" + order)
+                sjUniWatch.wmLog.logE(TAG, "success order contacts：" + String(msgBean.originData))
                 sendObserveNode(order % 255 + 1)
             }
         }
