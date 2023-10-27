@@ -74,7 +74,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 }
 
                 override fun onComplete() {
-                    var byteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE*10)
+                    var byteBuffer = ByteBuffer.allocate(MAX_BUSINESS_BUFFER_SIZE * 10)
 
                     msgList.forEachIndexed { index, msgBean ->
                         byteBuffer.put(msgBean.payload)
@@ -125,9 +125,10 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
         }
     }
 
-    fun onTimeOut(msgBean: MsgBean,nodeData: NodeData) {
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
 
     }
+
     private fun updateContactListBack(success: Boolean) {
         updateContactEmitter?.onSuccess(success)
     }
@@ -143,11 +144,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
             updateEmergencyEmitter = it
             sjUniWatch.sendWriteNodeCmdList(CmdHelper.getWriteEmergencyNumberCmd(emergencyCall))
         }
-
-    private fun getEmergencyContactBack(emergencyCall: WmEmergencyCall) {
-        mEmergencyCall = emergencyCall
-        emergencyNumberEmitter?.onNext(emergencyCall)
-    }
 
     private fun updateEmergencyContactBack(success: Boolean) {
         updateEmergencyEmitter?.onSuccess(mEmergencyCall)
@@ -179,7 +175,10 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             sjUniWatch.wmLog.logE(
                 TAG,
-                "业务分包数据 长度：" + businessArray.size + "->" + String(businessArray,StandardCharsets.UTF_8)
+                "业务分包数据 长度：" + businessArray.size + "->" + String(
+                    businessArray,
+                    StandardCharsets.UTF_8
+                )
             )
 
             //每一个单元再做数据分包
@@ -304,11 +303,12 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 } else {
                     if (it.dataLen >= NAME_BYTES_LIMIT + NUMBER_BYTES_LIMIT + 1) {
                         val emergencyByteArray = it.data
-                        val enable = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                        val enable = it.data[0].toInt() == 1
                         mEmergencyCall.isEnabled = enable
                         mEmergencyCall.emergencyContacts.clear()
                         val name = String(
-                            emergencyByteArray.copyOf(NAME_BYTES_LIMIT),
+                            emergencyByteArray.copyOf(NAME_BYTES_LIMIT)
+                                .takeWhile { it.toInt() != 0 }.toByteArray(),
                             StandardCharsets.UTF_8
                         )
 
@@ -320,15 +320,17 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                             StandardCharsets.UTF_8
                         )
 
-                        WmContact.create(name, num)?.let {
-                            sjUniWatch.wmLog.logD(TAG, "emergency contact:$it")
-                            mEmergencyCall.emergencyContacts.add(it)
+                        if (!TextUtils.isEmpty(name)) {
+                            WmContact.create(name, num)?.let {
+                                mEmergencyCall.emergencyContacts.add(it)
+                            }
+                            sjUniWatch.wmLog.logD(TAG, "emergency contact:$mEmergencyCall")
+                        } else {
+                            mEmergencyCall.isEnabled = false
                         }
-
-                        getEmergencyContactBack(mEmergencyCall)
-                    } else {
-                        getEmergencyContactBack(mEmergencyCall)
                     }
+
+                    emergencyNumberEmitter?.onNext(mEmergencyCall)
                 }
             }
         }
