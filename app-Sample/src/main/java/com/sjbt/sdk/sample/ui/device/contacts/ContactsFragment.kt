@@ -13,12 +13,14 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.base.sdk.entity.apps.WmContact
-import com.sjbt.sdk.sample.BuildConfig
+import com.base.sdk.entity.settings.WmEmergencyCall
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
@@ -35,34 +37,25 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import kotlin.random.Random
 
 
 class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
     private val viewBind: FragmentContactsBinding by viewBinding()
     private val viewModel: ContactsViewModel by viewModels()
-    private val emergencyModel: EmergencyContactViewModel by viewModels()
+
     private lateinit var adapter: ContactsAdapter
-    private var selfCheck = false
 
     private val pickContact =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val uri = result.data?.data
             if (result.resultCode == Activity.RESULT_OK && uri != null) {
-                getContact(uri, false)
+                getContact(uri)
             }
         }
 
-    private val pickEmergencyContact =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val uri = result.data?.data
-            if (result.resultCode == Activity.RESULT_OK && uri != null) {
-                getContact(uri, true)
-            }
-        }
 
-    private fun getContact(uri: Uri, emergency: Boolean) {
+    private fun getContact(uri: Uri) {
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
@@ -82,13 +75,8 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 number = number.replace(" ".toRegex(), "")
                 val newContact = WmContact.create(name, number)
                 newContact?.let {
-                    if (emergency) {
-                        promptProgress.showProgress("")
-                        emergencyModel.setEmergencyContact(it)
-                    } else {
-                        promptProgress.showProgress("")
-                        viewModel.addContacts(it)
-                    }
+                    promptProgress.showProgress("")
+                    viewModel.addContacts(it)
                 }
             }
         }
@@ -150,26 +138,6 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             viewModel.requestContacts()
         }
         viewBind.loadingView.associateViews = arrayOf(viewBind.recyclerView)
-        viewBind.itemEmergencyContactSwitch.getSwitchView()
-            ?.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (!selfCheck) {
-//                    promptProgress.showProgress("")
-//                    emergencyModel.setEmergencyEnbalbe(isChecked)
-                }
-                selfCheck = false
-            }
-
-        viewBind.itemEmergencyContact.setOnClickListener {
-            viewLifecycleScope.launchWhenResumed {
-                PermissionHelper.requestContacts(this@ContactsFragment) { granted ->
-                    if (granted) {
-                        pickEmergencyContact.launch(Intent(Intent.ACTION_PICK).apply {
-                            type = ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE
-                        })
-                    }
-                }
-            }
-        }
 
         viewBind.fabAdd.setOnClickListener {
             viewLifecycleScope.launchWhenResumed {
@@ -208,11 +176,10 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             } else {
                                 viewBind.loadingView.visibility = View.GONE
                             }
-
+                            Timber.i("requestContacts: contacts$contacts ]")
                             adapter.sources = contacts
                             adapter.notifyDataSetChanged()
-
-                            emergencyModel.requestEmegencyCall()
+//                            emergencyModel.requestEmegencyCall()
 
                         }
 
@@ -245,71 +212,6 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
                         is ContactsEvent.NavigateUp -> {
                             findNavController().navigateUp()
-                        }
-                    }
-                }
-            }
-
-            launch {
-                emergencyModel.flowState.collect { state ->
-                    when (state.requestEmergencyCall) {
-                        is Fail -> {
-                            viewBind.llEmergency.setAllChildEnabled(false)
-                            promptProgress.dismiss()
-                        }
-
-                        is Success -> {
-                            val emergencyCall = state.requestEmergencyCall()
-                            if (emergencyCall == null) {
-                            } else {
-                                viewBind.loadingView.visibility = View.GONE
-                                viewBind.llEmergency.setAllChildEnabled(true)
-                                if (emergencyCall.emergencyContacts.size > 0) {
-                                    selfCheck = true
-//                                    viewBind.itemEmergencyContactSwitch.getSwitchView()?.isChecked =
-//                                        emergencyCall.isEnabled
-                                    viewBind.itemEmergencyContact.getTitleView()?.text =
-                                        emergencyCall.emergencyContacts[0].name
-                                    viewBind.itemEmergencyContact.getTextView()?.text =
-                                        emergencyCall.emergencyContacts[0].number
-                                }
-                            }
-                            promptProgress.dismiss()
-                            viewBind.fabAdd.show()
-//                            viewModel.requestContacts()
-                        }
-
-                        else -> {}
-                    }
-                }
-            }
-            launch {
-                emergencyModel.flowEvent.collect { event ->
-                    when (event) {
-                        is EmergencyCallEvent.RequestFail -> {
-                            promptToast.showFailed(event.throwable)
-                        }
-
-                        is EmergencyCallEvent.setEmergencyContactFail -> {
-                            promptToast.showFailed(event.throwable)
-                            promptProgress.dismiss()
-                        }
-
-                        is EmergencyCallEvent.setEmergencyContactSuccess -> {
-                            promptProgress.dismiss()
-                            viewBind.itemEmergencyContact.getTitleView()?.text =
-                                if (event.wmEmergencyCall.emergencyContacts.isNotEmpty()) {
-                                    event.wmEmergencyCall.emergencyContacts[0].name
-                                } else {
-                                    ""
-                                }
-                            viewBind.itemEmergencyContact.getTextView()?.text =
-                                if (event.wmEmergencyCall.emergencyContacts.isNotEmpty()) {
-                                    event.wmEmergencyCall.emergencyContacts[0].number
-                                } else {
-                                    ""
-                                }
-
                         }
                     }
                 }

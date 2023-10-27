@@ -20,6 +20,7 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.data.device.isConnected
 import com.sjbt.sdk.sample.databinding.FragmentDialLibraryBinding
+import com.sjbt.sdk.sample.databinding.FragmentSportLibraryBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
@@ -33,9 +34,9 @@ import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 
-class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
+class SportLibraryFragment : BaseFragment(R.layout.fragment_sport_library) {
 
-    private val viewBind: FragmentDialLibraryBinding by viewBinding()
+    private val viewBind: FragmentSportLibraryBinding by viewBinding()
     private val sportLibraryViewModel: SportLibraryViewModel by viewModels()
     private val sportInstalledViewModel: SportInstalledViewModel by viewModels()
     private var wmSports: MutableList<LocalSportLibrary.LocalSport>? = mutableListOf()
