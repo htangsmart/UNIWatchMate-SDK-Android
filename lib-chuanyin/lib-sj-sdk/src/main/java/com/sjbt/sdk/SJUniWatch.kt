@@ -1122,6 +1122,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type
             || payloadPackage.actionType == RequestType.REQ_TYPE_WRITE.type
             || payloadPackage.actionType == RequestType.REQ_TYPE_READ.type
+            || payloadPackage.actionType == RequestType.REQ_TYPE_EXECUTE.type
         ) {
             wmLog.logD(TAG, "Each node msg")
             parseResponseEachNode(payloadPackage, msgBean)
@@ -1311,7 +1312,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_WEATHER -> {
-                            appWeather.weatherBusiness(it)
+                            appWeather.weatherBusiness(payloadPackage, it)
                         }
 
                         URN_APP_RATE -> {

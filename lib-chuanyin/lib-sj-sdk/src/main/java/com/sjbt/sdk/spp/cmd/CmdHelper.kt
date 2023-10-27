@@ -1930,7 +1930,7 @@ object CmdHelper {
         }
 
         payloadPackage.putData(
-            getUrnId(URN_APP_SETTING, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_SIX_DAYS),
+            getUrnId(URN_APP_SETTING, URN_APP_WEATHER, URN_APP_WEATHER_PUSH_SEVEN_DAYS),
             byteBuffer.array()
         )
 

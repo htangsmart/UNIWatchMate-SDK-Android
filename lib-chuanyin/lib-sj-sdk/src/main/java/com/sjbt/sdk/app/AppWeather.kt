@@ -1,16 +1,16 @@
 package com.sjbt.sdk.app
 
+import android.text.TextUtils
 import com.base.sdk.entity.apps.WmWeather
 import com.base.sdk.entity.apps.WmWeatherRequest
 import com.base.sdk.entity.apps.WmWeatherTime
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.base.sdk.port.app.AbAppWeather
 import com.sjbt.sdk.SJUniWatch
-import com.sjbt.sdk.entity.ErrorCode
-import com.sjbt.sdk.entity.MsgBean
-import com.sjbt.sdk.entity.NodeData
+import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.spp.cmd.CmdHelper
-import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SIX_DAYS
+import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_ALL
+import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SEVEN_DAYS
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_TODAY
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
@@ -19,6 +19,8 @@ import java.nio.charset.StandardCharsets
 
 class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
     private var pushWeatherEmitter: SingleEmitter<Boolean>? = null
+    private val requestWeather: PublishSubject<WmWeatherRequest> = PublishSubject.create()
+    override val observeWeather: PublishSubject<WmWeatherRequest> = requestWeather
     private val TAG = "AppWeather"
 
     override fun isSupport(): Boolean {
@@ -106,32 +108,59 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
         sjUniWatch.wmLog.logE(TAG, "msg time out:" + msgBean)
     }
 
-    private val requestWeather: PublishSubject<WmWeatherRequest> = PublishSubject.create()
 
-    override val observeWeather: PublishSubject<WmWeatherRequest> = requestWeather
+    fun weatherBusiness(payloadPackage: PayloadPackage, nodeData: NodeData) {
+        when (nodeData.urn[3]) {
+            URN_APP_WEATHER_PUSH_ALL -> {
+                val bcp = String(nodeData.data)
 
-    fun weatherBusiness(it: NodeData) {
-        when (it.urn[3]) {
-            URN_APP_WEATHER_PUSH_TODAY -> {
-                if (it.dataLen.toInt() == 1) {
-                    val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
-                    sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
-                    pushWeatherEmitter?.onSuccess(result)
-                } else {
-                    val bcp = String(it.data, StandardCharsets.UTF_8)
-                    observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.TODAY))
+                if(!TextUtils.isEmpty(bcp)){
+                    val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.TODAY)
+                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
+                    observeWeather?.onNext(weatherRequest)
                 }
             }
 
-            URN_APP_WEATHER_PUSH_SIX_DAYS -> {
-                if (it.dataLen.toInt() == 1) {
-                    val result = it.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
-                    sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
-                    pushWeatherEmitter?.onSuccess(result)
-                } else {
-                    val bcp = String(it.data, StandardCharsets.UTF_8)
-                    observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS))
+            URN_APP_WEATHER_PUSH_TODAY -> {
+
+                if (payloadPackage.actionType == RequestType.REQ_TYPE_EXECUTE.type) {
+                    val bcp = String(nodeData.data)
+                    val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.TODAY)
+
+                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
+                    observeWeather?.onNext(weatherRequest)
+
+                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type || payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
+                    if (nodeData.dataLen.toInt() == 1) {
+                        val result = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                        sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
+                        pushWeatherEmitter?.onSuccess(result)
+                    } else {
+                        val bcp = String(nodeData.data, StandardCharsets.UTF_8)
+                        observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.TODAY))
+                    }
                 }
+            }
+
+            URN_APP_WEATHER_PUSH_SEVEN_DAYS -> {
+
+                if (payloadPackage.actionType == RequestType.REQ_TYPE_EXECUTE.type) {
+                    val bcp = String(nodeData.data)
+                    val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS)
+                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
+                    observeWeather?.onNext(weatherRequest)
+
+                } else {
+                    if (nodeData.dataLen.toInt() == 1) {
+                        val result = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
+                        sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
+                        pushWeatherEmitter?.onSuccess(result)
+                    } else {
+                        val bcp = String(nodeData.data, StandardCharsets.UTF_8)
+                        observeWeather?.onNext(WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS))
+                    }
+                }
+
             }
         }
     }
