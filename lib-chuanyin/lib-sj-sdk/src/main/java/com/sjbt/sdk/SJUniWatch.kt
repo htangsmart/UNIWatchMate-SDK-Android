@@ -615,11 +615,11 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         )
 
                                         if (msgBean.divideType == DIVIDE_N_2) {//不分包消息
-                                            subPkObservableEmitter?.onComplete()
                                             var payloadPackage: PayloadPackage =
                                                 PayloadPackage.fromByteArray(msgBean.payload)
-
                                             parseResponseNodePayload(msgBean, payloadPackage)
+
+                                            subPkObservableEmitter?.onComplete()
                                         } else {//分包消息
 
                                             if (msgBean.divideType == DIVIDE_Y_F_2) {
@@ -1268,9 +1268,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                         }
 
                         URN_APP_SPORT -> {
-                            when (it.urn[2]) {
-
-                            }
+                            appSport.appSportBusiness(it)
                         }
 
                         URN_APP_CONTACT -> {
