@@ -127,12 +127,15 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                             promptToast.showFailed(event.throwable)
                         }
 
-                        is SportEvent.DialRemoved -> {
+                        is SportEvent.SportRemoved -> {
                             promptProgress.dismiss()
                             viewBind.loadingView.visibility = View.GONE
                             adapter.notifyItemRemoved(event.position)
                         }
-
+                        is SportEvent.SportSortSuccess -> {
+                            promptProgress.dismiss()
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
             }
@@ -169,6 +172,7 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
             context?.apply {
                 holder?.itemView?.setBackgroundColor(resources.getColor(R.color.white))
             }
+            promptProgress.showProgress("")
             applicationScope.launch {
                 viewModel.sortFixedSportList()
             }
