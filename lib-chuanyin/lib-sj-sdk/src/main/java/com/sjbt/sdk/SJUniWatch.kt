@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothDevice
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
+import android.util.Log
+import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
@@ -16,6 +18,13 @@ import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.data.WmBatteryInfo
 import com.base.sdk.entity.settings.*
 import com.google.gson.Gson
+import com.polidea.rxandroidble3.LogConstants
+import com.polidea.rxandroidble3.LogOptions
+import com.polidea.rxandroidble3.RxBleClient
+import com.polidea.rxandroidble3.exceptions.BleScanException
+import com.polidea.rxandroidble3.scan.ScanFilter
+import com.polidea.rxandroidble3.scan.ScanResult
+import com.polidea.rxandroidble3.scan.ScanSettings
 import com.sjbt.sdk.app.*
 import com.sjbt.sdk.dfu.SJTransferFile
 import com.sjbt.sdk.entity.*
@@ -35,7 +44,9 @@ import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.ClsUtils
 import com.sjbt.sdk.utils.SharedPreferencesUtils
 import com.sjbt.sdk.utils.UrlParse
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.*
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.ByteBuffer
 
@@ -149,6 +160,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     //当前消息的节点信息
     var mPayloadPackage: PayloadPackage? = null
+    lateinit var rxBleClient: RxBleClient
 
     init {
         mContext = context
@@ -241,6 +253,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         if (mBtAdapter.isEnabled) {
             btStateChange(WmConnectState.BT_DISABLE)
         }
+
+        rxBleClient = RxBleClient.create(mContext)
+        RxBleClient.updateLogOptions(
+            LogOptions.Builder()
+                .setLogLevel(LogConstants.INFO)
+                .setMacAddressLogSetting(LogConstants.MAC_ADDRESS_FULL)
+                .setUuidsLogSetting(LogConstants.UUIDS_FULL)
+                .setShouldLogAttributeValues(true)
+                .build()
+        )
 
         appCamera.startCameraThread()
     }
@@ -1527,19 +1549,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         return Observable.create { emitter ->
             discoveryObservableEmitter = emitter
 
-            //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            //                    mContext?.let {
-            //                        if (ActivityCompat.checkSelfPermission(
-            //                                it, Manifest.permission.BLUETOOTH_SCAN
-            //                            ) != PackageManager.PERMISSION_GRANTED
-            //                        ) {
-            //                            discoveryObservableEmitter?.onError(RuntimeException("permission denied"))
-            //                            return
-            //                        }
-            //                    }
-            //                }
             wmLog.logD(TAG, "discoveryObservableEmitter:$discoveryObservableEmitter")
-            mBtAdapter?.startDiscovery()
+//            mBtAdapter?.startDiscovery()
+
+            if (rxBleClient.isScanRuntimePermissionGranted) {
+                scanBleDevices()
+            }
 
             val stopAfter: Long = when (wmTimeUnit) {
                 WmTimeUnit.SECONDS -> {
@@ -1571,10 +1586,81 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     //                        ) {
                     //                            return
                     //                        }
-                    mBtAdapter?.cancelDiscovery()
+//                    mBtAdapter?.cancelDiscovery()
+                    discoveryObservableEmitter?.onComplete()
+                    dispose()
                 }
             }, stopAfter)
+
         }
+    }
+
+
+    private var scanDisposable: Disposable? = null
+
+    private val isScanning: Boolean
+        get() = scanDisposable != null
+
+    private fun scanBleDevices() {
+        val scanSettings = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+            .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+            .build()
+
+        val scanFilter = ScanFilter.Builder()
+//            .setDeviceAddress("B4:99:4C:34:DC:8B")
+            // add custom filters if needed
+            .build()
+
+        rxBleClient.scanBleDevices(scanSettings, scanFilter)
+            .observeOn(AndroidSchedulers.mainThread())
+            .doFinally { dispose() }
+            .subscribe({
+                addScanResult(it)
+            }, {
+                onScanFailure(it)
+            })
+            .let { scanDisposable = it }
+    }
+
+    fun addScanResult(bleScanResult: ScanResult) {
+        val bleDevice = bleScanResult.bleDevice
+        if (!TextUtils.isEmpty(bleDevice.name)) {
+            wmLog.logD(TAG, "scanResult device:" + bleScanResult.bleDevice)
+            wmLog.logD(
+                TAG,
+                "scanResult scanRecord hex:" + BtUtils.bytesToHexString(bleScanResult.scanRecord.bytes)
+            )
+
+            wmLog.logD(
+                TAG,
+                "scanResult scanRecord hex:" + bleScanResult.scanRecord.getManufacturerSpecificData()
+            )
+
+            val manuData = bleScanResult.scanRecord.manufacturerSpecificData.get(0x01A0)
+
+            manuData?.let {
+                if (BtUtils.bytesToHexString(manuData).startsWith("A1")) {
+                    discoveryObservableEmitter.onNext(WmDiscoverDevice(bleDevice.bluetoothDevice,bleScanResult.rssi))
+                }
+            }
+
+
+//             scanResult device:RxBleDeviceImpl{MAC='BE:CE:78:07:34:30', name=XS09 Ultra-430}
+//             scanResult device:0201020AFF A001A1 BECE7807343 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+//             scanResult device:RxBleDeviceImpl{MAC='D6:33:0C:31:0E:25', name=oraimo Watch ES_0E25}
+//             scanResult device:02010603020D18171678FE D6330C310E25 3D75010200B4000029330C310E2515096F7261696D6F2057617463682045535F30453235000000000000000000
+        }
+    }
+
+    private fun onScanFailure(throwable: Throwable) {
+        discoveryObservableEmitter?.onError(throwable)
+    }
+
+    private fun dispose() {
+        scanDisposable?.dispose()
+        scanDisposable = null
     }
 
     override fun getDeviceModel(): WmDeviceModel {
