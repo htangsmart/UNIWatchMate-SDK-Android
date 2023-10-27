@@ -7,6 +7,8 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
+import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
@@ -14,6 +16,7 @@ import com.base.sdk.port.setting.AbWmSettings
 import com.base.sdk.port.sync.AbWmSyncs
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 
 /**
  * sdk接口抽象类
@@ -117,6 +120,21 @@ abstract class AbUniWatch {
      * @return 设置是否成功
      */
     abstract fun setDeviceModel(wmDeviceModel: WmDeviceModel): Boolean
+
+    /**
+     * 获取设备信息
+     */
+    abstract fun getDeviceInfo():Single<WmDeviceInfo>
+
+    /**
+     * 获取电量信息
+     */
+    abstract fun getBatteryInfo(): Single<WmBatteryInfo>
+
+    /**
+     * 监听电量信息变化
+     */
+    abstract val observeBatteryChange: Observable<WmBatteryInfo>
 
     /**
      * 开始扫描设备

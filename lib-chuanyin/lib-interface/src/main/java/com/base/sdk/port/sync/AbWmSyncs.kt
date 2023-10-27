@@ -53,17 +53,8 @@ abstract class AbWmSyncs {
     abstract val syncSportSummaryData: AbSyncData<List<WmSportSummaryData>>
 
     /**
-     * syncDeviceInfo(同步设备信息)
-     */
-    abstract val syncDeviceInfoData: AbSyncData<WmDeviceInfo>
-
-    /**
      * syncTodayInfo(同步当日数据)
      */
     abstract val syncTodayInfoData: AbSyncData<WmTodayTotalData>
 
-    /**
-     * sync(更新电量)
-     */
-    abstract val syncBatteryInfo: AbSyncData<WmBatteryInfo>
 }

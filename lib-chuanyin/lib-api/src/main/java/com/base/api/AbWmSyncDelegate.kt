@@ -30,10 +30,6 @@ internal class AbWmSyncDelegate(
         get() = watchObservable.value!!.wmSync.syncActivityData
     override val syncSportSummaryData: AbSyncData<List<WmSportSummaryData>>
         get() = watchObservable.value!!.wmSync.syncSportSummaryData
-    override val syncDeviceInfoData: AbSyncData<WmDeviceInfo>
-        get() = watchObservable.value!!.wmSync.syncDeviceInfoData
     override val syncTodayInfoData: AbSyncData<WmTodayTotalData>
         get() = watchObservable.value!!.wmSync.syncTodayInfoData
-    override val syncBatteryInfo: AbSyncData<WmBatteryInfo>
-        get() = watchObservable.value!!.wmSync.syncBatteryInfo
 }

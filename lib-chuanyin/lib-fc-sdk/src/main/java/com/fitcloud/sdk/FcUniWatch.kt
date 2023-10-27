@@ -13,6 +13,8 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmTimeUnit
 import com.base.sdk.entity.common.WmDiscoverDevice
+import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.log.AbWmLog
@@ -23,6 +25,7 @@ import com.topstep.fitcloud.sdk.connector.FcConnectorState
 import com.topstep.fitcloud.sdk.v2.FcSDK
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 
 abstract class FcUniWatch(
     private val application: Application,
@@ -156,5 +159,14 @@ abstract class FcUniWatch(
             fcSDK?.isForeground = value
         }
 
+    override fun getDeviceInfo(): Single<WmDeviceInfo> {
+        TODO("Not yet implemented")
+    }
 
+    override fun getBatteryInfo(): Single<WmBatteryInfo> {
+        TODO("Not yet implemented")
+    }
+
+    override val observeBatteryChange: Observable<WmBatteryInfo>
+        get() = TODO("Not yet implemented")
 }

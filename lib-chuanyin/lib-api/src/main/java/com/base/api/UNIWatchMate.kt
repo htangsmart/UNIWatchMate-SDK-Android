@@ -11,12 +11,15 @@ import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.base.sdk.entity.common.WmTimeUnit
+import com.base.sdk.entity.data.WmBatteryInfo
+import com.base.sdk.entity.settings.WmDeviceInfo
 import com.base.sdk.port.log.AbWmLog
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.app.AbWmApps
 import com.base.sdk.port.sync.AbWmSyncs
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 
 object UNIWatchMate : AbUniWatch() {
@@ -111,6 +114,17 @@ object UNIWatchMate : AbUniWatch() {
         //出现此情况，说明调用者没有正确调用 init
         throw RuntimeException("No Sdk Match Exception!")
     }
+
+    override fun getDeviceInfo(): Single<WmDeviceInfo> {
+        return uniWatchSubject.value.getDeviceInfo()
+    }
+
+    override fun getBatteryInfo(): Single<WmBatteryInfo> {
+        return uniWatchSubject.value.getBatteryInfo()
+    }
+
+    override val observeBatteryChange: Observable<WmBatteryInfo>
+        get() = uniWatchSubject.value.observeBatteryChange
 
     override fun startDiscovery(
         scanTime: Int,

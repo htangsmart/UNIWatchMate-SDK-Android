@@ -52,6 +52,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
     private lateinit var discoveryObservableEmitter: ObservableEmitter<WmDiscoverDevice>
 
+    var deviceInfoEmitter: SingleEmitter<WmDeviceInfo>? = null
+    var batteryEmitter: SingleEmitter<WmBatteryInfo>? = null
+    var observeBatteryEmitter: ObservableEmitter<WmBatteryInfo>? = null
+
     private var mBindInfo: WmBindInfo? = null
     private var mCurrDevice: BluetoothDevice? = null
     private var mCurrAddress: String? = null
@@ -70,8 +74,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     //同步数据
     private val syncActivity = wmSync.syncActivityData as SyncActivityData
     private val syncCaloriesData = wmSync.syncCaloriesData as SyncCaloriesData
-    private val syncDeviceInfo = wmSync.syncDeviceInfoData as SyncDeviceInfo
-    private val syncBatteryInfo = wmSync.syncBatteryInfo as SyncBatteryInfo
     private val syncDistanceData = wmSync.syncDistanceData as SyncDistanceData
     private val syncHeartRateData = wmSync.syncHeartRateData as SyncHeartRateData
     private val syncOxygenData = wmSync.syncOxygenData as SyncOxygenData
@@ -243,6 +245,32 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         appCamera.startCameraThread()
     }
 
+    override fun getDeviceInfo(): Single<WmDeviceInfo> {
+        return Single.create {
+            deviceInfoEmitter = it
+            getBasicInfo()
+        }
+    }
+
+
+    override fun getBatteryInfo(): Single<WmBatteryInfo> {
+        return Single.create {
+            batteryEmitter = it
+            sendNormalMsg(CmdHelper.batteryInfo)
+        }
+    }
+
+    override val observeBatteryChange: Observable<WmBatteryInfo> =
+        Observable.create { emitter -> observeBatteryEmitter = emitter }
+
+    /**
+     * 获取基本信息
+     * @param
+     */
+    private fun getBasicInfo() {
+        sendNormalMsg(CmdHelper.baseInfoCmd)
+    }
+
     override fun socketNotify(state: Int, obj: Any?) {
         try {
             when (state) {
@@ -293,7 +321,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                             it.cw,
                                             it.ch
                                         )
-                                        syncDeviceInfo.deviceEmitter?.onSuccess(wm)
+
+                                        deviceInfoEmitter?.onSuccess(wm)
                                     }
                                 }
 
@@ -310,8 +339,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         val batteryInfo = WmBatteryInfo(
                                             it.isIs_charging == 1, it.battery_main
                                         )
-                                        syncBatteryInfo.batteryEmitter?.onSuccess(batteryInfo)
-                                        syncBatteryInfo.observeBatteryEmitter?.onNext(
+
+                                        batteryEmitter?.let {
+                                            if (!it.isDisposed) {
+                                                it?.onSuccess(batteryInfo)
+                                            }
+                                        }
+
+                                        observeBatteryEmitter?.onNext(
                                             batteryInfo
                                         )
                                     }
@@ -732,14 +767,14 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             HEAD_COMMON -> {
                 when (msgBean.cmdId.toShort()) {
                     CMD_ID_8001 -> {
-                        syncDeviceInfo.deviceEmitter?.onError(RuntimeException("get deviceInfo time out!"))
+                        deviceInfoEmitter?.onError(RuntimeException("get deviceInfo time out!"))
                     }
 
                     CMD_ID_8002 -> {
                     }
 
                     CMD_ID_8003 -> {
-                        syncBatteryInfo.batteryEmitter?.onError(RuntimeException("get battery time out"))
+                        batteryEmitter?.onError(RuntimeException("get battery time out"))
                     }
 
                     CMD_ID_8004 -> {

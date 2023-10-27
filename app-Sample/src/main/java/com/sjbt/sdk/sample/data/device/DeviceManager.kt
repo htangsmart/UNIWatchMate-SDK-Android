@@ -235,7 +235,7 @@ internal class DeviceManagerImpl(
                 runCatchingWithLog {
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo")
                     val deviceInfo =
-                        UNIWatchMate.wmSync.syncDeviceInfoData.syncData(System.currentTimeMillis())
+                        UNIWatchMate.getDeviceInfo()
                             .await()
                     UNIWatchMate.wmLog.logI(TAG, "getDeviceInfo=\n$deviceInfo")
                     CacheDataHelper.setCurrentDeviceInfo(deviceInfo)
@@ -313,8 +313,8 @@ internal class DeviceManagerImpl(
         }
         .flatMapLatest {//flatMap 不同的是，它会取消先前启动的流
 
-            UNIWatchMate?.wmSync?.syncBatteryInfo?.observeSyncData?.startWith(
-                UNIWatchMate.wmSync!!.syncBatteryInfo.syncData(System.currentTimeMillis())
+            UNIWatchMate?.observeBatteryChange?.startWith(
+                UNIWatchMate.getBatteryInfo()
             )?.retryWhen {
                 it.flatMap { throwable ->
                     Observable.timer(7500, TimeUnit.MILLISECONDS)
