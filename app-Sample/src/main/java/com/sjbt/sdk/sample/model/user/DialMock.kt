@@ -4,8 +4,11 @@ import android.os.Parcel
 import android.os.Parcelable
 
 /**
- * Created by qiyachao
- * on 2023_10_11
+ *
+ * @property dialCoverRes 封面资源文件id，如果为-1则为存储中选择的表盘文件
+ * @property dialAssert  assert文件中内置的表盘的名称
+ * @property installed 已安装 1
+ * @property id
  */
 data class DialMock(val dialCoverRes:Int, val dialAssert: String?,val installed:Int,val id: String) : Parcelable {
     constructor(parcel: Parcel) : this(

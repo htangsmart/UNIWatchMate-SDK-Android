@@ -325,6 +325,7 @@
     <string name="ds_sport_build_in">Sport Build-in</string>
     <string name="ds_sport_library">Sport Library</string>
 
+    <string name="ds_sport_at_most">at most 12</string>
     <string name="ds_sport_test_install_des">Used to test install sport</string>
     <string name="ds_sport_test_install">Sport Test install</string>
     <string name="tip_inner_sport_del_error">The built-in sport cannot be removed</string>

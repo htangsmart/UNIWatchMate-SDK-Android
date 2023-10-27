@@ -3,7 +3,7 @@ package com.base.sdk.entity.settings
 /**
  * Heart rate alerts(心率提醒)
  */
-class WmHeartRateAlerts(
+open class WmHeartRateAlerts(
     /**
      * Heart rate auto measure(心率自动测量开关)
      */
@@ -23,7 +23,7 @@ class WmHeartRateAlerts(
     /**
      * Age(年龄)
      */
-    val age: Int
+    val age: Int,
 ) {
     constructor(age: Int) : this(
         false, DEFAULT_MAX_HEART_RATE, HeartRateThresholdAlert(), HeartRateThresholdAlert(), age
@@ -46,13 +46,10 @@ class WmHeartRateAlerts(
     // 内部类，用于表示心率过高提醒的设置
     data class HeartRateThresholdAlert(
         var threshold: Int = THRESHOLDS[0],  // 默认值为阈值列表的第一个值
-        var isEnable: Boolean = false
+        var isEnable: Boolean = false,
     )
 
-    init {
-        if (maxHeartRate <= 0) {
-            maxHeartRate = DEFAULT_MAX_HEART_RATE
-        }
+    fun refreshIntervals() {
 
         /**
          *
@@ -71,7 +68,12 @@ class WmHeartRateAlerts(
             ((maxHeartRate - age) * 0.9).toInt(),
             maxHeartRate
         )
-
+    }
+    init {
+        if (maxHeartRate <= 0) {
+            maxHeartRate = DEFAULT_MAX_HEART_RATE
+        }
+        refreshIntervals()
     }
 
 

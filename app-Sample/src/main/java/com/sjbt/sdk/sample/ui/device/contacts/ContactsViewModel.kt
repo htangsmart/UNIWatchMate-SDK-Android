@@ -38,7 +38,7 @@ class ContactsViewModel : StateEventViewModel<ContactsState, ContactsEvent>(Cont
     private val deviceManager = Injector.getDeviceManager()
 
     init {
-//        requestContacts()
+        requestContacts()
     }
 
     fun requestContacts() {
