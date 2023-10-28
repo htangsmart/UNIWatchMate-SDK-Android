@@ -69,7 +69,7 @@ class DrinkWaterConfigFragment : BaseFragment(R.layout.fragment_drink_water_conf
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 deviceManager.flowStateConnected().collect {
-//                    viewBind.layoutContent.setAllChildEnabled(it)
+                    viewBind.layoutContent.setAllChildEnabled(it)
                 }
             }
             launch {

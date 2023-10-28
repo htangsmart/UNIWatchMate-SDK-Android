@@ -2,14 +2,21 @@ package com.sjbt.sdk.sample.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentSyncBinding
+import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 
 /**
  * **Document**
@@ -62,7 +69,7 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
 
     private val viewBind: FragmentSyncBinding by viewBinding()
 
-//  private val deviceManager = Injector.getDeviceManager()
+    private val deviceManager = Injector.getDeviceManager()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -76,6 +83,11 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
         viewBind.itemSport.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
+            launch {
+                deviceManager.flowStateConnected().collect {
+                    viewBind.refreshLayout.setAllChildEnabled(it)
+                }
+            }
 //            launch {
 //                deviceManager.configFeature.observerDeviceInfo().startWithItem(
 //                    deviceManager.configFeature.getDeviceInfo()

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CompoundButton
 import com.base.api.UNIWatchMate
+import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.settings.WmUnitInfo
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
@@ -11,9 +12,11 @@ import com.sjbt.sdk.sample.databinding.FragmentFunctionConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 
@@ -47,6 +50,11 @@ class FunctionConfigFragment : BaseFragment(R.layout.fragment_function_config),
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycle.launchRepeatOnStarted {
+            launch {
+                UNIWatchMate.observeConnectState.asFlow().collect {
+                    viewBind.layoutContent.setAllChildEnabled(it.equals(WmConnectState.VERIFIED))
+                }
+            }
             launch {
                 UNIWatchMate.wmSettings.settingUnitInfo.get().toObservable().asFlow().collect{
                     config = it

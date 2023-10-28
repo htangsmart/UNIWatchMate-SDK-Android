@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
 import com.base.api.UNIWatchMate
-import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.apps.WmConnectState
 import com.base.sdk.entity.apps.WmMusicControlType
 import com.base.sdk.entity.apps.WmWeatherTime
@@ -25,7 +24,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
-import kotlinx.coroutines.rx3.awaitFirst
 
 
 class MyApplication : Application() {
@@ -94,7 +92,7 @@ class MyApplication : Application() {
                 UNIWatchMate.wmApps.appWeather.observeWeather.asFlow().collect {
                     if (it.wmWeatherTime == WmWeatherTime.SEVEN_DAYS) {
                         val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenDaysWeather(
-                            getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+                            getTestWeatherdata(WmWeatherTime.SEVEN_DAYS, 32),
                             WmUnitInfo.TemperatureUnit.CELSIUS
                         )?.await()
                         UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
@@ -107,7 +105,7 @@ class MyApplication : Application() {
                         )
                     } else if (it.wmWeatherTime == WmWeatherTime.TODAY) {
                         val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
-                            getTestWeatherdata(WmWeatherTime.TODAY),
+                            getTestWeatherdata(WmWeatherTime.TODAY, 32),
                             WmUnitInfo.TemperatureUnit.CELSIUS
                         )?.await()
                         UNIWatchMate.wmLog.logE(
@@ -152,15 +150,15 @@ class MyApplication : Application() {
                     ToastUtil.showToast("FindMobile $it", true)
                     val topActivity = ActivityUtils.getTopActivity()
                     if (topActivity != null && topActivity is BaseActivity) {
-                        topActivity.showFindPhoneDialogWithCallback(
-                            getString(R.string.ds_find_phone_found),
-                            getString(R.string.ds_find_phone_stop)
-                        ) {//if Synchronizing data
-                            applicationScope.launch {
-                                val result = UNIWatchMate.wmApps.appFind.stopFindMobile().await()
-                                ToastUtil.showToast("reply observeFindMobile result: $result", true)
-                            }
-                        }
+                        topActivity.showFindPhoneDialogWithCallback( getString(R.string.ds_find_phone_found),
+                            getString(R.string.ds_find_phone_stop),object:CallBack<String>{
+                                override fun callBack(o: String) {
+                                    applicationScope.launch {
+                                        val result = UNIWatchMate.wmApps.appFind.stopFindMobile().await()
+                                        ToastUtil.showToast("reply observeFindMobile result: $result", true)
+                                    }
+                                }
+                            })
                     }
                 }
             }

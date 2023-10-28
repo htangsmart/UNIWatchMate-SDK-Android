@@ -1447,7 +1447,7 @@ object CmdHelper {
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
-        byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
+        byteBuffer.put(sedentaryReminder.frequency.value.toByte())
 
         byteBuffer.put(
             if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
@@ -1491,7 +1491,7 @@ object CmdHelper {
         byteBuffer.put(sedentaryReminder.timeRange.startMinute.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.timeRange.endMinute.toByte())
-        byteBuffer.put(sedentaryReminder.frequency.ordinal.toByte())
+        byteBuffer.put(sedentaryReminder.frequency.value.toByte())
 
         byteBuffer.put(
             if (sedentaryReminder.noDisturbLunchBreak.isEnabled) {
@@ -1505,7 +1505,7 @@ object CmdHelper {
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endHour.toByte())
         byteBuffer.put(sedentaryReminder.noDisturbLunchBreak.timeRange.endMinute.toByte())
 
-        payloadPackage.putData(getUrnId(URN_2, URN_5), byteBuffer.array())
+        payloadPackage.putData(getUrnId(URN_2, URN_6), byteBuffer.array())
         return payloadPackage
     }
 

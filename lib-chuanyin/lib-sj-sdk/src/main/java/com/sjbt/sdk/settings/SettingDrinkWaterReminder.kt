@@ -66,13 +66,13 @@ class SettingDrinkWaterReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSede
                 val frequency = byteBuffer.get()
 
                 val timeFrequency = when (frequency.toInt()) {
-                    0 -> {
+                    WmTimeFrequency.EVERY_30_MINUTES.value -> {
                         WmTimeFrequency.EVERY_30_MINUTES
                     }
-                    1 -> {
+                    WmTimeFrequency.EVERY_1_HOUR.value -> {
                         WmTimeFrequency.EVERY_1_HOUR
                     }
-                    2 -> {
+                    WmTimeFrequency.EVERY_1_HOUR.value -> {
                         WmTimeFrequency.EVERY_1_HOUR_30_MINUTES
                     }
                     else -> {

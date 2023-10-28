@@ -31,7 +31,7 @@ import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.dialog.CameraBusDialog
-import com.sjbt.sdk.sample.dialog.CameraBusDialog.TIP_TYPE_OPEN_CAMERA
+import com.sjbt.sdk.sample.dialog.CameraBusDialog.Companion.TIP_TYPE_OPEN_CAMERA
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.SingleMediaScanner
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
@@ -200,8 +200,8 @@ class CameraActivity : BaseActivity() {
             mCameraBusDialog!!.dismiss()
             mCameraBusDialog = null
         }
-        mCameraBusDialog = CameraBusDialog(this, type, object : CallBack<Int?> {
-            override fun callBack(o: Int?) {
+        mCameraBusDialog = CameraBusDialog(this, type, object : CallBack<Int> {
+            override fun callBack(o: Int) {
             }
 
         })

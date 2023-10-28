@@ -13,14 +13,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.base.sdk.entity.apps.WmContact
-import com.base.sdk.entity.settings.WmEmergencyCall
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.base.Fail
@@ -29,9 +26,8 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.databinding.FragmentContactsBinding
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
-import com.sjbt.sdk.sample.utils.setAllChildEnabled
-import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.showFailed
+import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
@@ -53,7 +49,6 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 getContact(uri)
             }
         }
-
 
     private fun getContact(uri: Uri) {
         val projection = arrayOf(

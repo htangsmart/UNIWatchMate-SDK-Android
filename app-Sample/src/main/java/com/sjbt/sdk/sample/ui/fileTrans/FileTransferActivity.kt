@@ -26,6 +26,7 @@ import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.ActivityFileTransferBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.base.BaseActivity
+import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.ui.dialog.SendMusicDialog
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
@@ -42,7 +43,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import java.io.File
 import java.util.*
- val TAG = "FileTransferActivity"
+
+val TAG = "FileTransferActivity"
+
 class FileTransferActivity : BaseActivity(), View.OnClickListener,
     CancelTransferFileListener {
     private var mMusicAdapter: MusicAdapter? = null
@@ -263,8 +266,10 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                                 mLocalFileBeanList.clear()
                                 mLocalFileBeanList.addAll(mLocalTxtFileBeans)
                                 mMusicAdapter!!.notifyDataSetChanged()
-                                Log.e("Send-电子书",
-                                    System.currentTimeMillis().toString() + "==========3")
+                                Log.e(
+                                    "Send-电子书",
+                                    System.currentTimeMillis().toString() + "==========3"
+                                )
                                 hideLoadingDlg()
                             }
 
@@ -419,6 +424,7 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                     Config.CLICK_RETRY -> prepareSendFiles()
                 }
             }
+
             prepareSendFiles()
         }
     }
@@ -539,11 +545,13 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                                 if (wmTransferState.sendingFile != null) {
                                     name = FileUtils.getFileName(wmTransferState.sendingFile)
                                 }
-                                mSendMusicDialog!!.updateProgress(name,
+                                mSendMusicDialog!!.updateProgress(
+                                    name,
                                     wmTransferState.index,
                                     wmTransferState.total,
                                     wmTransferState.progress.toDouble(),
-                                    cancelSend)
+                                    cancelSend
+                                )
                             }
                         } else if (wmTransferState.state === State.FINISH) {
                             if (transferType === FileType.MUSIC) {
@@ -554,7 +562,8 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                                 mSendVideCount = wmTransferState.index
                             }
                             UNIWatchMate.wmLog.logD(
-                                TAG, "State.FINISH)")
+                                TAG, "State.FINISH)"
+                            )
                             transferEnd()
                             fileSelected.clear()
                             binding!!.tvSend.text = getString(R.string.send_no_count)
@@ -590,7 +599,8 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
 
     private fun sendEndTransferFile() {
         UNIWatchMate.wmLog.logD(
-            TAG, "发送结束命令")
+            TAG, "发送结束命令"
+        )
 
         hideLoadingDlg()
         setTransferring(false)
@@ -601,11 +611,13 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
         hideLoadingDlg()
         setTransferring(false)
         showConfirmDialogWithCallback(getString(R.string.disconnect_tips),
-            getString(R.string.submit)
-        ) {
-            setTransferring(false)
-            finish()
-        }
+            getString(R.string.submit), object : CallBack<String> {
+                override fun callBack(o: String) {
+                    setTransferring(false)
+                    finish()
+                }
+            }
+        )
     }
 
     override fun onDestroy() {
@@ -623,11 +635,13 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                 transferType = FileType.MUSIC
                 tvMemoryLimit!!.text = getString(R.string.file_memory_size_tips)
             }
+
             2 -> {
                 mLocalTxtFileBeans.addAll(AudioUtils.getLocalDwonloadTxtFiles())
                 transferType = FileType.TXT
                 tvMemoryLimit!!.text = getString(R.string.file_memory_size_tips)
             }
+
             3 -> {
                 mLocalVideoBeans =
                     GetVideoListUtils.instance.loadPageMediaData(this@FileTransferActivity)

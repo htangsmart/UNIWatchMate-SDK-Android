@@ -15,6 +15,7 @@ import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.databinding.DialogDialLibraryDfuBinding
+import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.getParcelableCompat
@@ -72,10 +73,12 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
                 PermissionHelper.requestBle(this) { granted ->
                     if (granted) {
                         isCancelable = false
-                        dfuViewModel.startDfu(dialPacket) {
-                            UNIWatchMate.wmLog.logI("DfuViewModel", it.toString())
-                            onWmTransferStateChange(it)
-                        }
+                        dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
+                            override fun callBack(o: WmTransferState) {
+                                UNIWatchMate.wmLog.logI("DfuViewModel", it.toString())
+                                onWmTransferStateChange(o)
+                            }
+                        })
                     }
                 }
             }

@@ -93,6 +93,7 @@ class SleepConfigFragment : BaseFragment(R.layout.fragment_sleep_config),
                     showStartTimeDialog(it.startHour * 60 + it.startMinute)
                 }
             }
+
             viewBind.itemEndTime -> {
                 config?.let {
                     showEndTimeDialog(it.endHour * 60 + it.endMinute)

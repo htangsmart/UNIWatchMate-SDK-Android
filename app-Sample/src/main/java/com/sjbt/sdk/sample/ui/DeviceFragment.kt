@@ -15,6 +15,9 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
+import com.sjbt.sdk.sample.dialog.CallBack
+import com.sjbt.sdk.sample.dialog.WeatherCodeTestDialog
+import com.sjbt.sdk.sample.model.WeatherCode
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
 import com.sjbt.sdk.sample.ui.fileTrans.FileTransferActivity
@@ -40,7 +43,9 @@ fun WmConnectState.toStringRes(): Int {
 }
 
 const val TAG = "DeviceFragment"
-class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDialogFragment.Listener{
+
+class DeviceFragment : BaseFragment(R.layout.fragment_device),
+    DeviceConnectDialogFragment.Listener {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
 
@@ -90,7 +95,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         Timber.i("flowConnectorState=$it")
                     }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-                  viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
+                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
 
@@ -117,9 +122,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDeviceBind -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
+
             viewBind.imgDeviceAdd -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
+
             viewBind.itemDeviceInfo -> {
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
             }
@@ -156,6 +163,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemContacts -> {
                 findNavController().navigate(DeviceFragmentDirections.toContacts())
             }
+
             viewBind.itemEmergencyContact -> {
                 findNavController().navigate(DeviceFragmentDirections.toEmergencyContacts())
             }
@@ -188,6 +196,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDial -> {
                 findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
             }
+
             viewBind.itemSportPush -> {
                 findNavController().navigate(DeviceFragmentDirections.toSportHomePage())
             }
@@ -201,11 +210,19 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             }
 
             viewBind.itemTestWeather -> {
-//                showChooseWeatherDialog()
+                showChooseWeatherDialog()
 
+            }
+        }
+    }
+
+    private fun showChooseWeatherDialog() {
+        context?.let {
+            WeatherCodeTestDialog(it
+            ) { weatherCode ->
                 applicationScope.launchWithLog {
                     val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
-                        getTestWeatherdata(WmWeatherTime.TODAY),
+                        getTestWeatherdata(WmWeatherTime.TODAY, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
                     UNIWatchMate.wmLog.logE(TAG, "push today weather result = $result")
@@ -217,7 +234,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         }"
                     )
                     val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenDaysWeather(
-                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
                     UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
@@ -229,8 +246,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         }"
                     )
                 }
-            }
-
+            }.show()
         }
     }
 
@@ -241,7 +257,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
     override fun navToBgRunSettings() {
         findNavController().navigate(DeviceFragmentDirections.toBgRunSettings())
     }
-
 
 
 }

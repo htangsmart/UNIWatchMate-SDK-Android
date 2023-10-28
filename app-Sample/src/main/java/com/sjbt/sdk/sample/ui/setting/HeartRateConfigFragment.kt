@@ -1,27 +1,19 @@
 package com.sjbt.sdk.sample.ui.setting
 
-import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.settings.WmHeartRateAlerts
-import com.github.kilnn.wheellayout.OneWheelLayout
-import com.github.kilnn.wheellayout.WheelIntConfig
-import com.github.kilnn.wheellayout.WheelIntFormatter
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.data.device.flowStateConnected
-import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.databinding.FragmentHeartRateConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
-import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
-import kotlinx.coroutines.launch
+import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 
@@ -56,20 +48,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
 //        exerciseGoal=WmSportGoal(1,2.0,3.0,4)
         wmHeartRateAlerts = WmHeartRateAlerts(21)
 
-        lifecycleScope.launchWhenStarted {
-            deviceManager.flowStateConnected().collect {
-                viewBind.layoutContent.setAllChildEnabled(it)
-            }
 
-            UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
-                wmHeartRateAlerts = it
-                updateUi()
-            }
-            UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
-                wmHeartRateAlerts = it
-                updateUi()
-            }
-        }
 
     }
 
@@ -101,6 +80,21 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        lifecycleScope.launchWhenStarted {
+            deviceManager.flowStateConnected().collect {
+                viewBind.layoutContent.setAllChildEnabled(it)
+            }
+
+            UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
+                wmHeartRateAlerts = it
+                updateUi()
+            }
+            UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
+                wmHeartRateAlerts = it
+                updateUi()
+            }
+        }
+
         updateUi()
         viewBind.itemMaxHeartRate.setOnClickListener {
             wmHeartRateAlerts?.let {
