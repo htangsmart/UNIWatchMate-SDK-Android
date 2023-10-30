@@ -73,7 +73,9 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewBind.refreshLayout.setOnRefreshListener {
+            deviceManager.syncData()
+        }
         viewBind.refreshLayout.setOnRefreshListener {
         }
         viewBind.itemStep.clickTrigger(block = blockClick)
@@ -83,25 +85,7 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
         viewBind.itemSport.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
-            launch {
-                deviceManager.flowStateConnected().collect {
-                    viewBind.refreshLayout.setAllChildEnabled(it)
-                }
-            }
-//            launch {
-//                deviceManager.configFeature.observerDeviceInfo().startWithItem(
-//                    deviceManager.configFeature.getDeviceInfo()
-//                ).asFlow().collect {
-//                    viewBind.itemHeartRate.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.HEART_RATE)//心率
-//                    viewBind.itemOxygen.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.OXYGEN)//血氧
-//                    viewBind.itemBloodPressure.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.BLOOD_PRESSURE)//血压
-//                    viewBind.itemTemperature.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.TEMPERATURE)//温度
-//                    viewBind.itemPressure.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.PRESSURE)//压力
-//                    viewBind.itemEcg.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.ECG)//心电实时
-//                    viewBind.itemSport.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.SPORT)//运动
-//                    viewBind.itemGame.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.GAME)//游戏
-//                }
-//            }
+
 //            launch {
 //                deviceManager.flowSyncState.collect { state ->
 //                    if (state == null || state == FcSyncState.SUCCESS) {//refresh none or success
