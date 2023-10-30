@@ -1399,25 +1399,36 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     //    https://static-ie.oraimo.com/oh.htm&mac=15:7E:78:A2:4B:30&projectname=OSW-802N&random=4536abcdhwer54q
+    //    https://static-ie.oraimo.com/oh.htm&15:7E:78:A2:4B:30&OSW-802N&4536abcdhwer54q
     override fun connectScanQr(qrString: String, bindInfo: WmBindInfo): WmDevice? {
         mBindInfo = bindInfo
-        val params = UrlParse.getUrlParams(qrString)
+//        val params = UrlParse.getUrlParams(qrString)
 
-        bindInfo.model = WmDeviceModel.NOT_REG
-        if (params.isNotEmpty()) {
-            val schemeMacAddress = params["mac"]
-            bindInfo.randomCode = params["random"]
-            val projectName = params["projectname"]
-            bindInfo.model = if ("OSW-802N".equals(projectName)) {
-                WmDeviceModel.SJ_WATCH
+        val urlParams = qrString.split("?")
+
+        if (urlParams.isNotEmpty() && urlParams.size >= 2) {
+            val params = urlParams[1].split("&")
+
+            bindInfo.model = WmDeviceModel.NOT_REG
+
+            if (params.isNotEmpty() && params.size >= 3) {
+                val schemeMacAddress = params[0]
+                val projectName = params[1]
+                bindInfo.randomCode = params[2]
+                bindInfo.model = if ("OSW-802N".equals(projectName)) {
+                    WmDeviceModel.SJ_WATCH
+                } else {
+                    WmDeviceModel.NOT_REG
+                }
+
+                return schemeMacAddress?.let {
+                    connect(it, bindInfo)
+                }
+
+
             } else {
-                WmDeviceModel.NOT_REG
+                return WmDevice(bindInfo.model)
             }
-
-            return schemeMacAddress?.let {
-                connect(it, bindInfo)
-            }
-
         } else {
             return WmDevice(bindInfo.model)
         }
@@ -1528,7 +1539,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         }
     }
 
-    private val mObservableConnectState: PublishSubject<WmConnectState> = PublishSubject.create()
+    private val mObservableConnectState: PublishSubject<WmConnectState> =
+        PublishSubject.create()
     override val observeConnectState: PublishSubject<WmConnectState> = mObservableConnectState
 
     override fun getConnectState(): WmConnectState {

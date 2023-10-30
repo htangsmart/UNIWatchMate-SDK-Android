@@ -95,10 +95,15 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         val userInfo = userInfoRepository.flowCurrent.value
         userInfo?.let {
             val deviceModel = UNIWatchMate.getDeviceModel()
-            deviceModel?.let { deviceModel->
+            deviceModel?.let { deviceModel ->
                 val mDevice = UNIWatchMate.connect(
                     address,
-                    WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
+                    WmBindInfo(
+                        it.id.toString(),
+                        it.name,
+                        BindType.DISCOVERY,
+                        WmDeviceModel.SJ_WATCH
+                    )
                 )
                 deviceManager.bind(
                     address, if (name.isNullOrEmpty()) {
@@ -109,31 +114,38 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                 )
 
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
-            }?:{
+            } ?: {
                 ToastUtil.showToast("no deviceModel")
-        }
+            }
         }
     }
 
     fun parseSjScanQr(qrString: String): WmDevice? {
         var wmScanDevice: WmDevice? = null
 
-        val params = UrlParse.getUrlParams(qrString)
-        if (!params.isEmpty()) {
-            wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
-            val schemeMacAddress = params["mac"]
-            val schemeDeviceName = params["projectname"]
-            val random = params["random"]
+//        val params = UrlParse.getUrlParams(qrString)
+        val urlParams = qrString.split("?")
 
-            wmScanDevice.randomCode = random
+        if (urlParams.isNotEmpty()) {
+            val params = urlParams[1].split("&")
+            if (params.isNotEmpty() && params.size >= 3) {
+                wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
 
-            wmScanDevice.address = schemeMacAddress
-            wmScanDevice.isRecognized =
-                !TextUtils.isEmpty(schemeMacAddress) &&
-                        !TextUtils.isEmpty(schemeDeviceName) &&
-                        !TextUtils.isEmpty(random) &&
-                        isLegalMacAddress(schemeMacAddress)
+                val schemeMacAddress = params[0]
+                val schemeDeviceName = params[1]
+                val random = params[2]
+
+                wmScanDevice.randomCode = random
+
+                wmScanDevice.address = schemeMacAddress
+                wmScanDevice.isRecognized =
+                    !TextUtils.isEmpty(schemeMacAddress) &&
+                            !TextUtils.isEmpty(schemeDeviceName) &&
+                            !TextUtils.isEmpty(random) &&
+                            isLegalMacAddress(schemeMacAddress)
+            }
         }
+
         return wmScanDevice
     }
 
@@ -158,7 +170,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                             bindInfo
                         )
                         if (wmDevice != null) {
-                            Timber.i(  "device=$wmDevice")
+                            Timber.i("device=$wmDevice")
                             deviceManager.bind(
                                 wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
                                     UNKNOWN_DEVICE_NAME
@@ -294,22 +306,27 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, WmDeviceModel.SJ_WATCH,"oraimoWatchNeo")?.asFlow()
+                UNIWatchMate.startDiscovery(
+                    12000,
+                    WmTimeUnit.MILLISECONDS,
+                    WmDeviceModel.SJ_WATCH,
+                    "oraimoWatchNeo"
+                )?.asFlow()
                     ?.catch {
                         this::class.simpleName?.let { tag ->
-                            Timber.e( "startDiscovery error ${it.message}")
+                            Timber.e("startDiscovery error ${it.message}")
                         }
                         ToastUtil.showToast(it.message, true)
                     }.onCompletion {
-                    this::class.simpleName?.let { tag ->
-                        Timber.e( "startDiscover onCompletion")
+                        this::class.simpleName?.let { tag ->
+                            Timber.e("startDiscover onCompletion")
+                        }
+                        viewBind.refreshLayout.isRefreshing = false
+                        startScan = false
+                    }.collect {
+                        this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
+                        scanDevicesAdapter.newScanResult(it)
                     }
-                    viewBind.refreshLayout.isRefreshing = false
-                    startScan = false
-                }.collect {
-                    this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
-                    scanDevicesAdapter.newScanResult(it)
-                }
             }
         }
     }
