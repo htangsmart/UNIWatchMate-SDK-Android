@@ -476,8 +476,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                                     val wmWistRaise = WmWistRaise(armScreen == 1)
 
-                                    settingWistRaise.getWmWistRaise(wmWistRaise)
-                                    settingWistRaise.observeWmWistRaiseChange(wmWistRaise)
+                                    settingWistRaise.backWistRaiseSettings(wmWistRaise)
 
                                     val wmSoundAndHaptic = WmSoundAndHaptic(
                                         ringState == 1,
@@ -487,10 +486,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         keepNoVoice == 1
                                     )
 
-                                    settingSoundAndHaptic.getWmWistRaise(wmSoundAndHaptic)
-                                    settingSoundAndHaptic.observeWmWistRaiseChange(
-                                        wmSoundAndHaptic
-                                    )
+                                    settingSoundAndHaptic.backSoundAndHapticSettings(wmSoundAndHaptic)
 
                                 }
 
@@ -1618,7 +1614,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             .let { scanDisposable = it }
     }
 
-    fun addScanResult(bleScanResult: ScanResult) {
+    private fun addScanResult(bleScanResult: ScanResult) {
         val bleDevice = bleScanResult.bleDevice
         if (!TextUtils.isEmpty(bleDevice.name)) {
             wmLog.logD(TAG, "scanResult device:" + bleScanResult.bleDevice)

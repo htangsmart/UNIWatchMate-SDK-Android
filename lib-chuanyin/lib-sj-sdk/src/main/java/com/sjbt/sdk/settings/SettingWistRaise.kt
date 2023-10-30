@@ -14,14 +14,15 @@ class SettingWistRaise(val sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() 
 
     private var mWmWistRaise: WmWistRaise? = null
     private var backWmWistRaise = WmWistRaise();
+    private var isGet = false
 
-    fun getWmWistRaise(wmWistRaise: WmWistRaise) {
+    private fun getWmWistRaise(wmWistRaise: WmWistRaise) {
         backWmWistRaise = wmWistRaise
         mWmWistRaise = WmWistRaise(wmWistRaise.isScreenWakeEnabled)
         getEmitter?.onSuccess(wmWistRaise)
     }
 
-    fun observeWmWistRaiseChange(wmWistRaise: WmWistRaise) {
+    private fun observeWmWistRaiseChange(wmWistRaise: WmWistRaise) {
         backWmWistRaise = wmWistRaise
         mWmWistRaise = WmWistRaise(wmWistRaise.isScreenWakeEnabled)
         observeEmitter?.onNext(wmWistRaise)
@@ -48,11 +49,7 @@ class SettingWistRaise(val sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() 
     }
 
     override fun observeChange(): Observable<WmWistRaise> {
-        return Observable.create(object : ObservableOnSubscribe<WmWistRaise> {
-            override fun subscribe(emitter: ObservableEmitter<WmWistRaise>) {
-                observeEmitter = emitter
-            }
-        })
+        return Observable.create { emitter -> observeEmitter = emitter }
     }
 
     override fun set(obj: WmWistRaise): Single<WmWistRaise> {
@@ -72,13 +69,22 @@ class SettingWistRaise(val sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() 
 
     override fun get(): Single<WmWistRaise> {
         return Single.create { emitter ->
+            isGet = true
             getEmitter = emitter
             sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
         }
     }
 
+    fun backWistRaiseSettings(wmWistRaise: WmWistRaise) {
+        if (isGet) {
+            isGet = false
+            getWmWistRaise(wmWistRaise)
+        } else {
+            observeWmWistRaiseChange(wmWistRaise)
+        }
+    }
+
     fun onTimeOut(nodeData: NodeData) {
-        TODO("Not yet implemented")
     }
 
 }

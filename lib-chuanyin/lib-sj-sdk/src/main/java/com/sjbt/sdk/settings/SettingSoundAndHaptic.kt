@@ -15,6 +15,16 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
     private var sjUniWatch = sjUniWatch
     private var wmSoundAndHaptic: WmSoundAndHaptic? = null
     private var backWmSoundAndHaptic = WmSoundAndHaptic();
+    private var isGet = false
+
+    fun backSoundAndHapticSettings(wmWistRaise: WmSoundAndHaptic){
+       if(isGet){
+           isGet =false
+           getWmWistRaise(wmWistRaise)
+       }else{
+           observeWmWistRaiseChange(wmWistRaise)
+       }
+    }
 
     fun getWmWistRaise(wmWistRaise: WmSoundAndHaptic) {
         backWmSoundAndHaptic = wmWistRaise
@@ -82,7 +92,6 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
         wmSoundAndHaptic?.isSystemHapticFeedback = backWmSoundAndHaptic.isSystemHapticFeedback
 
         setEmitter?.onSuccess(backWmSoundAndHaptic)
-        observeEmitter?.onNext(backWmSoundAndHaptic)
     }
 
     override fun isSupport(): Boolean {
@@ -151,16 +160,15 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
     }
 
     override fun get(): Single<WmSoundAndHaptic> {
-        return Single.create(object : SingleOnSubscribe<WmSoundAndHaptic> {
-            override fun subscribe(emitter: SingleEmitter<WmSoundAndHaptic>) {
-                getEmitter = emitter
-                sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
-            }
-        })
+        return Single.create { emitter ->
+            isGet = true
+            getEmitter = emitter
+            sjUniWatch.sendNormalMsg(CmdHelper.deviceRingStateCmd)
+        }
     }
 
     fun onTimeOut(nodeData: NodeData) {
-        TODO("Not yet implemented")
+
     }
 
 }
