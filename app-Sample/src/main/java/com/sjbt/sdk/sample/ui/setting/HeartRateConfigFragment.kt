@@ -179,7 +179,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         if (DIALOG_MAX_HEART_RATE == tag) {
             wmHeartRateAlerts?.let {
                 it.maxHeartRate = selectValue
-                it.refreshIntervals()
+//                it.refreshIntervals()
                 it.save()
             }
             updateUi()

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmSport
@@ -53,10 +54,9 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_sport_library) {
 
         viewBind.recyclerView.layoutManager = GridLayoutManager(requireContext(), 1)
         viewBind.recyclerView.addItemDecoration(
-            GridSpacingItemDecoration(
-                1,
-                DisplayUtil.dip2px(requireContext(), 15F),
-                true
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
             )
         )
 

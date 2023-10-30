@@ -59,21 +59,19 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_device_bind, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == R.id.menu_qr_code_scanner) {
-                    PermissionHelper.requestAppCamera(this@DeviceFragment) {
-                        findNavController().navigate(DeviceBindFragmentDirections.toCustomQr())
-                    }
-                    return true
-                }
-                return false
-            }
-        }, viewLifecycleOwner)
+//        requireActivity().addMenuProvider(object : MenuProvider {
+//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+//                menuInflater.inflate(R.menu.menu_device_add, menu)
+//            }
+//
+//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+//                if (menuItem.itemId == R.id.menu_add_device) {
+//                    findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
+//                    return true
+//                }
+//                return false
+//            }
+//        }, viewLifecycleOwner)
 
         viewBind.itemDeviceBind.setOnClickListener(blockClick)
 //      viewBind.imgDeviceAdd.setOnClickListener(blockClick)
