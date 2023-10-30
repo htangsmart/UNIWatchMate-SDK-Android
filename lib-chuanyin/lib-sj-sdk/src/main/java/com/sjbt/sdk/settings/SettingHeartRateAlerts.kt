@@ -67,7 +67,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
             }
         )
         byteBuffer.put(heartRateAlerts.maxHeartRate.toByte())
-        byteBuffer.put(heartRateAlerts.exerciseHeartRateAlert.threshold.toByte())
+
         byteBuffer.put(
             if (heartRateAlerts.exerciseHeartRateAlert.isEnable) {
                 1
@@ -75,8 +75,8 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
                 0
             }
         )
+        byteBuffer.put(heartRateAlerts.exerciseHeartRateAlert.threshold.toByte())
 
-        byteBuffer.put(heartRateAlerts.restingHeartRateAlert.threshold.toByte())
         byteBuffer.put(
             if (heartRateAlerts.restingHeartRateAlert.isEnable) {
                 1
@@ -84,6 +84,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
                 0
             }
         )
+        byteBuffer.put(heartRateAlerts.restingHeartRateAlert.threshold.toByte())
 
         payloadPackage.putData(
             CmdHelper.getUrnId(URN_APP_SETTING, URN_APP_RATE),

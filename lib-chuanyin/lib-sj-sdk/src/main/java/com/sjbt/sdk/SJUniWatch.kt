@@ -243,10 +243,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             }
 
             override fun onStopDiscovery() {
-                if (!discoveryObservableEmitter.isDisposed) {
-                    discoveryObservableEmitter?.onComplete()
-                    wmLog.logD(TAG, "onComplete")
-                }
+//                if (!discoveryObservableEmitter.isDisposed) {
+//                    discoveryObservableEmitter?.onComplete()
+//                    wmLog.logD(TAG, "onComplete")
+//                }
             }
         })
 
@@ -1573,23 +1573,19 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             wmLog.logE(TAG, "stopAfter:$stopAfter")
 
-            mHandler.postDelayed(object : Runnable {
-                override fun run() {
-
-                    if (!discoveryObservableEmitter.isDisposed) {
-                        discoveryObservableEmitter?.onComplete()
-                        wmLog.logD(TAG, "onComplete")
-                    }
-                    //                        if (ActivityCompat.checkSelfPermission(
-                    //                                mContext, Manifest.permission.BLUETOOTH_SCAN
-                    //                            ) != PackageManager.PERMISSION_GRANTED
-                    //                        ) {
-                    //                            return
-                    //                        }
-//                    mBtAdapter?.cancelDiscovery()
+            mHandler.postDelayed({
+                if (!discoveryObservableEmitter.isDisposed) {
                     discoveryObservableEmitter?.onComplete()
-                    dispose()
+                    wmLog.logD(TAG, "onComplete")
                 }
+                //                        if (ActivityCompat.checkSelfPermission(
+                //                                mContext, Manifest.permission.BLUETOOTH_SCAN
+                //                            ) != PackageManager.PERMISSION_GRANTED
+                //                        ) {
+                //                            return
+                //                        }
+                //                    mBtAdapter?.cancelDiscovery()
+                dispose()
             }, stopAfter)
 
         }
