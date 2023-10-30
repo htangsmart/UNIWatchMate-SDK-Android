@@ -110,7 +110,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
         } else {
             val byteBuffer = ByteBuffer.wrap(nodeData.data)
             val isEnableHrAutoMeasure = byteBuffer.get().toInt() == 1
-            val maxHeartRate = byteBuffer.get().toInt()
+            val maxHeartRate = byteBuffer.get().toInt().and(0XFF)
             val isExerciseHeartEnabled = byteBuffer.get().toInt() == 1
             val exerciseThreshold = byteBuffer.get().toInt()
             val isRestingHeartEnabled = byteBuffer.get().toInt() == 1
