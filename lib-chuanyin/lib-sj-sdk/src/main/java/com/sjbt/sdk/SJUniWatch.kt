@@ -49,6 +49,7 @@ import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.ByteBuffer
+import kotlin.experimental.and
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -486,7 +487,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                         keepNoVoice == 1
                                     )
 
-                                    settingSoundAndHaptic.backSoundAndHapticSettings(wmSoundAndHaptic)
+                                    settingSoundAndHaptic.backSoundAndHapticSettings(
+                                        wmSoundAndHaptic
+                                    )
 
                                 }
 
@@ -1537,7 +1540,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     }
 
     override fun startDiscovery(
-        scanTime: Int, wmTimeUnit: WmTimeUnit, tag: String
+        scanTime: Int, wmTimeUnit: WmTimeUnit, deviceModel: WmDeviceModel, tag: String
     ): Observable<WmDiscoverDevice> {
         discoveryTag = tag
 
@@ -1628,21 +1631,27 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 "scanResult scanRecord hex:" + bleScanResult.scanRecord.getManufacturerSpecificData()
             )
 
-            val manuData = bleScanResult.scanRecord.manufacturerSpecificData.get(0x01A0)
-
-            manuData?.let {
-                if (BtUtils.bytesToHexString(manuData).startsWith("A1")) {
-                    wmLog.logD(TAG,"scanResult bluetoothDevice:"+bleDevice.bluetoothDevice)
-                    discoveryObservableEmitter.onNext(WmDiscoverDevice(bleDevice.bluetoothDevice,bleScanResult.rssi))
-                }
-            }
-
+            val byteBuffer = ByteBuffer.wrap(bleScanResult.scanRecord.bytes)
 
 //             scanResult device:RxBleDeviceImpl{MAC='BE:CE:78:07:34:30', name=XS09 Ultra-430}
 //             scanResult device:0201020AFF A001A1 BECE7807343 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 //             scanResult device:RxBleDeviceImpl{MAC='D6:33:0C:31:0E:25', name=oraimo Watch ES_0E25}
 //             scanResult device:02010603020D18171678FE D6330C310E25 3D75010200B4000029330C310E2515096F7261696D6F2057617463682045535F30453235000000000000000000
+
+            val id = byteBuffer.get(5).toInt().and(0xFF)
+            val productType = byteBuffer.get(6).toInt().and(0xFF)
+            if (id + productType == 0xA1) {
+                bleDevice.name?.let {
+                    if (it.contains(discoveryTag)) {
+                        discoveryObservableEmitter?.onNext(WmDiscoverDevice(
+                            bleDevice.bluetoothDevice,
+                            bleScanResult.rssi
+                        ))
+                    }
+                }
+            }
+
         }
     }
 

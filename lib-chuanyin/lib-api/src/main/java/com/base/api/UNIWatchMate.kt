@@ -99,7 +99,7 @@ object UNIWatchMate : AbUniWatch() {
         return uniWatchSubject.value?.getDeviceModel()
     }
 
-    override fun setDeviceModel(wmDeviceModel: WmDeviceModel): Boolean {
+     override fun setDeviceModel(wmDeviceModel: WmDeviceModel): Boolean {
         if (uniWatchSubject.value?.getDeviceModel() == wmDeviceModel) {
             //deviceMode²»±ä
             return false
@@ -129,9 +129,22 @@ object UNIWatchMate : AbUniWatch() {
     override fun startDiscovery(
         scanTime: Int,
         wmTimeUnit: WmTimeUnit,
+        deviceModel: WmDeviceModel,
         tag: String
     ): Observable<WmDiscoverDevice> {
-        return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit,tag)
+
+        uniWatches.forEach {
+            val selected = it.setDeviceModel(deviceModel)
+            if (selected) {
+                uniWatchSubject.onNext(it)
+                return uniWatchSubject.value.startDiscovery(scanTime, wmTimeUnit, deviceModel, tag)
+            }
+        }
+
+        return Observable.create {
+            it.onError(RuntimeException("no sdk support!"))
+        }
+
     }
 
     override fun setLogEnable(logEnable: Boolean) {

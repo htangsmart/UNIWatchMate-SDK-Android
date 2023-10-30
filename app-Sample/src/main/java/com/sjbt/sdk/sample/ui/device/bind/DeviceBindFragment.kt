@@ -294,8 +294,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.setDeviceModel(WmDeviceModel.SJ_WATCH)
-                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, "oraimoWatchNeo")?.asFlow()
+                UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, WmDeviceModel.SJ_WATCH,"oraimoWatchNeo")?.asFlow()
                     ?.catch {
                         this::class.simpleName?.let { tag ->
                             Timber.e( "startDiscovery error ${it.message}")

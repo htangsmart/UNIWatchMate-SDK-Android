@@ -143,6 +143,7 @@ abstract class AbUniWatch {
     abstract fun startDiscovery(
         scanTime: Int,
         wmTimeUnit: WmTimeUnit,
+        deviceModel: WmDeviceModel,
         tag: String
     ): Observable<WmDiscoverDevice>
 
