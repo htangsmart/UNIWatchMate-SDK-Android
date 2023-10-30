@@ -23,6 +23,7 @@ import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 import java.util.Calendar
 import java.util.Date
 
@@ -47,7 +48,7 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
         viewLifecycleScope.launchWhenStarted {
             info = userInfoRepository.getUserInfo(authedUserId)
             if (info == null) {
-                UNIWatchMate.wmLog.logD(TAG, "user info is null")
+                Timber.d( "user info is null")
                 return@launchWhenStarted
             }
             valueDate = Date(info!!.birthYear - 1900, info!!.birthMonth - 1, info!!.birthDay)
@@ -115,7 +116,7 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
                         UNIWatchMate.wmSettings.settingPersonalInfo.set(it.toSdkUser()).doOnError {
                             ToastUtil.showToast(it.message)
                         }.await()
-                    UNIWatchMate.wmLog.logI(TAG, "userInfo save $userInfo")
+                    Timber.i( "userInfo save $userInfo")
                 }
 //                viewLifecycle.launchRepeatOnStarted {
 //                    promptProgress.dismiss()

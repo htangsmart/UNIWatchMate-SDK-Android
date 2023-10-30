@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 
 class MyApplication : Application() {
@@ -68,7 +69,7 @@ class MyApplication : Application() {
 
         UNIWatchMate.observeConnectState.subscribe {
 
-            UNIWatchMate.wmLog.logE(TAG, it.name)
+            Timber.e(TAG, it.name)
 
             when (it) {
                 WmConnectState.BT_DISABLE -> {
@@ -77,7 +78,7 @@ class MyApplication : Application() {
 
                 WmConnectState.VERIFIED -> {
                     UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe {
-                        UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
+                        Timber.e( "设备相机状态1：$it")
                     }
                 }
 
@@ -95,7 +96,7 @@ class MyApplication : Application() {
                             getTestWeatherdata(WmWeatherTime.SEVEN_DAYS, 32),
                             WmUnitInfo.TemperatureUnit.CELSIUS
                         )?.await()
-                        UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
+                        Timber.e( "push seven_days weather result = $result2")
                         ToastUtil.showToast(
                             "push seven_days weather test ${
                                 if (result2) getString(R.string.tip_success) else getString(
@@ -126,7 +127,7 @@ class MyApplication : Application() {
                 UNIWatchMate.wmApps.appCamera.observeCameraOpenState.asFlow().collect {
                     if (it) {//
                         if (ActivityUtils.getTopActivity() != null) {
-                            UNIWatchMate.wmLog.logE(TAG, "设备相机状态1：$it")
+                            Timber.e( "设备相机状态1：$it")
                             CacheDataHelper.cameraLaunchedByDevice = true
                             CameraActivity.launchActivity(ActivityUtils.getTopActivity())
                         }
@@ -165,8 +166,7 @@ class MyApplication : Application() {
 
             launchWithLog {
                 UNIWatchMate.wmApps.appFind.observeStopFindMobile.asFlow().onCompletion {
-                    UNIWatchMate.wmLog.logE(
-                        TAG,
+                    Timber.e(
                         "onCompletion"
                     )
                 }.catch {
@@ -188,8 +188,7 @@ class MyApplication : Application() {
             launchWithLog {
                 UNIWatchMate.wmApps.appMusicControl.observableMusicControl.asFlow().collect {
                     simulateMediaButton(it)
-                    UNIWatchMate.wmLog.logE(
-                        TAG,
+                    Timber.e(
                         "receive music control type= $it"
                     )
                 }

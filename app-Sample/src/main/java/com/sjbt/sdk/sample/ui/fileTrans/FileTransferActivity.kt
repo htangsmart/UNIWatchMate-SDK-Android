@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
@@ -561,8 +562,7 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
                             } else if (transferType === FileType.AVI) {
                                 mSendVideCount = wmTransferState.index
                             }
-                            UNIWatchMate.wmLog.logD(
-                                TAG, "State.FINISH)"
+                            Timber.d( "State.FINISH)"
                             )
                             transferEnd()
                             fileSelected.clear()
@@ -598,8 +598,7 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
 
 
     private fun sendEndTransferFile() {
-        UNIWatchMate.wmLog.logD(
-            TAG, "发送结束命令"
+        Timber.d(  "发送结束命令"
         )
 
         hideLoadingDlg()
@@ -623,7 +622,7 @@ class FileTransferActivity : BaseActivity(), View.OnClickListener,
     override fun onDestroy() {
         super.onDestroy()
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        UNIWatchMate.wmLog.logD(TAG, "$localClassName onDestroy")
+        Timber.d(  "$localClassName onDestroy")
         sendEndTransferFile()
         hideDialog(mSendMusicDialog)
     }

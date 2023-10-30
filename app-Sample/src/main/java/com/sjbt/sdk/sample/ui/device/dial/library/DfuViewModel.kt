@@ -67,7 +67,7 @@ class DfuViewModel : ViewModel() {
                     .collect {
                         callBack.callBack(it)
                     }
-                UNIWatchMate.wmLog.logI("DfuViewModel","startTransfer DIAL")
+                Timber.i( "startTransfer DIAL")
                 UNIWatchMate.wmTransferFile.startTransfer(FileType.DIAL, dialList)
                     .asFlow()
 //                    .catch {

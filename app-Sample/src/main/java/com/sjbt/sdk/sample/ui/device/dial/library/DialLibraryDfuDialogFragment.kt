@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
 
@@ -75,7 +76,7 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
                         isCancelable = false
                         dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
                             override fun callBack(o: WmTransferState) {
-                                UNIWatchMate.wmLog.logI("DfuViewModel", it.toString())
+                                Timber.i( it.toString())
                                 onWmTransferStateChange(o)
                             }
                         })

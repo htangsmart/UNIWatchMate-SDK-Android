@@ -112,7 +112,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
         }
 
         UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
-            UNIWatchMate.wmLog.logE(TAG, "设备相机状态3：$aBoolean")
+            Timber.e( "设备相机状态3：$aBoolean")
         }
 
     }
@@ -225,7 +225,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
                         getTestWeatherdata(WmWeatherTime.TODAY, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
-                    UNIWatchMate.wmLog.logE(TAG, "push today weather result = $result")
+                    Timber.e( "push today weather result = $result")
                     ToastUtil.showToast(
                         "push today weather test ${
                             if (result) getString(R.string.tip_success) else getString(
@@ -237,7 +237,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
                         getTestWeatherdata(WmWeatherTime.SEVEN_DAYS, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
-                    UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
+                    Timber.e( "push seven_days weather result = $result2")
                     ToastUtil.showToast(
                         "push seven_days weather test ${
                             if (result2) getString(R.string.tip_success) else getString(

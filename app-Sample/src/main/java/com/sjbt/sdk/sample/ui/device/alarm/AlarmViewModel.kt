@@ -107,7 +107,7 @@ class AlarmViewModel : StateEventViewModel<AlarmState, AlarmEvent>(AlarmState())
                 val addPosition = findAlarmAddPosition(alarmModified, alarms)
                 alarms.add(addPosition, alarmModified)
                 action()
-                UNIWatchMate.wmLog.logI("TAG", "modifyAlarm")
+                Timber.i(  "modifyAlarm")
                 AlarmEvent.AlarmMoved(position, addPosition).newEvent()
             }
         }

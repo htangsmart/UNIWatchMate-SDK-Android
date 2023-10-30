@@ -11,11 +11,14 @@ import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.databinding.FragmentHeartRateConfigBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.*
+import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
 import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 /**
  * **Document**
@@ -46,10 +49,6 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         super.onCreate(savedInstanceState)
 //        isLengthMetric = !deviceManager.configFeature.getFunctionConfig().isFlagEnabled(FcFunctionConfig.Flag.LENGTH_UNIT)
 //        exerciseGoal=WmSportGoal(1,2.0,3.0,4)
-        wmHeartRateAlerts = WmHeartRateAlerts(21)
-
-
-
     }
 
     private fun updateUi() {
@@ -80,22 +79,26 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launchWhenStarted {
-            deviceManager.flowStateConnected().collect {
-                viewBind.layoutContent.setAllChildEnabled(it)
+        lifecycle.launchRepeatOnStarted {
+            launch {
+                deviceManager.flowStateConnected().collect {
+                    viewBind.layoutContent.setAllChildEnabled(it)
+                }
             }
-
-            UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
-                wmHeartRateAlerts = it
-                updateUi()
+            launch {
+                UNIWatchMate.wmSettings.settingHeartRate.observeChange().asFlow().collect {
+                    wmHeartRateAlerts = it
+                    updateUi()
+                }
             }
-            UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
-                wmHeartRateAlerts = it
-                updateUi()
+            launch {
+                UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
+                    wmHeartRateAlerts = it
+                    updateUi()
+                }
             }
         }
 
-        updateUi()
         viewBind.itemMaxHeartRate.setOnClickListener {
             wmHeartRateAlerts?.let {
                 showHeartRateDialog(it.maxHeartRate, 10, 22, DIALOG_MAX_HEART_RATE)
@@ -138,7 +141,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.exerciseHeartRateAlert.threshold = 0
                     }
-                    it.exerciseHeartRateAlert.isEnable=isChecked
+                    it.exerciseHeartRateAlert.isEnable = isChecked
                     it.save()
                     updateUi()
                 }
@@ -152,7 +155,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
                     } else {
                         it.restingHeartRateAlert.threshold = 0
                     }
-                    it.restingHeartRateAlert.isEnable=isChecked
+                    it.restingHeartRateAlert.isEnable = isChecked
                     it.save()
                     updateUi()
 

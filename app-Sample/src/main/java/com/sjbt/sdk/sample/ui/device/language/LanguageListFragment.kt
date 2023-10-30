@@ -21,6 +21,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
 
@@ -67,7 +68,7 @@ class LanguageListFragment : BaseFragment(R.layout.fragment_language_list) {
 
                         is Success -> {
                             val wmLanguages = state.requestLanguages()
-                            UNIWatchMate.wmLog.logI("LanguageListFragment","wmLanguages $wmLanguages")
+                            Timber.d( "wmLanguages $wmLanguages")
                             if (wmLanguages.isNullOrEmpty()) {
                                 viewBind.loadingView.showError(R.string.ds_no_data)
                             } else {

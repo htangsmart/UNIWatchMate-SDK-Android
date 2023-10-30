@@ -46,7 +46,6 @@ abstract class AppDatabase : RoomDatabase() {
             it.execSQL(
                 "CREATE TABLE IF NOT EXISTS `StepItemEntity` (`step` INTEGER NOT NULL, `time` TEXT NOT NULL , `calories` REAL NOT NULL,  `distance` REAL NOT NULL,`userId` INTEGER NOT NULL, PRIMARY KEY(`userId`, `time`)  )"
             )
-
             it.execSQL(
                 "CREATE TABLE IF NOT EXISTS `HeartRateItemEntity` ( `heartRate` INTEGER NOT NULL,`userId` INTEGER NOT NULL, `time` TEXT NOT NULL, PRIMARY KEY(`userId`, `time`))"
             )

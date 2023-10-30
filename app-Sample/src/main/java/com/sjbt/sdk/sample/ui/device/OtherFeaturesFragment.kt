@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
 import kotlinx.coroutines.rx3.awaitFirst
+import timber.log.Timber
 import java.io.File
 
 class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
@@ -210,7 +211,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     }
 
     private fun otaFileResult(it: WmTransferState) {
-        UNIWatchMate.wmLog.logI("OtherFeaturesFragment", "WmTransferState = ${it}")
+        Timber.i( "WmTransferState = ${it}")
         when (it.state) {
             State.PRE_TRANSFER -> {
             }

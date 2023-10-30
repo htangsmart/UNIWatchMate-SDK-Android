@@ -103,10 +103,11 @@ class SportInstalledListFragment : BaseFragment(R.layout.fragment_sport_installe
                                 viewBind.loadingView.showError(R.string.ds_no_data)
                             } else {
                                 if (alarms!!.size > 8) {
+                                    installDatas.clear()
                                     installDatas.addAll(alarms.subList(8, alarms!!.size))
                                     adapter.sources =installDatas
                                     adapter.notifyDataSetChanged()
-
+                                    buildInDatas.clear()
                                     buildInDatas.addAll(alarms.subList(0, 8))
                                     dragAdapter.notifyDataSetChanged()
                                 } else {

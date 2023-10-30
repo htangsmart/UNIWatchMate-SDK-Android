@@ -94,19 +94,24 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
         val userInfo = userInfoRepository.flowCurrent.value
         userInfo?.let {
-            val mDevice = UNIWatchMate.connect(
-                address,
-                WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
-            )
-            deviceManager.bind(
-                address, if (name.isNullOrEmpty()) {
-                    UNKNOWN_DEVICE_NAME
-                } else {
-                    name
-                }, WmDeviceModel.SJ_WATCH
-            )
+            val deviceModel = UNIWatchMate.getDeviceModel()
+            deviceModel?.let { deviceModel->
+                val mDevice = UNIWatchMate.connect(
+                    address,
+                    WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, WmDeviceModel.SJ_WATCH)
+                )
+                deviceManager.bind(
+                    address, if (name.isNullOrEmpty()) {
+                        UNKNOWN_DEVICE_NAME
+                    } else {
+                        name
+                    }, WmDeviceModel.SJ_WATCH
+                )
 
-            DeviceConnectDialogFragment().show(childFragmentManager, null)
+                DeviceConnectDialogFragment().show(childFragmentManager, null)
+            }?:{
+                ToastUtil.showToast("no deviceModel")
+        }
         }
     }
 
@@ -153,7 +158,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                             bindInfo
                         )
                         if (wmDevice != null) {
-                            UNIWatchMate.wmLog.logI(TAG, "device=$wmDevice")
+                            Timber.i(  "device=$wmDevice")
                             deviceManager.bind(
                                 wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
                                     UNKNOWN_DEVICE_NAME
@@ -289,15 +294,16 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
         startScan = true
         viewLifecycle.launchRepeatOnStarted {
             launch {
+                UNIWatchMate.setDeviceModel(WmDeviceModel.SJ_WATCH)
                 UNIWatchMate.startDiscovery(12000, WmTimeUnit.MILLISECONDS, "oraimoWatchNeo")?.asFlow()
                     ?.catch {
                         this::class.simpleName?.let { tag ->
-                            UNIWatchMate.wmLog.logE(tag, "startDiscovery error ${it.message}")
+                            Timber.e( "startDiscovery error ${it.message}")
                         }
                         ToastUtil.showToast(it.message, true)
                     }.onCompletion {
                     this::class.simpleName?.let { tag ->
-                        UNIWatchMate.wmLog.logE(tag, "startDiscover onCompletion")
+                        Timber.e( "startDiscover onCompletion")
                     }
                     viewBind.refreshLayout.isRefreshing = false
                     startScan = false

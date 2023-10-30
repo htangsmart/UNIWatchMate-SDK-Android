@@ -43,7 +43,7 @@ class EmergencyContactViewModel :
         viewModelScope.launch {
             state.copy(requestEmergencyCall = Loading()).newState()
             runCatchingWithLog {
-                UNIWatchMate.wmLog.logI("EmergencyContactViewModel", "observableEmergencyContacts")
+                Timber.i( "observableEmergencyContacts")
                 UNIWatchMate.wmApps.appContact.observableEmergencyContacts().awaitFirst()
 //                WmEmergencyCall(false, mutableListOf<WmContact>())
             }.onSuccess {
@@ -89,7 +89,7 @@ class EmergencyContactViewModel :
 //            call.isEnabled = result.isEnabled
 //            call.emergencyContacts.clear()
 //            call.emergencyContacts.addAll(result.emergencyContacts)
-            UNIWatchMate.wmLog.logD(this.javaClass.simpleName, "result=$result")
+            Timber.d(  "result=$result")
         }.onSuccess {
             EmergencyCallEvent.setEmergencyContactSuccess(call).newEvent()
         }.onFailure {

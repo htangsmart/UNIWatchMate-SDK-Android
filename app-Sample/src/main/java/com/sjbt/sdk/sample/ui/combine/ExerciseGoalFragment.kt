@@ -27,6 +27,7 @@ import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.launchWithLog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 
 /**
@@ -86,7 +87,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
     private fun WmSportGoal.saveConfig() {
         applicationScope.launchWithLog {
             if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
-                UNIWatchMate.wmLog.logI("ExerciseGoalFragment","${this@saveConfig}")
+                Timber.i( "${this@saveConfig}")
                 UNIWatchMate.wmSettings.settingSportGoal.set(this@saveConfig).await()
             }
         }
