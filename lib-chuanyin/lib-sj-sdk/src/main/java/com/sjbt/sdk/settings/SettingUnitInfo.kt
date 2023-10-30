@@ -15,8 +15,8 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
     private var observeEmitter: ObservableEmitter<WmUnitInfo>? = null
     private var setEmitter: SingleEmitter<WmUnitInfo>? = null
     private var getEmitter: SingleEmitter<WmUnitInfo>? = null
-
     private var wmUnitInfo: WmUnitInfo? = null
+    private var isGet = false
 
     override fun isSupport(): Boolean {
         return true
@@ -36,13 +36,13 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
 
     override fun get(): Single<WmUnitInfo> {
         return Single.create { emitter ->
+            isGet = true
             getEmitter = emitter
             sjUniWatch.sendReadNodeCmdList(CmdHelper.getReadUnitSettingCmd())
         }
     }
 
-    fun onTimeOut(msgBean: MsgBean,nodeData: NodeData) {
-        TODO("Not yet implemented")
+    fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
     }
 
     fun unitInfoBusiness(it: NodeData) {
@@ -89,8 +89,12 @@ class SettingUnitInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmUnitInfo>() {
                         }
                     )
 
-                    getEmitter?.onSuccess(wmUnitInfo)
-                    observeEmitter?.onNext(wmUnitInfo)
+                    if (isGet) {
+                        isGet = false
+                        getEmitter?.onSuccess(wmUnitInfo)
+                    } else {
+                        observeEmitter?.onNext(wmUnitInfo)
+                    }
                 }
             }
         }

@@ -7,12 +7,11 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
-class SettingWistRaise(sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
+class SettingWistRaise(val sjUniWatch: SJUniWatch) : AbWmSetting<WmWistRaise>() {
     var observeEmitter: ObservableEmitter<WmWistRaise>? = null
     private var setEmitter: SingleEmitter<WmWistRaise>? = null
-    var getEmitter: SingleEmitter<WmWistRaise>? = null
+    private var getEmitter: SingleEmitter<WmWistRaise>? = null
 
-    private var sjUniWatch = sjUniWatch
     private var mWmWistRaise: WmWistRaise? = null
     private var backWmWistRaise = WmWistRaise();
 

@@ -3,6 +3,7 @@ package com.sjbt.sdk.settings
 import com.base.sdk.entity.settings.WmHeartRateAlerts
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
+import com.sjbt.sdk.entity.ErrorCode
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.entity.PayloadPackage
@@ -14,6 +15,8 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
     var observeEmitter: ObservableEmitter<WmHeartRateAlerts>? = null
     var setEmitter: SingleEmitter<WmHeartRateAlerts>? = null
     var getEmitter: SingleEmitter<WmHeartRateAlerts>? = null
+    private var isGet = false
+    private var heartRateAlerts: WmHeartRateAlerts? = null
 
     override fun isSupport(): Boolean {
         return true
@@ -27,6 +30,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
 
     override fun set(obj: WmHeartRateAlerts): Single<WmHeartRateAlerts> {
         return Single.create { emitter ->
+            heartRateAlerts = obj
             setEmitter = emitter
             sjUniWatch.sendWriteNodeCmdList(getWriteRateSettingPayLoad(obj))
         }
@@ -34,6 +38,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
 
     override fun get(): Single<WmHeartRateAlerts> {
         return Single.create { emitter ->
+            isGet = true
             getEmitter = emitter
             sjUniWatch.sendReadNodeCmdList(getReadRateSettingPayload())
         }
@@ -94,12 +99,39 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
         return payloadPackage
     }
 
-
     fun onTimeOut(msgBean: MsgBean, nodeData: NodeData) {
 
     }
 
-    fun settingHeartRateBusiness(nodeData: NodeData){
+    fun settingHeartRateBusiness(nodeData: NodeData) {
 
+        if (nodeData.data.size == 1) {
+            setEmitter?.onSuccess(heartRateAlerts)
+        } else {
+            val byteBuffer = ByteBuffer.wrap(nodeData.data)
+            val isEnableHrAutoMeasure = byteBuffer.get().toInt() == 1
+            val maxHeartRate = byteBuffer.get().toInt()
+            val isExerciseHeartEnabled = byteBuffer.get().toInt() == 1
+            val exerciseThreshold = byteBuffer.get().toInt()
+            val isRestingHeartEnabled = byteBuffer.get().toInt() == 1
+            val restingThreshold = byteBuffer.get().toInt()
+
+            heartRateAlerts = WmHeartRateAlerts(0)
+            heartRateAlerts!!.isEnableHrAutoMeasure = isEnableHrAutoMeasure
+            heartRateAlerts!!.maxHeartRate = maxHeartRate
+
+            heartRateAlerts!!.exerciseHeartRateAlert.isEnable = isExerciseHeartEnabled
+            heartRateAlerts!!.exerciseHeartRateAlert.threshold = exerciseThreshold
+
+            heartRateAlerts!!.restingHeartRateAlert.threshold = restingThreshold
+            heartRateAlerts!!.restingHeartRateAlert.isEnable = isRestingHeartEnabled
+
+            if (isGet) {
+                isGet = false
+                getEmitter?.onSuccess(heartRateAlerts)
+            } else {
+                observeEmitter?.onNext(heartRateAlerts)
+            }
+        }
     }
 }

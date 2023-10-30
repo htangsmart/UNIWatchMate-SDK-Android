@@ -18,6 +18,8 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
     private var wmSportGoal: WmSportGoal? = null
     private val TAG = "SettingSportGoal"
 
+    private var isGet = false
+
     override fun isSupport(): Boolean {
         return true
     }
@@ -37,9 +39,10 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
     }
 
     override fun get(): Single<WmSportGoal> {
-        return Single.create { emitter ->
-            getEmitter = emitter
 
+        return Single.create { emitter ->
+            isGet = true
+            getEmitter = emitter
             sjUniWatch.sendReadNodeCmdList(CmdHelper.getDeviceSportGoalCmd())
         }
     }
@@ -76,9 +79,15 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
 
                     sjUniWatch.wmLog.logD(TAG, "sport goal：$wmSportGoal")
 
-                    getEmitter?.onSuccess(
-                        wmSportGoal
-                    )
+                    if (isGet) {
+                        isGet = !isGet
+                        getEmitter?.onSuccess(
+                            wmSportGoal
+                        )
+                    }else{
+                        observeEmitter?.onNext(wmSportGoal)
+                    }
+
                 }
             }
 

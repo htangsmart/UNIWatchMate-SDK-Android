@@ -396,8 +396,8 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     }
 
                                     val wmAppView = WmAppView(appViews)
-                                    settingAppView.getEmitter?.onSuccess(wmAppView)
-                                    settingAppView.observeEmitter?.onNext(wmAppView)
+
+                                    settingAppView.appViewsBack(wmAppView)
                                 }
 
                                 CMD_ID_8009 -> {//APP 视图设置
@@ -812,11 +812,12 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
 
                     CMD_ID_8008 -> {
-                        settingAppView.getEmitter?.onError(RuntimeException("get app views"))
+                        settingAppView.appViewsBackTimeOut()
                     }
                     CMD_ID_8009 -> {
-                        settingAppView.setEmitter?.onError(RuntimeException("set app view time out"))
+                        settingAppView.appViewsSetTimeOut()
                     }
+
                     CMD_ID_800A -> {}
                     CMD_ID_800B -> {}
                     CMD_ID_800C -> {}
@@ -842,12 +843,10 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     }
                     CMD_ID_8017 -> {
                         settingSoundAndHaptic.getEmitter?.onError(RuntimeException("get sound and haptic time out"))
-                        settingAppView.observeEmitter?.onError(RuntimeException("get wist raise time out"))
                     }
 
                     CMD_ID_8018 -> {
                         settingSoundAndHaptic.setEmitter?.onError(RuntimeException("set sound and haptic time out"))
-                        settingAppView.setEmitter?.onError(RuntimeException("set wist raise time out"))
                     }
 
                     CMD_ID_801C -> {

@@ -1,18 +1,21 @@
 package com.sjbt.sdk.settings
 
 import com.base.sdk.entity.settings.WmAppView
+import com.base.sdk.exception.WmException
 import com.base.sdk.port.setting.AbWmSetting
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.NodeData
+import com.sjbt.sdk.exception.SjException
 import com.sjbt.sdk.spp.cmd.CmdHelper
 import io.reactivex.rxjava3.core.*
 
 class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
-    var observeEmitter: ObservableEmitter<WmAppView>? = null
+    private var observeEmitter: ObservableEmitter<WmAppView>? = null
     var setEmitter: SingleEmitter<WmAppView>? = null
-    var getEmitter: SingleEmitter<WmAppView>? = null
+    private var getEmitter: SingleEmitter<WmAppView>? = null
     var isActionSupport: Boolean = false
     private var mAppView: WmAppView? = null
+    private var isGet = false
 
     override fun isSupport(): Boolean {
         return isActionSupport
@@ -49,8 +52,12 @@ class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
         })
     }
 
-    fun onTimeOut(nodeData: NodeData) {
-        TODO("Not yet implemented")
+    fun appViewsSetTimeOut() {
+        setEmitter?.onError(SjException("set app view time out"))
+    }
+
+    fun appViewsBackTimeOut() {
+        getEmitter?.onError(SjException("get app views time out"))
     }
 
     fun setAppViewResult(isSuccess: Boolean) {
@@ -58,6 +65,17 @@ class SettingAppView(val sjUniWatch: SJUniWatch) : AbWmSetting<WmAppView>() {
             setEmitter?.onSuccess(mAppView)
         } else {
             setEmitter?.onError(Throwable("set fail"))
+        }
+    }
+
+
+    fun appViewsBack(appView: WmAppView) {
+        mAppView = appView
+        if (isGet) {
+            isGet = false
+            getEmitter?.onSuccess(appView)
+        } else {
+            observeEmitter?.onNext(appView)
         }
     }
 }
