@@ -8,6 +8,7 @@ import com.base.sdk.entity.settings.*
 import com.base.sdk.port.FileType
 import com.google.gson.Gson
 import com.sjbt.sdk.ALARM_NAME_LEN
+import com.sjbt.sdk.entity.DivideInfo
 import com.sjbt.sdk.entity.MsgBean
 import com.sjbt.sdk.entity.OtaCmdInfo
 import com.sjbt.sdk.entity.PayloadPackage
@@ -58,7 +59,7 @@ object CmdHelper {
     /**
      * 获取divideType和业务单元总包长度
      */
-    fun readShortFromBytes(data: ByteArray): DivideInfo {
+    fun readDivideInfoFromBytes(data: ByteArray): DivideInfo {
         require(data.size == 2) { "Invalid byte array length" }
 
         // 使用第二个字节的低8位和第一个字节的高5位构造short值 248 = 0b11111000
@@ -71,11 +72,7 @@ object CmdHelper {
         return DivideInfo(divideType, value)
     }
 
-    data class DivideInfo(val divideType: Byte, val payloadPackTotalLen: Short) {
-        override fun toString(): String {
-            return "DivideInfo(divideType=$divideType, value=$payloadPackTotalLen)"
-        }
-    }
+
 
     /**
      * 组包公用方法
@@ -165,7 +162,7 @@ object CmdHelper {
             divideArray[0] = byteBuffer[4]
             divideArray[1] = byteBuffer[5]
 
-             val divideInfo=readShortFromBytes(divideArray.reversedArray())
+            val divideInfo = readDivideInfoFromBytes(divideArray.reversedArray())
             val divideType = divideInfo.divideType
 
             msgBean.divideType = divideType

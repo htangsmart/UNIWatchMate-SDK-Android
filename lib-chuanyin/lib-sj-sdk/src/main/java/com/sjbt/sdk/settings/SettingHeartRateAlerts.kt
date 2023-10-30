@@ -112,9 +112,9 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
             val isEnableHrAutoMeasure = byteBuffer.get().toInt() == 1
             val maxHeartRate = byteBuffer.get().toInt().and(0XFF)
             val isExerciseHeartEnabled = byteBuffer.get().toInt() == 1
-            val exerciseThreshold = byteBuffer.get().toInt()
+            val exerciseThreshold = byteBuffer.get().toInt().and(0XFF)
             val isRestingHeartEnabled = byteBuffer.get().toInt() == 1
-            val restingThreshold = byteBuffer.get().toInt()
+            val restingThreshold = byteBuffer.get().toInt().and(0XFF)
 
             heartRateAlerts = WmHeartRateAlerts(0)
             heartRateAlerts!!.isEnableHrAutoMeasure = isEnableHrAutoMeasure
@@ -125,7 +125,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
 
             heartRateAlerts!!.restingHeartRateAlert.threshold = restingThreshold
             heartRateAlerts!!.restingHeartRateAlert.isEnable = isRestingHeartEnabled
-
+            heartRateAlerts!!.refreshIntervals()
             if (isGet) {
                 isGet = false
                 getEmitter?.onSuccess(heartRateAlerts)
