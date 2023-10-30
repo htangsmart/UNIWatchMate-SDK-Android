@@ -94,6 +94,7 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
             launch {
                 UNIWatchMate.wmSettings.settingHeartRate.get().toObservable().asFlow().collect {
                     wmHeartRateAlerts = it
+                    Timber.d("get $it")
                     updateUi()
                 }
             }
@@ -126,39 +127,44 @@ class HeartRateConfigFragment : BaseFragment(R.layout.fragment_heart_rate_config
         }
         viewBind.itemAutoHeartRateMeasurementSwitch.getSwitchView()
             .setOnCheckedChangeListener { buttonView, isChecked ->
-                wmHeartRateAlerts?.let {
-                    it.isEnableHrAutoMeasure = isChecked
-                    updateUi()
+                if (buttonView.isPressed) {
+                    wmHeartRateAlerts?.let {
+                        it.isEnableHrAutoMeasure = isChecked
+                        updateUi()
+                    }
                 }
             }
 
         viewBind.itemExerciseHeartRateHighAlertSwitch.getSwitchView()
             .setOnCheckedChangeListener { buttonView, isChecked ->
-                wmHeartRateAlerts?.let {
-                    if (isChecked) {
-                        it.exerciseHeartRateAlert.threshold =
-                            WmHeartRateAlerts.THRESHOLDS[1]
-                    } else {
-                        it.exerciseHeartRateAlert.threshold = 0
+                if (buttonView.isPressed) {
+                    wmHeartRateAlerts?.let {
+                        if (isChecked) {
+                            it.exerciseHeartRateAlert.threshold =
+                                WmHeartRateAlerts.THRESHOLDS[1]
+                        } else {
+                            it.exerciseHeartRateAlert.threshold = 0
+                        }
+                        it.exerciseHeartRateAlert.isEnable = isChecked
+                        it.save()
+                        updateUi()
                     }
-                    it.exerciseHeartRateAlert.isEnable = isChecked
-                    it.save()
-                    updateUi()
                 }
             }
         viewBind.itemQuietHeartRateHighAlertSwitch.getSwitchView()
             .setOnCheckedChangeListener { buttonView, isChecked ->
-                wmHeartRateAlerts?.let {
-                    if (isChecked) {
-                        it.restingHeartRateAlert.threshold =
-                            WmHeartRateAlerts.THRESHOLDS[1]
-                    } else {
-                        it.restingHeartRateAlert.threshold = 0
+                if (buttonView.isPressed) {
+                    wmHeartRateAlerts?.let {
+                        if (isChecked) {
+                            it.restingHeartRateAlert.threshold =
+                                WmHeartRateAlerts.THRESHOLDS[1]
+                        } else {
+                            it.restingHeartRateAlert.threshold = 0
+                        }
+                        it.restingHeartRateAlert.isEnable = isChecked
+                        it.save()
+                        updateUi()
                     }
-                    it.restingHeartRateAlert.isEnable = isChecked
-                    it.save()
-                    updateUi()
-
                 }
             }
     }

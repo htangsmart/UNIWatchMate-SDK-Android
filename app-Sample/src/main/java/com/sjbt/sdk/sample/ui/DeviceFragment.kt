@@ -1,8 +1,12 @@
 package com.sjbt.sdk.sample.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.annotation.StringRes
+import androidx.core.view.MenuProvider
 import androidx.navigation.fragment.findNavController
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
@@ -20,6 +24,7 @@ import com.sjbt.sdk.sample.dialog.WeatherCodeTestDialog
 import com.sjbt.sdk.sample.model.WeatherCode
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
+import com.sjbt.sdk.sample.ui.device.bind.DeviceBindFragmentDirections
 import com.sjbt.sdk.sample.ui.fileTrans.FileTransferActivity
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
@@ -51,9 +56,25 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
 
     private val deviceManager = Injector.getDeviceManager()
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_device_bind, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == R.id.menu_qr_code_scanner) {
+                    PermissionHelper.requestAppCamera(this@DeviceFragment) {
+                        findNavController().navigate(DeviceBindFragmentDirections.toCustomQr())
+                    }
+                    return true
+                }
+                return false
+            }
+        }, viewLifecycleOwner)
+
         viewBind.itemDeviceBind.setOnClickListener(blockClick)
 //      viewBind.imgDeviceAdd.setOnClickListener(blockClick)
         viewBind.itemDeviceInfo.setOnClickListener(blockClick)
