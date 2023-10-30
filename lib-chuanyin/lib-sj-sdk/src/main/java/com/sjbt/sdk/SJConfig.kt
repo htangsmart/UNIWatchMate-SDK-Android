@@ -8,5 +8,6 @@ const val MSG_INTERVAL_SLOW = 40
 
 const val ALARM_NAME_LEN = 20
 const val BT_ADDRESS: String = "bt_mac"
+const val DEVICE_MANUFACTURER_CODE = 0xA1
 
 

@@ -1641,13 +1641,17 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
             val id = byteBuffer.get(5).toInt().and(0xFF)
             val productType = byteBuffer.get(6).toInt().and(0xFF)
-            if (id + productType == 0xA1) {
+            val deviceType = byteBuffer.get(7).toInt().and(0xFF)
+
+            if (id + productType == deviceType && deviceType == DEVICE_MANUFACTURER_CODE) {
                 bleDevice.name?.let {
                     if (it.contains(discoveryTag)) {
-                        discoveryObservableEmitter?.onNext(WmDiscoverDevice(
-                            bleDevice.bluetoothDevice,
-                            bleScanResult.rssi
-                        ))
+                        discoveryObservableEmitter?.onNext(
+                            WmDiscoverDevice(
+                                bleDevice.bluetoothDevice,
+                                bleScanResult.rssi
+                            )
+                        )
                     }
                 }
             }
