@@ -73,7 +73,7 @@ class SettingSedentaryReminder(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSeden
                         WmTimeFrequency.EVERY_1_HOUR.value -> {
                             WmTimeFrequency.EVERY_1_HOUR
                         }
-                        WmTimeFrequency.EVERY_1_HOUR.value -> {
+                        WmTimeFrequency.EVERY_1_HOUR_30_MINUTES.value -> {
                             WmTimeFrequency.EVERY_1_HOUR_30_MINUTES
                         }
                         else -> {
