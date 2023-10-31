@@ -1792,8 +1792,9 @@ object CmdHelper {
 
         //位置
         byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
-        byteBuffer.put(wmWeather.location.country.toByteArray())
         byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
+
+        byteBuffer.put(wmWeather.location.country.toByteArray())
         byteBuffer.put(wmWeather.location.city.toByteArray())
 
         //当天
@@ -1873,8 +1874,8 @@ object CmdHelper {
 
         //位置
         byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
-        byteBuffer.put(wmWeather.location.country.toByteArray())
         byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
+        byteBuffer.put(wmWeather.location.country.toByteArray())
         byteBuffer.put(wmWeather.location.city.toByteArray())
 
         wmWeather.weatherForecast.forEach {
@@ -1918,6 +1919,7 @@ object CmdHelper {
             byteBuffer.put(it.uvIndex.toByte())
             byteBuffer.put(it.dayCode.toByte())
             byteBuffer.put(it.nightCode.toByte())
+
             byteBuffer.put(it.dayDesc.toByteArray().size.toByte())
             byteBuffer.put(it.nightDesc.toByteArray().size.toByte())
 
