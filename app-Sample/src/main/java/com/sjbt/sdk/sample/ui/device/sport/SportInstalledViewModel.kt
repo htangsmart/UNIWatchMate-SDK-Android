@@ -169,8 +169,9 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
                 wmSports.add(wmSport)
                 runCatchingWithLog {
                     val result = UNIWatchMate.wmApps.appSport.updateSportList(wmSports).await()
+                    result
                 }.onSuccess {
-                    localSport.installed = true
+                    localSport.installed = it
                     SportEvent.SportInstallSuccess(position).newEvent()
                 }.onFailure {
                     localSport.installed = false

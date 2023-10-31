@@ -62,7 +62,14 @@
             android:name=".DeviceService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice"/>
-
+        <receiver android:name=".AdbTestReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.sjbt.sdk.adb.installDial" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.sjbt.sdk.sample.provider"
