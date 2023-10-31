@@ -17,6 +17,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
     var getEmitter: SingleEmitter<WmHeartRateAlerts>? = null
     private var isGet = false
     private var heartRateAlerts: WmHeartRateAlerts? = null
+    private val TAG = "SettingHeartRateAlerts"
 
     override fun isSupport(): Boolean {
         return true
@@ -31,6 +32,7 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
     override fun set(obj: WmHeartRateAlerts): Single<WmHeartRateAlerts> {
         return Single.create { emitter ->
             heartRateAlerts = obj
+            heartRateAlerts?.refreshIntervals()
             setEmitter = emitter
             sjUniWatch.sendWriteNodeCmdList(getWriteRateSettingPayLoad(obj))
         }
@@ -106,6 +108,8 @@ class SettingHeartRateAlerts(val sjUniWatch: SJUniWatch) : AbWmSetting<WmHeartRa
     fun settingHeartRateBusiness(nodeData: NodeData) {
 
         if (nodeData.data.size == 1) {
+            heartRateAlerts?.refreshIntervals()
+            sjUniWatch.wmLog.logD(TAG, "heartRateAlerts:$heartRateAlerts")
             setEmitter?.onSuccess(heartRateAlerts)
         } else {
             val byteBuffer = ByteBuffer.wrap(nodeData.data)

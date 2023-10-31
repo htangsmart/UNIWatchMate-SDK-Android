@@ -68,6 +68,8 @@ open class WmHeartRateAlerts(
             ((maxHeartRate - age) * 0.9).toInt(),
             maxHeartRate
         )
+
+
     }
     init {
         if (maxHeartRate <= 0) {
@@ -102,6 +104,7 @@ open class WmHeartRateAlerts(
     }
 
     override fun toString(): String {
-        return "WmHeartRateAlerts(maxHeartRate=$maxHeartRate, exerciseHeartRateAlert=$exerciseHeartRateAlert, restingHeartRateAlert=$restingHeartRateAlert)"
+        return "WmHeartRateAlerts(isEnableHrAutoMeasure=$isEnableHrAutoMeasure, maxHeartRate=$maxHeartRate, exerciseHeartRateAlert=$exerciseHeartRateAlert, restingHeartRateAlert=$restingHeartRateAlert, age=$age,HEART_RATE_INTERVALS=$HEART_RATE_INTERVALS)"
     }
+
 }
