@@ -65,25 +65,22 @@ public class BtEngine {
     protected static final int TYPE_CONNECT = 0x12;
     protected static MyHandlerThread myHandlerThread = new MyHandlerThread("bt_thread");
 
-    public static final int STATE_CONNECTING = 1;
-    public static final int STATE_CONNECTED = 2;
+    public static final int SOCKET_STATE_NONE = 0;
+    public static final int SOCKET_STATE_CONNECTING = 1;
+    public static final int SOCKET_STATE_CONNECTED = 2;
 
-    private static final Map<String, Integer> mStateMap = new HashMap<>();
-
-    public void putStateMap(String mac, int state) {
-        mStateMap.put(mac, state);
-    }
+    private static final Map<String, Integer> mSocketStateMap = new HashMap<>();
 
     public void clearStateMap() {
-        mStateMap.clear();
+        mSocketStateMap.clear();
     }
 
-    public int getDeviceConnectState(String mac) {
-        if (mStateMap.get(mac) == null) {
+    public int getSocketState(String mac) {
+        if (mSocketStateMap.get(mac) == null) {
             return 0;
         }
 
-        return mStateMap.get(mac);
+        return mSocketStateMap.get(mac);
     }
 
     public static void setDefaultMsgTimeout(int defaultMsgTimeout) {
@@ -121,13 +118,13 @@ public class BtEngine {
         if (!mSocket.isConnected()) {
             logD("start to connect -->:" + mDevice.getAddress());
 
-            mStateMap.put(mDevice.getAddress(), STATE_CONNECTING);
+            mSocketStateMap.put(mDevice.getAddress(), SOCKET_STATE_CONNECTING);
             mSocket.connect();
             deviceBusing = false;
         }
 
         if (mSocket.isConnected()) {
-            mStateMap.put(mDevice.getAddress(), STATE_CONNECTED);
+            mSocketStateMap.put(mDevice.getAddress(), SOCKET_STATE_CONNECTED);
             BluetoothDevice device = mSocket.getRemoteDevice();
             clearMessageQueue();
             logD("connect success:" + device.getAddress());
@@ -224,7 +221,9 @@ public class BtEngine {
                             if (mDevice != null) {
                                 logD("create BluetoothSocket：" + mDevice.getAddress());
                                 try {
+//                                    if (!mSocket.isConnected()) {
                                     mSocket = mDevice.createInsecureRfcommSocketToServiceRecord(SPP_UUID);
+//                                    }
                                     logD("start thread to read " + mDevice.getAddress());
                                     socketConnectRead();
                                 } catch (IOException e) {
@@ -263,7 +262,9 @@ public class BtEngine {
      */
     public void connect(BluetoothDevice dev) {
         try {
-            closeSocket("BtClient connect ：" + dev.getAddress(), false);
+            if (mSocketStateMap.size() > 0 && mSocketStateMap.get(dev.getAddress()) == SOCKET_STATE_CONNECTED) {
+                closeSocket("BtClient connect ：" + dev.getAddress(), false);
+            }
 
             mDevice = dev;
             sendHandleMessage(TYPE_CONNECT, dev);
@@ -421,7 +422,7 @@ public class BtEngine {
      */
     public void closeSocket(String name, boolean isNotify) {
         try {
-            mStateMap.clear();
+            mSocketStateMap.clear();
 
             deviceBusing = false;
             lock.lock();
@@ -562,7 +563,7 @@ public class BtEngine {
 
     protected static void notifyErrorOnUI(String msg) {
         if (mDevice != null) {
-            mStateMap.put(mDevice.getAddress(), 0);
+            mSocketStateMap.put(mDevice.getAddress(), 0);
             mUIHandler.post(new Runnable() {
                 @Override
                 public void run() {

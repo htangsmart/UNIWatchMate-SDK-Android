@@ -6,8 +6,6 @@ import android.bluetooth.BluetoothDevice
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import android.util.Log
-import androidx.core.app.ActivityCompat
 import com.base.sdk.AbUniWatch
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.WmDevice
@@ -21,7 +19,6 @@ import com.google.gson.Gson
 import com.polidea.rxandroidble3.LogConstants
 import com.polidea.rxandroidble3.LogOptions
 import com.polidea.rxandroidble3.RxBleClient
-import com.polidea.rxandroidble3.exceptions.BleScanException
 import com.polidea.rxandroidble3.scan.ScanFilter
 import com.polidea.rxandroidble3.scan.ScanResult
 import com.polidea.rxandroidble3.scan.ScanSettings
@@ -36,20 +33,18 @@ import com.sjbt.sdk.settings.*
 import com.sjbt.sdk.spp.BtStateReceiver
 import com.sjbt.sdk.spp.OnBtStateListener
 import com.sjbt.sdk.spp.bt.BtEngine
-import com.sjbt.sdk.spp.bt.BtEngine.Listener
+import com.sjbt.sdk.spp.bt.BtEngine.*
 import com.sjbt.sdk.spp.bt.BtEngine.Listener.*
 import com.sjbt.sdk.spp.cmd.*
 import com.sjbt.sdk.sync.*
 import com.sjbt.sdk.utils.BtUtils
 import com.sjbt.sdk.utils.ClsUtils
 import com.sjbt.sdk.utils.SharedPreferencesUtils
-import com.sjbt.sdk.utils.UrlParse
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.*
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.PublishSubject
 import java.nio.ByteBuffer
-import kotlin.experimental.and
 
 abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Listener {
 
@@ -197,7 +192,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
 
                 if (device.address == mCurrAddress) {
                     mBindInfo?.let {
-                        connect(device, it)
+                        if(mBtEngine.getSocketState(mCurrAddress) == SOCKET_STATE_NONE) {
+                            connect(device, it)
+                        }
                     }
                 }
             }
@@ -1487,26 +1484,27 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
         mCurrDevice = bluetoothDevice
         val wmDevice = WmDevice(bindInfo.model)
         mCurrAddress = bluetoothDevice.address
-
-        mBtStateReceiver?.let {
-            it.setmCurrDevice(mCurrAddress)
-        }
-
         wmDevice.address = bluetoothDevice.address
         wmDevice.isRecognized = bindInfo.model == WmDeviceModel.SJ_WATCH
 
-        if (wmDevice.isRecognized) {
-
-            if (!mBtAdapter.isEnabled) {
-                observeConnectState?.onNext(WmConnectState.BT_DISABLE)
-                return wmDevice
+        if(mBtEngine.getSocketState(mCurrAddress) == SOCKET_STATE_NONE){
+            mBtStateReceiver?.let {
+                it.setmCurrDevice(mCurrAddress)
             }
 
-            wmLog.logE(TAG, " connect:${wmDevice}")
-            observeConnectState?.onNext(WmConnectState.CONNECTING)
-            mBtEngine.connect(bluetoothDevice)
-        } else {
-            observeConnectState?.onError(RuntimeException("not recognized device"))
+            if (wmDevice.isRecognized) {
+
+                if (!mBtAdapter.isEnabled) {
+                    observeConnectState?.onNext(WmConnectState.BT_DISABLE)
+                    return wmDevice
+                }
+
+                wmLog.logE(TAG, "sdk pre connect:${wmDevice}")
+                observeConnectState?.onNext(WmConnectState.CONNECTING)
+                mBtEngine.connect(bluetoothDevice)
+            } else {
+                observeConnectState?.onError(RuntimeException("not recognized device"))
+            }
         }
 
         return wmDevice
@@ -1590,7 +1588,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
             mHandler.postDelayed({
                 if (!discoveryObservableEmitter.isDisposed) {
                     discoveryObservableEmitter?.onComplete()
-                    wmLog.logD(TAG, "onComplete")
+                    wmLog.logD(TAG, "stop discovery onComplete")
                 }
                 dispose()
             }, stopAfter)
