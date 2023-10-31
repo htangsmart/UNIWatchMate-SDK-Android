@@ -9,7 +9,6 @@ import com.base.sdk.port.app.AbAppWeather
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.spp.cmd.CmdHelper
-import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_ALL
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_SEVEN_DAYS
 import com.sjbt.sdk.spp.cmd.URN_APP_WEATHER_PUSH_TODAY
 import io.reactivex.rxjava3.core.Single
@@ -110,16 +109,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
 
 
     fun weatherBusiness(payloadPackage: PayloadPackage, nodeData: NodeData) {
-        when (nodeData.urn[3]) {
-            URN_APP_WEATHER_PUSH_ALL -> {
-                val bcp = String(nodeData.data)
-
-                if(!TextUtils.isEmpty(bcp)){
-                    val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.TODAY)
-                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
-                    observeWeather?.onNext(weatherRequest)
-                }
-            }
+        when (nodeData.urn[2]) {
 
             URN_APP_WEATHER_PUSH_TODAY -> {
 
@@ -127,7 +117,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                     val bcp = String(nodeData.data)
                     val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.TODAY)
 
-                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
+                    sjUniWatch.wmLog.logD(TAG, "weatherRequest TODAY:" + weatherRequest)
                     observeWeather?.onNext(weatherRequest)
 
                 } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type || payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
@@ -147,7 +137,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                 if (payloadPackage.actionType == RequestType.REQ_TYPE_EXECUTE.type) {
                     val bcp = String(nodeData.data)
                     val weatherRequest = WmWeatherRequest(bcp, WmWeatherTime.SEVEN_DAYS)
-                    sjUniWatch.wmLog.logD(TAG, "weather language:" + weatherRequest)
+                    sjUniWatch.wmLog.logD(TAG, "weatherRequest SEVEN_DAYS:" + weatherRequest)
                     observeWeather?.onNext(weatherRequest)
 
                 } else {
