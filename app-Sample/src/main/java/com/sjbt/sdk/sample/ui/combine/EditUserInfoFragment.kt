@@ -51,6 +51,13 @@ class EditUserInfoFragment : BaseFragment(R.layout.fragment_edit_user_info),
                 Timber.d( "user info is null")
                 return@launchWhenStarted
             }
+
+            lifecycleScope.launchWhenStarted {
+                UNIWatchMate.wmSettings.settingPersonalInfo.get().subscribe{ it->
+                    UNIWatchMate.wmLog.logE("个人消息",""+it)
+                }
+            }
+
             valueDate = Date(info!!.birthYear - 1900, info!!.birthMonth - 1, info!!.birthDay)
             viewBind.editHeight.setText(info!!.height.toString())
             viewBind.editWeight.setText(info!!.weight.toString())

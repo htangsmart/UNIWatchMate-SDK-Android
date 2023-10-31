@@ -9,6 +9,7 @@ import com.sjbt.sdk.entity.NodeData
 import com.sjbt.sdk.spp.cmd.*
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() {
     private var observeEmitter: ObservableEmitter<WmSportGoal>? = null
@@ -63,7 +64,8 @@ class SettingSportGoal(val sjUniWatch: SJUniWatch) : AbWmSetting<WmSportGoal>() 
 
                 } else {
                     val byteBuffer =
-                        ByteBuffer.wrap(it.data)
+                        ByteBuffer.wrap(it.data).order(ByteOrder.LITTLE_ENDIAN)
+
                     val step = byteBuffer.getInt()
                     val distance = byteBuffer.getInt()
                     val calories = byteBuffer.getInt()

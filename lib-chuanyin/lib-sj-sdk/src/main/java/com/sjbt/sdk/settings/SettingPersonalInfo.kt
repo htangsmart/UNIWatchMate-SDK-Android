@@ -9,6 +9,7 @@ import com.sjbt.sdk.spp.cmd.CmdHelper
 import com.sjbt.sdk.spp.cmd.URN_0
 import io.reactivex.rxjava3.core.*
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class SettingPersonalInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalInfo>() {
     private var observeEmitter: ObservableEmitter<WmPersonalInfo>? = null
@@ -54,7 +55,7 @@ class SettingPersonalInfo(val sjUniWatch: SJUniWatch) : AbWmSetting<WmPersonalIn
 
                 } else {
                     val byteBuffer =
-                        ByteBuffer.wrap(it.data)
+                        ByteBuffer.wrap(it.data).order(ByteOrder.LITTLE_ENDIAN)
                     val height = byteBuffer.getShort()
                     val weight = byteBuffer.getShort()
                     val gender = byteBuffer.get()
