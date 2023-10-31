@@ -312,6 +312,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     mBindInfo?.let {
 //                                        if (it.bindType != BindType.CONNECT_BACK) {
                                         wmLog.logD(TAG, "bindinfo:" + it)
+                                        mConnectTryCount = 0
                                         sendNormalMsg(CmdHelper.getBindCmd(it))
 //                                        } else {
 //                                            btStateChange(WmConnectState.VERIFIED)
@@ -569,7 +570,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     val result = msgBean.payload[0].toInt()
                                     wmLog.logD(TAG, "bind result:$result")
 
-                                    if (result.toInt() == 1) {
+                                    if (result == 1) {
                                         btStateChange(WmConnectState.VERIFIED)
                                         mCurrAddress?.let {
                                             mBindStateMap.put(it, true)
@@ -1385,6 +1386,9 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 ) && mBindStateMap.get(device.address) == true
             ) {
                 mConnectTryCount++
+
+                wmLog.logE(TAG, "reconnect times:$mConnectTryCount")
+
                 if (mConnectTryCount < MAX_RETRY_COUNT) {
                     reConnect(device)
                 } else {
@@ -1415,7 +1419,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                 val schemeMacAddress = params[0]
                 val projectName = params[1]
                 bindInfo.randomCode = params[2]
-                bindInfo.model = if ("OSW-802N".equals(projectName)) {
+                bindInfo.model = if ("OSW-802N" == projectName) {
                     WmDeviceModel.SJ_WATCH
                 } else {
                     WmDeviceModel.NOT_REG
@@ -1511,7 +1515,7 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     /**
      * 重连
      */
-    fun reConnect(device: BluetoothDevice) {
+    private fun reConnect(device: BluetoothDevice) {
         mBindInfo?.let {
             connect(device, it)
         }
@@ -1588,13 +1592,6 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                     discoveryObservableEmitter?.onComplete()
                     wmLog.logD(TAG, "onComplete")
                 }
-                //                        if (ActivityCompat.checkSelfPermission(
-                //                                mContext, Manifest.permission.BLUETOOTH_SCAN
-                //                            ) != PackageManager.PERMISSION_GRANTED
-                //                        ) {
-                //                            return
-                //                        }
-                //                    mBtAdapter?.cancelDiscovery()
                 dispose()
             }, stopAfter)
 
@@ -1632,16 +1629,16 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
     private fun addScanResult(bleScanResult: ScanResult) {
         val bleDevice = bleScanResult.bleDevice
         if (!TextUtils.isEmpty(bleDevice.name)) {
-            wmLog.logD(TAG, "scanResult device:" + bleScanResult.bleDevice)
-            wmLog.logD(
-                TAG,
-                "scanResult scanRecord hex:" + BtUtils.bytesToHexString(bleScanResult.scanRecord.bytes)
-            )
-
-            wmLog.logD(
-                TAG,
-                "scanResult scanRecord hex:" + bleScanResult.scanRecord.getManufacturerSpecificData()
-            )
+//            wmLog.logD(TAG, "scanResult device:" + bleScanResult.bleDevice)
+//            wmLog.logD(
+//                TAG,
+//                "scanResult scanRecord hex:" + BtUtils.bytesToHexString(bleScanResult.scanRecord.bytes)
+//            )
+//
+//            wmLog.logD(
+//                TAG,
+//                "scanResult scanRecord hex:" + bleScanResult.scanRecord.getManufacturerSpecificData()
+//            )
 
             val byteBuffer = ByteBuffer.wrap(bleScanResult.scanRecord.bytes)
 
