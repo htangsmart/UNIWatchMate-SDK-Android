@@ -120,7 +120,7 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                     sjUniWatch.wmLog.logD(TAG, "weatherRequest TODAY:" + weatherRequest)
                     observeWeather?.onNext(weatherRequest)
 
-                } else if (payloadPackage.actionType == ResponseResultType.RESPONSE_ALL_OK.type || payloadPackage.actionType == ResponseResultType.RESPONSE_EACH.type) {
+                } else {
                     if (nodeData.dataLen.toInt() == 1) {
                         val result = nodeData.data[0].toInt() == ErrorCode.ERR_CODE_OK.ordinal
                         sjUniWatch.wmLog.logD(TAG, "weather push result:$result")
