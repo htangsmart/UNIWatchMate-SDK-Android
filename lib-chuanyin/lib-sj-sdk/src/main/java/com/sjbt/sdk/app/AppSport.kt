@@ -96,7 +96,9 @@ class AppSport(val sjUniWatch: SJUniWatch) : AbAppSport() {
                         val sportId = byteBuffer.short.toInt()
                         val wmSport = WmSport(sportId, 0, false)
                         sjUniWatch.wmLog.logD(TAG, "sport id:" + sportId);
-                        mSportList.add(wmSport)
+                        if (sportId != 0) {
+                            mSportList.add(wmSport)
+                        }
                     }
 
                     getSportListEmitter?.onSuccess(mSportList)

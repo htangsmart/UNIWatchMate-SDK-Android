@@ -148,7 +148,6 @@ class BtStateReceiver(
                         mSocket?.let {
                             val b = ByteArray(1)
                             it.outputStream.write(b)
-                            it.close()
                         }
                     } catch (ex: IOException) {
                         ex.printStackTrace()
