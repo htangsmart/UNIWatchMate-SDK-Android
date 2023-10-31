@@ -80,7 +80,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
         viewBind.itemQrCodes.setOnClickListener(blockClick)
         viewBind.itemAlarm.setOnClickListener(blockClick)
         viewBind.itemContacts.setOnClickListener(blockClick)
-        viewBind.itemEmergencyContact.setOnClickListener(blockClick)
         viewBind.itemTestSendNotification.setOnClickListener(blockClick)
         viewBind.itemSportPush.setOnClickListener(blockClick)
         viewBind.itemDial.setOnClickListener(blockClick)
@@ -90,7 +89,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
         viewBind.itemTestWeather.setOnClickListener(blockClick)
         viewBind.itemPushDateTime.setOnClickListener(blockClick)
         viewBind.itemOtherFeatures.setOnClickListener(blockClick)
-
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
@@ -180,11 +178,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device),
             }
 
             viewBind.itemContacts -> {
-                findNavController().navigate(DeviceFragmentDirections.toContacts())
-            }
-
-            viewBind.itemEmergencyContact -> {
-                findNavController().navigate(DeviceFragmentDirections.toEmergencyContacts())
+                findNavController().navigate(DeviceFragmentDirections.toPageContacts())
             }
 
             viewBind.itemTestSendNotification -> {

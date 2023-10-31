@@ -85,7 +85,6 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
         viewBind.itemSport.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
-
 //            launch {
 //                deviceManager.flowSyncState.collect { state ->
 //                    if (state == null || state == FcSyncState.SUCCESS) {//refresh none or success
@@ -129,7 +128,7 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
             }
 
             viewBind.itemSleep -> {
-//                findNavController().navigate(SyncFragmentDirections.toSleep())
+//              findNavController().navigate(SyncFragmentDirections.toSleep())
             }
 
             viewBind.itemHeartRate -> {
@@ -143,7 +142,6 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
             viewBind.itemSport -> {
 //                findNavController().navigate(SyncFragmentDirections.toSport())
             }
-
         }
     }
 }

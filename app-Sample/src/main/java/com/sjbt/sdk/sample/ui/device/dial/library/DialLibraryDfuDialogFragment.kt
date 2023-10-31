@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.port.AbWmTransferFile
@@ -47,13 +48,20 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
     private var _viewBind: DialogDialLibraryDfuBinding? = null
     private val viewBind get() = _viewBind!!
 
-    private val dfuViewModel: DfuViewModel by viewModels({ requireParentFragment()})
+    private lateinit  var dfuViewModel: DfuViewModel
     private val promptToast by promptToast()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireArguments().let {
             dialPacket = it.getParcelableCompat(EXTRA_DIAL_PACKET)!!
+        }
+        if (requireParentFragment() != null) {
+            dfuViewModel = ViewModelProvider(requireParentFragment())[DfuViewModel::class.java]
+        }else{
+            //adapt use this fragment in activity
+            dfuViewModel = ViewModelProvider(this)[DfuViewModel::class.java]
+
         }
     }
 
@@ -77,6 +85,20 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
                         dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
                             override fun callBack(o: WmTransferState) {
                                 Timber.i( it.toString())
+                                onWmTransferStateChange(o)
+                            }
+                        })
+                    }
+                }
+            }
+        }
+        if (dialPacket.dialCoverRes == -2) {
+            if (!dfuViewModel.isDfuIng()) {
+                PermissionHelper.requestBle(this) { granted ->
+                    if (granted) {
+                        isCancelable = false
+                        dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
+                            override fun callBack(o: WmTransferState) {
                                 onWmTransferStateChange(o)
                             }
                         })

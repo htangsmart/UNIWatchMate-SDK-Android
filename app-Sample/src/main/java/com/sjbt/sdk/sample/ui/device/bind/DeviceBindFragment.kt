@@ -72,7 +72,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
     private val scanDevicesAdapter: ScanDevicesAdapter = ScanDevicesAdapter().apply {
         listener = object : ScanDevicesAdapter.Listener {
             override fun onItemClick(device: ScanDevice) {
-                tryingBind(device.address, device.name)
+                tryingBind(device)
             }
 
             override fun onItemSizeChanged(oldSize: Int, newSize: Int) {
@@ -90,64 +90,55 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
 
     private var bluetoothSnackbar: Snackbar? = null
 
-    private fun tryingBind(address: String, name: String?) {
-        this::class.simpleName?.let { Timber.tag(it).i("address=$address name=$name") }
+    private fun tryingBind(device: ScanDevice) {
+        this::class.simpleName?.let { Timber.i("address=${device.address} name=${device.name}") }
         val userInfo = userInfoRepository.flowCurrent.value
         userInfo?.let {
-            val deviceModel = UNIWatchMate.getDeviceModel()
-            deviceModel?.let { deviceModel ->
-                val mDevice = UNIWatchMate.connect(
-                    address,
-                    WmBindInfo(
-                        it.id.toString(),
-                        it.name,
-                        BindType.DISCOVERY,
-                        WmDeviceModel.SJ_WATCH
-                    )
-                )
-                deviceManager.bind(
-                    address, if (name.isNullOrEmpty()) {
-                        UNKNOWN_DEVICE_NAME
-                    } else {
-                        name
-                    }, WmDeviceModel.SJ_WATCH
-                )
+            UNIWatchMate.connect(
+                device.address,
+                WmBindInfo(it.id.toString(), it.name, BindType.DISCOVERY, device.mode)
+            )
+            deviceManager.bind(
+                device.address, if (device.name.isNullOrEmpty()) {
+                    UNKNOWN_DEVICE_NAME
+                } else {
+                    device.name!!
+                }, device.mode
+            )
 
-                DeviceConnectDialogFragment().show(childFragmentManager, null)
-            } ?: {
-                ToastUtil.showToast("no deviceModel")
-            }
+            DeviceConnectDialogFragment().show(childFragmentManager, null)
+
         }
     }
 
-    fun parseSjScanQr(qrString: String): WmDevice? {
-        var wmScanDevice: WmDevice? = null
-
-//        val params = UrlParse.getUrlParams(qrString)
-        val urlParams = qrString.split("?")
-
-        if (urlParams.isNotEmpty()) {
-            val params = urlParams[1].split("&")
-            if (params.isNotEmpty() && params.size >= 3) {
-                wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
-
-                val schemeMacAddress = params[0]
-                val schemeDeviceName = params[1]
-                val random = params[2]
-
-                wmScanDevice.randomCode = random
-
-                wmScanDevice.address = schemeMacAddress
-                wmScanDevice.isRecognized =
-                    !TextUtils.isEmpty(schemeMacAddress) &&
-                            !TextUtils.isEmpty(schemeDeviceName) &&
-                            !TextUtils.isEmpty(random) &&
-                            isLegalMacAddress(schemeMacAddress)
-            }
-        }
-
-        return wmScanDevice
-    }
+//    fun parseSjScanQr(qrString: String): WmDevice? {
+//        var wmScanDevice: WmDevice? = null
+//
+////        val params = UrlParse.getUrlParams(qrString)
+//        val urlParams = qrString.split("?")
+//
+//        if (urlParams.isNotEmpty()) {
+//            val params = urlParams[1].split("&")
+//            if (params.isNotEmpty() && params.size >= 3) {
+//                wmScanDevice = WmDevice(WmDeviceModel.SJ_WATCH)
+//
+//                val schemeMacAddress = params[0]
+//                val schemeDeviceName = params[1]
+//                val random = params[2]
+//
+//                wmScanDevice.randomCode = random
+//
+//                wmScanDevice.address = schemeMacAddress
+//                wmScanDevice.isRecognized =
+//                    !TextUtils.isEmpty(schemeMacAddress) &&
+//                            !TextUtils.isEmpty(schemeDeviceName) &&
+//                            !TextUtils.isEmpty(random) &&
+//                            isLegalMacAddress(schemeMacAddress)
+//            }
+//        }
+//
+//        return wmScanDevice
+//    }
 
     private fun isLegalMacAddress(address: String?): Boolean {
         return !TextUtils.isEmpty(address)
@@ -159,34 +150,26 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                 this::class.simpleName?.let { Timber.tag(it).i("scanResult=$scanResult") }
                 val userInfo = userInfoRepository.flowCurrent.value ?: return@launchWithLog
                 val bindInfo = WmBindInfo(userInfo.id.toString(), userInfo.name, BindType.SCAN_QR)
-                val wmScanDevice = parseSjScanQr(scanResult.getContent())
-                if (wmScanDevice == null) {
-                    ToastUtil.showToast(getString(R.string.device_scan_tips_error))
-                } else {
-                    if (wmScanDevice.address != null) {
 //                        deviceManager.delDevice()
-                        val wmDevice = UNIWatchMate.connectScanQr(
-                            scanResult.getContent(),
-                            bindInfo
-                        )
-                        if (wmDevice != null) {
-                            Timber.i("device=$wmDevice")
-                            deviceManager.bind(
-                                wmScanDevice.address!!, if (wmScanDevice.name.isNullOrEmpty()) {
-                                    UNKNOWN_DEVICE_NAME
-                                } else {
-                                    wmScanDevice.name!!
-                                }, wmDevice!!.mode
-                            )
-                            DeviceConnectDialogFragment().show(childFragmentManager, null)
+                val wmDevice = UNIWatchMate.connectScanQr(
+                    scanResult.getContent(),
+                    bindInfo
+                )
+                if (wmDevice != null && wmDevice.mode != WmDeviceModel.NOT_REG) {
+                    Timber.i("device=$wmDevice")
+                    deviceManager.bind(
+                        wmDevice.address!!, if (wmDevice.name.isNullOrEmpty()) {
+                            UNKNOWN_DEVICE_NAME
                         } else {
-                            ToastUtil.showToast(getString(R.string.device_scan_tips_error))
-                        }
-
-                    } else {
-                        ToastUtil.showToast(getString(R.string.device_scan_tips_error))
-                    }
+                            wmDevice.name!!
+                        }, wmDevice!!.mode
+                    )
+                    DeviceConnectDialogFragment().show(childFragmentManager, null)
+                } else {
+                    ToastUtil.showToast(getString(R.string.device_scan_tips_error))
                 }
+            }.onFailure {
+                ToastUtil.showToast(it.message)
             }
         }
     }
@@ -325,7 +308,7 @@ class DeviceBindFragment : BaseFragment(R.layout.fragment_device_bind),
                         startScan = false
                     }.collect {
                         this::class.simpleName?.let { it1 -> Timber.tag(it1).i(it.toString()) }
-                        scanDevicesAdapter.newScanResult(it)
+                        scanDevicesAdapter.newScanResult(it, WmDeviceModel.SJ_WATCH)
                     }
             }
         }

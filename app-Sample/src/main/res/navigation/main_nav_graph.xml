@@ -23,8 +23,8 @@
             android:id="@+id/toAlarm"
             app:destination="@id/alarmFragment" />
         <action
-            android:id="@+id/toContacts"
-            app:destination="@id/contactsFragment" />
+            android:id="@+id/toPageContacts"
+            app:destination="@id/contactPageFragment" />
         <action
             android:id="@+id/toEmergencyContacts"
             app:destination="@id/toEmergencyContacts" />
@@ -356,13 +356,26 @@
         android:name="com.sjbt.sdk.sample.ui.device.alarm.AlarmFragment" />
 
     <fragment
+        android:id="@+id/contactPageFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.contacts.ContactHomePageFragment"
+        android:label="@string/ds_contacts"
+        tools:layout="@layout/fragment_contact_home_page" >
+        <action
+            android:id="@+id/toContacts"
+            app:destination="@id/contactsFragment" />
+        <action
+            android:id="@+id/toEmergencyContacts"
+            app:destination="@id/emergencyContacts" />
+    </fragment>
+
+    <fragment
         android:id="@+id/contactsFragment"
         android:name="com.sjbt.sdk.sample.ui.device.contacts.ContactsFragment"
         android:label="@string/ds_contacts"
         tools:layout="@layout/fragment_contacts" />
 
     <fragment
-        android:id="@+id/toEmergencyContacts"
+        android:id="@+id/emergencyContacts"
         android:name="com.sjbt.sdk.sample.ui.device.contacts.EmergencyContactFragment"
         android:label="@string/ds_emergency_contacts"
         tools:layout="@layout/fragment_emergency_contacts" />

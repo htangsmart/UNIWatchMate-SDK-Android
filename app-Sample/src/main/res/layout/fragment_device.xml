@@ -109,10 +109,7 @@ android:padding="@dimen/dp_15"
             android:id="@+id/item_contacts"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_contacts" />
-        <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_emergency_contact"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_emergency_contacts" />
+
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_test_send_notification"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
