@@ -231,12 +231,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
             "郑十二"
         )
         val lastNames = listOf("一", "二", "三", "四", "五", "六", "七", "八", "九", "十")
-        for (indext in 0 until 99) {
+        for (indext in 0 until  100) {
             val firstName = firstNames[random.nextInt(firstNames.size)]
             val lastName = lastNames[random.nextInt(lastNames.size)]
             val fullName = "$firstName$lastName"
+//            val phoneNumber =
+//                "${random.nextInt(900) + 100}${random.nextInt(900) + 100}${random.nextInt(9000) + 1000}$indext"
             val phoneNumber =
-                "${random.nextInt(900) + 100}${random.nextInt(900) + 100}${random.nextInt(9000) + 1000}"
+                "$indext"
             val wmContact = WmContact.create(fullName, phoneNumber)
             if (wmContact != null) {
                 contacts.add(wmContact)

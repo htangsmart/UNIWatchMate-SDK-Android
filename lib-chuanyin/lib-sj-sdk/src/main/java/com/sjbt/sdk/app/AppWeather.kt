@@ -37,11 +37,11 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
             var cityLen = weather.location.city?.let { it.toByteArray().size }
             var countryLen = weather.location.country?.let { it.toByteArray().size }
 
-            var totalLen = 7 + cityLen + countryLen + 2
+            var totalLen = 7 + cityLen + countryLen + 2 + 2
             sjUniWatch.wmLog.logD(TAG, "today weather payload_len:" + totalLen)
 
             weather.todayWeather.forEach {
-                totalLen += it.weatherDesc.toByteArray().size + 13
+                totalLen += it.weatherDesc.toByteArray().size + 13 + 1
             }
 
             sjUniWatch.wmLog.logD(TAG, "today weather payload_len:" + totalLen)
@@ -75,11 +75,11 @@ class AppWeather(val sjUniWatch: SJUniWatch) : AbAppWeather() {
                 var cityLen = weather.location.city?.let { it.toByteArray().size }
                 var countryLen = weather.location.country?.let { it.toByteArray().size }
 
-                var sevenDayLen = 7 + cityLen + countryLen + 2
+                var sevenDayLen = 7 + cityLen + countryLen + 2 + 2
                 sjUniWatch.wmLog.logD(TAG, "7 days weather payload_len:" + sevenDayLen)
 
                 weather.weatherForecast.forEach {
-                    sevenDayLen += it.dayDesc.toByteArray().size + it.nightDesc.toByteArray().size + 18
+                    sevenDayLen += it.dayDesc.toByteArray().size + it.nightDesc.toByteArray().size + 18 + 2
                 }
 
                 sjUniWatch.wmLog.logD(TAG, "7 days weather total bytes:" + sevenDayLen)

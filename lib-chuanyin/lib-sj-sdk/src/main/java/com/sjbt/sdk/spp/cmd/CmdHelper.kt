@@ -73,7 +73,6 @@ object CmdHelper {
     }
 
 
-
     /**
      * 组包公用方法
      */
@@ -1218,7 +1217,7 @@ object CmdHelper {
 
     fun sizeOfNumber(variable: Any): Int {
         // Long.SIZE_BYTES = 8
-        return ByteBuffer.allocate(Long.SIZE_BYTES)
+        return ByteBuffer.allocate(Long.SIZE_BYTES).order(ByteOrder.LITTLE_ENDIAN)
             .let { buffer ->
                 when (variable) {
                     is Byte -> buffer.put(variable)
@@ -1266,7 +1265,7 @@ object CmdHelper {
         val payloadPackage = PayloadPackage()
 
 //        if (sportGoal.steps != 0 || sportGoal.calories != 0 || sportGoal.distance != 0 || sportGoal.activityDuration.toInt() != 0) {
-        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2)
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4 + 4 + 4 + 2).order(ByteOrder.LITTLE_ENDIAN)
         bbSport.putInt(sportGoal.steps)
         bbSport.putInt(sportGoal.calories)
         bbSport.putInt(sportGoal.distance)
@@ -1322,7 +1321,7 @@ object CmdHelper {
         val payloadPackage = PayloadPackage()
 
 //        if (personalInfo.height != 0 || personalInfo.weight != 0 || personalInfo.gender != 0 || personalInfo.activityDuration.toInt() != 0) {
-        val bbSport: ByteBuffer = ByteBuffer.allocate(2 + 2 + 1 + 4)
+        val bbSport: ByteBuffer = ByteBuffer.allocate(2 + 2 + 1 + 4).order(ByteOrder.LITTLE_ENDIAN)
         bbSport.putShort(personalInfo.height)
         bbSport.putShort(personalInfo.weight)
         bbSport.put(personalInfo.gender.ordinal.toByte())
@@ -1369,7 +1368,7 @@ object CmdHelper {
     ): PayloadPackage {
 
         val payloadPackage = PayloadPackage()
-        val bbSport: ByteBuffer = ByteBuffer.allocate(4)
+        val bbSport: ByteBuffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
         bbSport.put(wmUnitInfo.timeFormat.ordinal.toByte())
         bbSport.put(wmUnitInfo.distanceUnit.ordinal.toByte())
         bbSport.put(wmUnitInfo.temperatureUnit.ordinal.toByte())
@@ -1432,7 +1431,7 @@ object CmdHelper {
      */
     fun getWriteSedentaryReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(
             if (sedentaryReminder.isEnabled) {
                 1.toByte()
@@ -1476,7 +1475,7 @@ object CmdHelper {
      */
     fun getWriteReadDrinkReminderCmd(sedentaryReminder: WmSedentaryReminder): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(11).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(
             if (sedentaryReminder.isEnabled) {
                 1.toByte()
@@ -1521,7 +1520,7 @@ object CmdHelper {
 //            }
 //        }
 
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25 * totalAlarms.size)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(25 * totalAlarms.size).order(ByteOrder.LITTLE_ENDIAN)
 
         totalAlarms.forEach { alarm ->
             byteBuffer.put(0)
@@ -1548,7 +1547,7 @@ object CmdHelper {
      */
     fun getWriteAddAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5).order(ByteOrder.LITTLE_ENDIAN)
 //        byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
         byteBuffer.put(originNameArray.copyOf(ALARM_NAME_LEN))
@@ -1581,7 +1580,7 @@ object CmdHelper {
      */
     fun getWriteModifyAlarmCmd(alarm: WmAlarm): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(ALARM_NAME_LEN + 5).order(ByteOrder.LITTLE_ENDIAN)
 //        byteBuffer.put(alarm.alarmId.toByte())
         val originNameArray = alarm.alarmName.toByteArray(StandardCharsets.UTF_8)
 
@@ -1616,7 +1615,7 @@ object CmdHelper {
      */
     fun getReadContactCountCmd(contactCount: Byte): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer = ByteBuffer.allocate(1)
+        val byteBuffer = ByteBuffer.allocate(1).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(contactCount)
         payloadPackage.putData(getUrnId(URN_4, URN_3, URN_1), byteBuffer.array())
         return payloadPackage
@@ -1702,7 +1701,7 @@ object CmdHelper {
      */
     fun getExecuteStartFindDevice(wmFind: WmFind): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(3).order(ByteOrder.LITTLE_ENDIAN)
         byteBuffer.put(wmFind.count.toByte())
         byteBuffer.putShort(wmFind.timeSeconds.toShort())
         payloadPackage.putData(getUrnId(URN_5, URN_2, URN_1), byteBuffer.array())
@@ -1771,7 +1770,7 @@ object CmdHelper {
     ): PayloadPackage {
         val payloadPackage = PayloadPackage()
 
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen).order(ByteOrder.LITTLE_ENDIAN)
 
         //时间
         val calendar = Calendar.getInstance()
@@ -1791,11 +1790,14 @@ object CmdHelper {
         byteBuffer.put(second.toByte())
 
         //位置
-        byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
-        byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
+        byteBuffer.put((wmWeather.location.country.toByteArray().size + 1).toByte())
+        byteBuffer.put((wmWeather.location.city.toByteArray().size + 1).toByte())
 
         byteBuffer.put(wmWeather.location.country.toByteArray())
+        byteBuffer.put(0)//字符串结束符
         byteBuffer.put(wmWeather.location.city.toByteArray())
+        byteBuffer.put(0)//字符串结束符
+
 
         //当天
         wmWeather.todayWeather.forEach {
@@ -1831,8 +1833,9 @@ object CmdHelper {
             byteBuffer.putShort(it.humidity.toShort())
             byteBuffer.put(it.uvIndex.toByte())
             byteBuffer.put(it.weatherCode.toByte())
-            byteBuffer.put(it.weatherDesc.toByteArray().size.toByte())
+            byteBuffer.put((it.weatherDesc.toByteArray().size + 1).toByte())
             byteBuffer.put(it.weatherDesc.toByteArray())
+            byteBuffer.put(0)//字符串结束符
         }
 
         payloadPackage.putData(
@@ -1853,7 +1856,7 @@ object CmdHelper {
         wmWeather: WmWeather
     ): PayloadPackage {
         val payloadPackage = PayloadPackage()
-        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen)
+        val byteBuffer: ByteBuffer = ByteBuffer.allocate(totalLen).order(ByteOrder.LITTLE_ENDIAN)
 
         //时间
         val calendar = Calendar.getInstance()
@@ -1873,10 +1876,12 @@ object CmdHelper {
         byteBuffer.put(second.toByte())
 
         //位置
-        byteBuffer.put(wmWeather.location.country.toByteArray().size.toByte())
-        byteBuffer.put(wmWeather.location.city.toByteArray().size.toByte())
+        byteBuffer.put((wmWeather.location.country.toByteArray().size + 1).toByte())
+        byteBuffer.put((wmWeather.location.city.toByteArray().size + 1).toByte())
         byteBuffer.put(wmWeather.location.country.toByteArray())
+        byteBuffer.put(0)//字符串结束符
         byteBuffer.put(wmWeather.location.city.toByteArray())
+        byteBuffer.put(0)//字符串结束符
 
         wmWeather.weatherForecast.forEach {
 
@@ -1920,11 +1925,13 @@ object CmdHelper {
             byteBuffer.put(it.dayCode.toByte())
             byteBuffer.put(it.nightCode.toByte())
 
-            byteBuffer.put(it.dayDesc.toByteArray().size.toByte())
-            byteBuffer.put(it.nightDesc.toByteArray().size.toByte())
+            byteBuffer.put((it.dayDesc.toByteArray().size + 1).toByte())
+            byteBuffer.put((it.nightDesc.toByteArray().size + 1).toByte())
 
             byteBuffer.put(it.dayDesc.toByteArray())
+            byteBuffer.put(0)//字符串结束符
             byteBuffer.put(it.nightDesc.toByteArray())
+            byteBuffer.put(0)//字符串结束符
 
         }
 
