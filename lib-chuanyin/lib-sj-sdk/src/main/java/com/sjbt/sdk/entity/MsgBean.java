@@ -18,7 +18,7 @@ import com.sjbt.sdk.utils.BtUtils;
 public class MsgBean {
     //    public String head;
     public byte head;
-    public byte cmdOrder;
+    public int cmdOrder;
     public String cmdIdStr;
     public int cmdId;
 

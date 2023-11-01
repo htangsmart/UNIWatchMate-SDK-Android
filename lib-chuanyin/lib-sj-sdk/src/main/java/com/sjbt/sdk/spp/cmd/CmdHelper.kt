@@ -1,5 +1,6 @@
 package com.sjbt.sdk.spp.cmd
 
+import android.util.Log
 import com.base.sdk.entity.WmBindInfo
 import com.base.sdk.entity.apps.*
 import com.base.sdk.entity.apps.WmContact.Companion.NAME_BYTES_LIMIT
@@ -36,6 +37,8 @@ object CmdHelper {
     private var mKeyData1: String? = null
     private var mKeyData2: String? = null
     private val gson = Gson()
+
+    const val MAX_ORDER_ID = 127
 
     /**
      * 写入分包类型和总长度
@@ -91,7 +94,8 @@ object CmdHelper {
 
         //TYPE
         byteBuffer.put(head)
-        byteBuffer.put((command_index % 255).toByte())
+        byteBuffer.put((command_index % MAX_ORDER_ID).toByte())
+        Log.e("SJ_SDK>>>>>", "ORIGIN_ORDER_ID:" + (command_index % MAX_ORDER_ID).toByte())
         byteBuffer.putShort((cmd_id.toInt() and TRANSFER_KEY.toInt()).toShort()) //携带方向
 
         //Length
@@ -140,7 +144,7 @@ object CmdHelper {
             val byteBuffer = ByteBuffer.wrap(msg)
             msgBean.originData = msg
             msgBean.head = byteBuffer.get()
-            msgBean.cmdOrder = byteBuffer.get()
+            msgBean.cmdOrder = byteBuffer.get().toInt() and 0Xfffffff
 
             val cmdId = ByteArray(2)
 

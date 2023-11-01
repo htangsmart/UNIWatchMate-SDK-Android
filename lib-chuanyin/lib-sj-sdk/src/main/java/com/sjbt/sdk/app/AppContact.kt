@@ -9,6 +9,7 @@ import com.base.sdk.port.app.AbAppContact
 import com.sjbt.sdk.SJUniWatch
 import com.sjbt.sdk.entity.*
 import com.sjbt.sdk.spp.cmd.*
+import com.sjbt.sdk.spp.cmd.CmdHelper.MAX_ORDER_ID
 import com.sjbt.sdk.utils.BtUtils
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.ObservableEmitter
@@ -192,19 +193,22 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                 //传输层分包
                 var payload: ByteArray? = null
 
-                if (i == count - 1) {
+                if(count == 1){
                     payload = businessArray.copyOfRange(i * mtu, i * mtu + lastCount)
-                } else {
-                    payload = businessArray.copyOfRange(i * mtu, i * mtu + mtu)
-                }
-
-                if (i == 0) {
-                    divideType = DIVIDE_Y_F_2
+                    divideType = DIVIDE_N_2
                 } else if (i == count - 1) {
+                    payload = businessArray.copyOfRange(i * mtu, i * mtu + lastCount)
                     divideType = DIVIDE_Y_E_2
                 } else {
-                    divideType = DIVIDE_Y_M_2
+                    payload = businessArray.copyOfRange(i * mtu, i * mtu + mtu)
+                    if (i == 0) {
+                        divideType = DIVIDE_Y_F_2
+                    } else {
+                        divideType = DIVIDE_Y_M_2
+                    }
                 }
+
+                sjUniWatch.wmLog.logE(TAG, "分包数据payload：" + BtUtils.bytesToHexString(payload))
 
                 val cmdArray = CmdHelper.constructCmd(
                     HEAD_NODE_TYPE,
@@ -218,11 +222,12 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                 val msgBean = CmdHelper.getPayLoadJson(false, cmdArray)
 
-                msgPkMap.put(msgBean.cmdOrder.toInt(), msgBean)
+                val order = msgBean.cmdOrder
+                msgPkMap[order] = msgBean
 
                 if (k == 0 && i == 0) {
-                    firstPkOrder = msgBean.cmdOrder.toInt()
-                    sjUniWatch.wmLog.logE(TAG, "first Order Id：" + firstPkOrder)
+                    firstPkOrder = order
+                    sjUniWatch.wmLog.logE(TAG, "first Order Id：$firstPkOrder")
                 }
             }
         }
@@ -231,13 +236,34 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
     }
 
     private fun sendObserveNode(order: Int) {
-        msgPkMap.get(order)?.let { msgBean ->
+        sjUniWatch.wmLog.logE(TAG, "total left ${msgPkMap.keys} send next order:$order")
+        msgPkMap[order]?.let { msgBean ->
+            sjUniWatch.wmLog.logE(TAG, "divideType： ${msgBean.divideType}  order:$order")
             sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
-                sjUniWatch.wmLog.logE(TAG, "success order id：" + order)
-                sjUniWatch.wmLog.logE(TAG, "success order contacts：" + String(msgBean.originData))
-                sendObserveNode(order % 255 + 1)
+                sjUniWatch.wmLog.logE(TAG, "success order id：$order")
+                msgPkMap.remove(order)
+
+                if (order != 0) {
+                    if (order == MAX_ORDER_ID - 1) {
+                        sendObserveNode(0)
+                    } else {
+                        sendObserveNode(order % MAX_ORDER_ID + 1)
+                    }
+                } else {
+                    sendObserveNode(order % MAX_ORDER_ID + 1)
+                }
+
             }
         }
+
+//        msgPkMap.get(order)?.let { msgBean ->
+//            sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
+//                sjUniWatch.wmLog.logE(TAG, "success order id：" + order)
+//                sjUniWatch.wmLog.logE(TAG, "success order contacts：" + String(msgBean.originData))
+//
+//                sendObserveNode(order % MAX_ORDER_ID + 1)
+//            }
+//        }
     }
 
     fun contactBusiness(
