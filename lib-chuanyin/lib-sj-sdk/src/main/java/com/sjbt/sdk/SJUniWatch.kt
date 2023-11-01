@@ -447,28 +447,28 @@ abstract class SJUniWatch(context: Application, timeout: Int) : AbUniWatch(), Li
                                     for (i in 0 until msgBean.payload.size) {
 
                                         when (i) {
-                                            0 -> {
+                                            SettingSoundAndHaptic.SoundAndHapticType.RING.type -> {
                                                 ringState = msgBean.payload[i].toInt()
                                             }
 
-                                            1 -> {
-                                                msgShake = msgBean.payload[1].toInt()
+                                            SettingSoundAndHaptic.SoundAndHapticType.NOTIFY.type -> {
+                                                msgShake = msgBean.payload[i].toInt()
                                             }
 
-                                            2 -> {
-                                                crowShake = msgBean.payload[2].toInt()
+                                            SettingSoundAndHaptic.SoundAndHapticType.CROWN.type -> {
+                                                crowShake = msgBean.payload[i].toInt()
                                             }
 
-                                            3 -> {
-                                                sysShake = msgBean.payload[3].toInt()
+                                            SettingSoundAndHaptic.SoundAndHapticType.SYSTEM.type -> {
+                                                sysShake = msgBean.payload[i].toInt()
                                             }
 
                                             4 -> {
-                                                armScreen = msgBean.payload[4].toInt()
+                                                armScreen = msgBean.payload[i].toInt()
                                             }
 
-                                            5 -> {
-                                                keepNoVoice = msgBean.payload[5].toInt()
+                                            SettingSoundAndHaptic.SoundAndHapticType.MUTED.type -> {
+                                                keepNoVoice = msgBean.payload[i].toInt()
                                             }
                                         }
                                     }

@@ -53,27 +53,27 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
     fun observeWmWistRaiseChange(type: Int, value: Int) {
         wmSoundAndHaptic?.let {
             when (type) {
-                0 -> {
+                SoundAndHapticType.RING.type -> {
                     it.isRingtoneEnabled = value == 1
                     backWmSoundAndHaptic.isRingtoneEnabled = value == 1
                 }
 
-                1 -> {
+                SoundAndHapticType.NOTIFY.type -> {
                     it.isNotificationHaptic = value == 1
                     backWmSoundAndHaptic.isNotificationHaptic = value == 1
                 }
 
-                2 -> {
+                SoundAndHapticType.CROWN.type -> {
                     it.isCrownHapticFeedback = value == 1
                     backWmSoundAndHaptic.isCrownHapticFeedback = value == 1
                 }
 
-                3 -> {
+                SoundAndHapticType.SYSTEM.type -> {
                     it.isSystemHapticFeedback = value == 1
                     backWmSoundAndHaptic.isSystemHapticFeedback = value == 1
                 }
 
-                4 -> {
+                SoundAndHapticType.MUTED.type -> {
                     it.isMuted = value == 1
                     backWmSoundAndHaptic.isMuted = value == 1
                 }
@@ -99,64 +99,57 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
     }
 
     override fun observeChange(): Observable<WmSoundAndHaptic> {
-        return Observable.create(object : ObservableOnSubscribe<WmSoundAndHaptic> {
-            override fun subscribe(emitter: ObservableEmitter<WmSoundAndHaptic>) {
-                observeEmitter = emitter
-            }
-        })
+        return Observable.create { emitter -> observeEmitter = emitter }
     }
 
     override fun set(obj: WmSoundAndHaptic): Single<WmSoundAndHaptic> {
-        return Single.create(object : SingleOnSubscribe<WmSoundAndHaptic> {
-            override fun subscribe(emitter: SingleEmitter<WmSoundAndHaptic>) {
-                setEmitter = emitter
-                backWmSoundAndHaptic = obj
+        return Single.create { emitter ->
+            setEmitter = emitter
+            backWmSoundAndHaptic = obj
 
-                wmSoundAndHaptic?.let {
-                    if (it.isRingtoneEnabled != obj.isRingtoneEnabled) {
-                        sjUniWatch.sendNormalMsg(
-                            CmdHelper.getSetDeviceRingStateCmd(
-                                0.toByte(),
-                                if (obj.isRingtoneEnabled) 1 else 0
-                            )
+            wmSoundAndHaptic?.let {
+                if (it.isRingtoneEnabled != obj.isRingtoneEnabled) {
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getSetDeviceRingStateCmd(
+                            0.toByte(),
+                            if (obj.isRingtoneEnabled) 1 else 0
                         )
-                    } else if (it.isNotificationHaptic != obj.isNotificationHaptic) {
-                        sjUniWatch.sendNormalMsg(
-                            CmdHelper.getSetDeviceRingStateCmd(
-                                1.toByte(),
-                                if (obj.isNotificationHaptic) 1 else 0
-                            )
+                    )
+                } else if (it.isNotificationHaptic != obj.isNotificationHaptic) {
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getSetDeviceRingStateCmd(
+                            1.toByte(),
+                            if (obj.isNotificationHaptic) 1 else 0
                         )
-                    } else if (it.isCrownHapticFeedback != obj.isCrownHapticFeedback) {
+                    )
+                } else if (it.isCrownHapticFeedback != obj.isCrownHapticFeedback) {
 
-                        sjUniWatch.sendNormalMsg(
-                            CmdHelper.getSetDeviceRingStateCmd(
-                                2.toByte(),
-                                if (obj.isCrownHapticFeedback) 1 else 0
-                            )
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getSetDeviceRingStateCmd(
+                            2.toByte(),
+                            if (obj.isCrownHapticFeedback) 1 else 0
                         )
-                    } else if (it.isSystemHapticFeedback != obj.isSystemHapticFeedback) {
+                    )
+                } else if (it.isSystemHapticFeedback != obj.isSystemHapticFeedback) {
 
-                        sjUniWatch.sendNormalMsg(
-                            CmdHelper.getSetDeviceRingStateCmd(
-                                3.toByte(),
-                                if (obj.isSystemHapticFeedback) 1 else 0
-                            )
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getSetDeviceRingStateCmd(
+                            3.toByte(),
+                            if (obj.isSystemHapticFeedback) 1 else 0
                         )
-                    } else if (it.isMuted != obj.isMuted) {
-                        sjUniWatch.sendNormalMsg(
-                            CmdHelper.getSetDeviceRingStateCmd(
-                                5.toByte(),
-                                if (obj.isMuted) 1 else 0
-                            )
+                    )
+                } else if (it.isMuted != obj.isMuted) {
+                    sjUniWatch.sendNormalMsg(
+                        CmdHelper.getSetDeviceRingStateCmd(
+                            5.toByte(),
+                            if (obj.isMuted) 1 else 0
                         )
-                    } else {
-                        0
-                    }
+                    )
+                } else {
+                    0
                 }
-
             }
-        })
+        }
     }
 
     override fun get(): Single<WmSoundAndHaptic> {
@@ -169,6 +162,14 @@ class SettingSoundAndHaptic(sjUniWatch: SJUniWatch) : AbWmSetting<WmSoundAndHapt
 
     fun onTimeOut(nodeData: NodeData) {
 
+    }
+
+    enum class SoundAndHapticType(val type:Int){
+        RING(0),
+        NOTIFY(1),
+        CROWN(2),
+        SYSTEM(3),
+        MUTED(5)
     }
 
 }
