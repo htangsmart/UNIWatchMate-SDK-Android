@@ -51,8 +51,8 @@ android {
         applicationId "com.sjbt.sdk.sample"
         minSdk min_sdk_version
         targetSdk target_sdk_version
-        versionCode 31
-        versionName "1.0.31"
+        versionCode 32
+        versionName "1.0.32"
         signingConfig signingConfigs.release
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -109,46 +109,29 @@ def static buildTime() {
 
 dependencies {
     //Required
-    implementation(name: 'lib-api', ext: 'aar')//api层aar
-    implementation(name: 'lib-interface', ext: 'aar')
-    implementation(name: 'lib-sj-sdk', ext: 'aar')//
+    implementation(name: 'lib-api-1.0.1', ext: 'aar')//api层aar
+    implementation(name: 'lib-interface-1.0.1', ext: 'aar')
+    implementation(name: 'lib-sj-sdk-1.0.1', ext: 'aar')//
     implementation(name: 'lib_jni_opencv_1.0.1_202310091127', ext: 'aar')
 
     implementation "androidx.core:core-ktx:$core_ktx_version"
     implementation "com.google.code.gson:gson:$gson_version"
     implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
     implementation "io.reactivex.rxjava3:rxandroid:$rx_android_version"
+    implementation "com.polidea.rxandroidble3:rxandroidble:1.17.2"
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "com.google.android.material:material:$material_version"
     implementation "com.guolindev.permissionx:permissionx:$permissionx_version"
-
     //Required
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    implementation "androidx.core:core-ktx:$core_ktx_version"
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "com.google.android.material:material:$material_version"
-    implementation 'com.guolindev.permissionx:permissionx:1.6.4'
-    if (use_chuanyin_aar.equalsIgnoreCase("true")) {
-        implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
-    } else {
-        implementation fileTree(dir: 'libs', include: ['*.jar', 'lib_*.aar'])
-        implementation project(path: ':lib-chuanyin:lib-interface')
-        implementation project(path: ':lib-chuanyin:lib-sj-sdk')
-        implementation project(path: ':lib-chuanyin:lib-api')
-    }
+    implementation(name: 'lib_toolkit_v1.0.0-alpha1', ext: 'aar')
     implementation project(path: ':zbarlibrary')
     implementation project(path: ':file-chooser-lib')
-
-    //Required
-    implementation "com.jakewharton.timber:timber:$timber_version"
-    implementation "io.reactivex.rxjava3:rxjava:$rx_java_version"
-    implementation "io.reactivex.rxjava3:rxandroid:$rx_android_version"
-    implementation "com.polidea.rxandroidble3:rxandroidble:1.17.2"
 
 //Base
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
