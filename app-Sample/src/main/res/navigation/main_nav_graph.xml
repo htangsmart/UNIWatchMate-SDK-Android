@@ -23,9 +23,11 @@
             android:id="@+id/toAlarm"
             app:destination="@id/alarmFragment" />
         <action
-            android:id="@+id/toContacts"
-            app:destination="@id/contactsFragment" />
-
+            android:id="@+id/toPageContacts"
+            app:destination="@id/contactPageFragment" />
+        <action
+            android:id="@+id/toEmergencyContacts"
+            app:destination="@id/toEmergencyContacts" />
         <action
             android:id="@+id/toDialHomePage"
             app:destination="@id/dialHomePageFragment" />
@@ -47,18 +49,18 @@
         android:id="@+id/syncFragment"
         android:name="com.sjbt.sdk.sample.ui.SyncFragment"
         android:label="@string/module_sync">
-        <!--        <action-->
-        <!--            android:id="@+id/toStep"-->
-        <!--            app:destination="@id/stepFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toSleep"-->
-        <!--            app:destination="@id/sleepFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toHeartRate"-->
-        <!--            app:destination="@id/heartRateFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toOxygen"-->
-        <!--            app:destination="@id/oxygenFragment"/>-->
+        <action
+            android:id="@+id/toStep"
+            app:destination="@id/stepFragment" />
+        <action
+            android:id="@+id/toSleep"
+            app:destination="@id/sleepFragment" />
+        <action
+            android:id="@+id/toHeartRateHomePage"
+            app:destination="@id/heartRateHomePageFragment" />
+        <action
+            android:id="@+id/toOxygen"
+            app:destination="@id/oxygenFragment" />
         <!--        <action-->
         <!--            android:id="@+id/toBloodPressure"-->
         <!--            app:destination="@id/bloodPressureFragment"/>-->
@@ -71,38 +73,37 @@
         <!--        <action-->
         <!--            android:id="@+id/toEcg"-->
         <!--            app:destination="@id/ecgFragment"/>-->
-        <!--        <action-->
-        <!--            android:id="@+id/toSport"-->
-        <!--            app:destination="@id/sportFragment"/>-->
+        <action
+            android:id="@+id/toSport"
+            app:destination="@id/sportFragment" />
         <!--        <action-->
         <!--            android:id="@+id/toGame"-->
         <!--            app:destination="@id/gameFragment"/>-->
     </fragment>
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/stepFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.StepFragment"-->
-    <!--        android:label="@string/data_step"-->
-    <!--        tools:layout="@layout/fragment_step"/>-->
+    <fragment
+        android:id="@+id/stepFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.StepFragment"
+        android:label="@string/data_step"
+        tools:layout="@layout/fragment_step" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/sleepFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.SleepFragment"-->
-    <!--        android:label="@string/data_sleep"-->
-    <!--        tools:layout="@layout/fragment_sleep"/>-->
+    <fragment
+        android:id="@+id/sleepFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.SleepFragment"
+        android:label="@string/data_sleep"
+        tools:layout="@layout/fragment_sleep" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/heartRateFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.HeartRateFragment"-->
-    <!--        android:label="@string/data_heart_rate"-->
-    <!--        tools:layout="@layout/fragment_data_list"/>-->
+    <fragment
+        android:id="@+id/heartRateFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.HeartRateHourlyFragment"
+        android:label="@string/data_heart_rate"
+        tools:layout="@layout/fragment_data_list" />
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/oxygenFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.OxygenFragment"-->
-    <!--        android:label="@string/data_oxygen"-->
-    <!--        tools:layout="@layout/fragment_data_list"/>-->
-
+    <fragment
+        android:id="@+id/oxygenFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.OxygenFragment"
+        android:label="@string/data_oxygen"
+        tools:layout="@layout/fragment_data_list" />
     <!--    <fragment-->
     <!--        android:id="@+id/bloodPressureFragment"-->
     <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.BloodPressureFragment"-->
@@ -113,6 +114,29 @@
         android:name="com.sjbt.sdk.sample.ui.setting.HeartRateConfigFragment"
         android:label="@string/ds_heart_rate_config"
         tools:layout="@layout/fragment_heart_rate_config" />
+
+    <fragment
+        android:id="@+id/heartRateHomePageFragment"
+        android:name="com.sjbt.sdk.sample.ui.setting.HeartRateHomePageFragment"
+        android:label="@string/ds_heart_rate_config"
+        tools:layout="@layout/fragment_heart_rate_config">
+        <action
+            android:id="@+id/toHourHeartRateFragment"
+            app:destination="@id/hourHeartRateFragment" />
+        <action
+            android:id="@+id/to5MinutesHeartRateFragment"
+            app:destination="@id/fiveMinutesHeartRateFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/hourHeartRateFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.HeartRateHourlyFragment"
+        android:label="@string/hourly_data"
+        tools:layout="@layout/fragment_data_list" />
+    <fragment
+        android:id="@+id/fiveMinutesHeartRateFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.HeartRateFiveMinutesFragment"
+        android:label="@string/data_every_5_minutes"
+        tools:layout="@layout/fragment_data_list" />
     <!--    <fragment-->
     <!--        android:id="@+id/temperatureFragment"-->
     <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.TemperatureFragment"-->
@@ -131,11 +155,11 @@
     <!--        android:label="@string/data_ecg"-->
     <!--        tools:layout="@layout/fragment_ecg"/>-->
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/sportFragment"-->
-    <!--        android:name="com.topstep.fitcloud.sample2.ui.sync.SportFragment"-->
-    <!--        android:label="@string/data_sport"-->
-    <!--        tools:layout="@layout/fragment_data_list"/>-->
+    <fragment
+        android:id="@+id/sportFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.SportFragment"
+        android:label="@string/data_sport"
+        tools:layout="@layout/fragment_data_list" />
 
     <!--    <fragment-->
     <!--        android:id="@+id/gameFragment"-->
@@ -153,7 +177,7 @@
     <fragment
         android:id="@+id/combineFragment"
         android:name="com.sjbt.sdk.sample.ui.CombineFragment"
-        android:label="@string/module_combine">
+        android:label="@string/module_user">
         <action
             android:id="@+id/toEditUserInfo"
             app:destination="@id/editUserInfoFragment" />
@@ -220,9 +244,9 @@
         android:label="@string/ds_config"
         tools:layout="@layout/fragment_device_config">
 
-        <action
-            android:id="@+id/toNotificationConfig"
-            app:destination="@id/notificationConfigFragment" />
+        <!--        <action-->
+        <!--            android:id="@+id/toNotificationConfig"-->
+        <!--            app:destination="@id/notificationConfigFragment" />-->
         <action
             android:id="@+id/toUnitConfig"
             app:destination="@id/unitConfigFragment" />
@@ -261,11 +285,21 @@
     <!--        android:label="@string/ds_page_config"-->
     <!--        tools:layout="@layout/fragment_page_config"/>-->
 
-    <fragment
-        android:id="@+id/notificationConfigFragment"
-        android:name="com.sjbt.sdk.sample.ui.setting.notification.NotificationConfigFragment"
-        android:label="@string/ds_notification_config"
-        tools:layout="@layout/fragment_notification_config" />
+    <!--    <fragment-->
+    <!--        android:id="@+id/notificationConfigFragment"-->
+    <!--        android:name="com.sjbt.sdk.sample.ui.setting.notification.NotificationConfigFragment"-->
+    <!--        android:label="@string/ds_notification_config"-->
+    <!--        tools:layout="@layout/fragment_notification_config">-->
+    <!--        <action-->
+    <!--            android:id="@+id/toOtherNotification"-->
+    <!--            app:destination="@id/otherNotificationFragment" />-->
+    <!--    </fragment>-->
+
+    <!--    <fragment-->
+    <!--        android:id="@+id/otherNotificationFragment"-->
+    <!--        android:name="com.sjbt.sdk.sample.ui.setting.notification.OtherNotificationListFragment"-->
+    <!--        android:label="@string/ds_notification_others"-->
+    <!--        tools:layout="@layout/fragment_other_notification_list" />-->
 
     <fragment
         android:id="@+id/unitConfigFragment"
@@ -344,12 +378,29 @@
         android:name="com.sjbt.sdk.sample.ui.device.alarm.AlarmFragment" />
 
     <fragment
+        android:id="@+id/contactPageFragment"
+        android:name="com.sjbt.sdk.sample.ui.device.contacts.ContactHomePageFragment"
+        android:label="@string/ds_contacts"
+        tools:layout="@layout/fragment_contact_home_page">
+        <action
+            android:id="@+id/toContacts"
+            app:destination="@id/contactsFragment" />
+        <action
+            android:id="@+id/toEmergencyContacts"
+            app:destination="@id/emergencyContacts" />
+    </fragment>
+
+    <fragment
         android:id="@+id/contactsFragment"
         android:name="com.sjbt.sdk.sample.ui.device.contacts.ContactsFragment"
         android:label="@string/ds_contacts"
         tools:layout="@layout/fragment_contacts" />
 
-
+    <fragment
+        android:id="@+id/emergencyContacts"
+        android:name="com.sjbt.sdk.sample.ui.device.contacts.EmergencyContactFragment"
+        android:label="@string/ds_emergency_contacts"
+        tools:layout="@layout/fragment_emergency_contacts" />
     <fragment
         android:id="@+id/dialHomePageFragment"
         android:name="com.sjbt.sdk.sample.ui.device.dial.DialHomePageFragment"

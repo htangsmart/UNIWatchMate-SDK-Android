@@ -33,6 +33,7 @@ import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 /**
  * **Document**
@@ -69,19 +70,23 @@ class DrinkWaterConfigFragment : BaseFragment(R.layout.fragment_drink_water_conf
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 deviceManager.flowStateConnected().collect {
-//                    viewBind.layoutContent.setAllChildEnabled(it)
+                    viewBind.layoutContent.setAllChildEnabled(it)
                 }
             }
+
             launch {
                 UNIWatchMate.wmSettings.settingDrinkWater.observeChange().asFlow().collect {
                     config = it
                     updateUI()
+                    Timber.i("observeChange config = $config")
                 }
             }
+
             launch {
                 UNIWatchMate.wmSettings.settingDrinkWater.get().toObservable().asFlow().collect {
                     config = it
                     updateUI()
+                    Timber.i("get config = $config")
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmSport
@@ -20,6 +21,7 @@ import com.sjbt.sdk.sample.base.Success
 import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.data.device.isConnected
 import com.sjbt.sdk.sample.databinding.FragmentDialLibraryBinding
+import com.sjbt.sdk.sample.databinding.FragmentSportLibraryBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
@@ -33,12 +35,13 @@ import com.sjbt.sdk.sample.widget.LoadingView
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 
-class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
+class SportLibraryFragment : BaseFragment(R.layout.fragment_sport_library) {
 
-    private val viewBind: FragmentDialLibraryBinding by viewBinding()
+    private val viewBind: FragmentSportLibraryBinding by viewBinding()
     private val sportLibraryViewModel: SportLibraryViewModel by viewModels()
     private val sportInstalledViewModel: SportInstalledViewModel by viewModels()
     private var wmSports: MutableList<LocalSportLibrary.LocalSport>? = mutableListOf()
+    private var wmIntalledSports: MutableList<WmSport>? = mutableListOf()
     private lateinit var adapter: SportlLibraryAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,10 +54,9 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
 
         viewBind.recyclerView.layoutManager = GridLayoutManager(requireContext(), 1)
         viewBind.recyclerView.addItemDecoration(
-            GridSpacingItemDecoration(
-                1,
-                DisplayUtil.dip2px(requireContext(), 15F),
-                true
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
             )
         )
 
@@ -67,7 +69,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         promptToast.showInfo(R.string.ds_sport_installed)
                     } else {
                         promptProgress.showProgress(getString(R.string.ds_sport_installing))
-                        sportLibraryViewModel.installContactContain(pos)
+                        sportInstalledViewModel.installContactContain(pos, packet)
                     }
                 } else {
                     promptToast.showInfo(R.string.device_state_disconnected)
@@ -91,6 +93,7 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         }
 
                         is Success -> {
+                            wmIntalledSports = state.requestSports()
                             sportLibraryViewModel.requestLibrarySports(state.requestSports())
 
                         }
@@ -131,18 +134,13 @@ class SportLibraryFragment : BaseFragment(R.layout.fragment_dial_library) {
                         is SportEvent.RequestFail -> {
                             promptToast.showFailed(event.throwable)
                         }
-                    }
-                }
-            }
-            launch {
-                sportLibraryViewModel.flowEvent.collect { event ->
-                    when (event) {
-                        is SportLibraryEvent.SportInstallSuccess -> {
+
+                        is SportEvent.SportInstallSuccess -> {
                             promptProgress.dismiss()
                             adapter.notifyItemChanged(event.position)
                         }
 
-                        is SportLibraryEvent.SportInstallFail -> {
+                        is SportEvent.SportInstallFail -> {
                             promptProgress.dismiss()
                             ToastUtil.showToast(event.msg)
                         }
@@ -159,8 +157,7 @@ data class SportLibraryState(
 
 sealed class SportLibraryEvent {
     class RequestFail(val throwable: Throwable) : SportLibraryEvent()
-    class SportInstallSuccess(val position: Int) : SportLibraryEvent()
-    class SportInstallFail(val msg: String) : SportLibraryEvent()
+
 }
 
 /**
@@ -204,22 +201,6 @@ class SportLibraryViewModel(
             }
         }
         return localSportLibrary.sports
-    }
-
-    fun installContactContain(position: Int) {
-        viewModelScope.launch {
-            val localSport = state.requestSports()?.get(position)
-            localSport?.let {
-                val wmSport = WmSport(localSport.id, localSport.type, localSport.buildIn)
-                runCatchingWithLog {
-                    val result = UNIWatchMate.wmApps.appSport.addSport(wmSport).await()
-                    localSport.installed = true
-                    SportLibraryEvent.SportInstallSuccess(position)
-                }
-
-//                SportLibraryEvent.SportInstallFail(e.message ?: "")
-            }
-        }
     }
 
 }

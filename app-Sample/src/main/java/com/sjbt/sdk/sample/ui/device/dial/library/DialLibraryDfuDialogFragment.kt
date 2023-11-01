@@ -5,15 +5,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.base.api.UNIWatchMate
 import com.base.sdk.port.AbWmTransferFile
 import com.base.sdk.port.State
 import com.base.sdk.port.WmTransferState
+import com.blankj.utilcode.util.FileUtils
 import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.databinding.DialogDialLibraryDfuBinding
+import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.model.user.DialMock
 import com.sjbt.sdk.sample.utils.PermissionHelper
 import com.sjbt.sdk.sample.utils.getParcelableCompat
@@ -24,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
 
@@ -44,7 +48,7 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
     private var _viewBind: DialogDialLibraryDfuBinding? = null
     private val viewBind get() = _viewBind!!
 
-    private val dfuViewModel: DfuViewModel by viewModels({ requireParentFragment()})
+    private lateinit  var dfuViewModel: DfuViewModel
     private val promptToast by promptToast()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,15 +56,24 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
         requireArguments().let {
             dialPacket = it.getParcelableCompat(EXTRA_DIAL_PACKET)!!
         }
+        if (requireParentFragment() != null) {
+            dfuViewModel = ViewModelProvider(requireParentFragment())[DfuViewModel::class.java]
+        }else{
+            //adapt use this fragment in activity
+            dfuViewModel = ViewModelProvider(this)[DfuViewModel::class.java]
+
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _viewBind = DialogDialLibraryDfuBinding.inflate(LayoutInflater.from(context))
 
         viewBind.tvName.text = dialPacket.dialAssert
-
-        glideShowMipmapImage(viewBind.imgView, dialPacket.dialCoverRes, false)
-
+        if (dialPacket.dialCoverRes > 0) {
+            glideShowMipmapImage(viewBind.imgView, dialPacket.dialCoverRes, false)
+        }else{
+            viewBind.tvName.text = FileUtils.getFileName(dialPacket.dialAssert)
+        }
 
         resetStateView()
 
@@ -69,10 +82,26 @@ class DialLibraryDfuDialogFragment : AppCompatDialogFragment() {
                 PermissionHelper.requestBle(this) { granted ->
                     if (granted) {
                         isCancelable = false
-                        dfuViewModel.startDfu(dialPacket) {
-                            UNIWatchMate.wmLog.logI("DfuViewModel", it.toString())
-                            onWmTransferStateChange(it)
-                        }
+                        dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
+                            override fun callBack(o: WmTransferState) {
+                                Timber.i( it.toString())
+                                onWmTransferStateChange(o)
+                            }
+                        })
+                    }
+                }
+            }
+        }
+        if (dialPacket.dialCoverRes == -2) {
+            if (!dfuViewModel.isDfuIng()) {
+                PermissionHelper.requestBle(this) { granted ->
+                    if (granted) {
+                        isCancelable = false
+                        dfuViewModel.startDfu(dialPacket,object :CallBack<WmTransferState>{
+                            override fun callBack(o: WmTransferState) {
+                                onWmTransferStateChange(o)
+                            }
+                        })
                     }
                 }
             }

@@ -1,10 +1,12 @@
 package com.sjbt.sdk.sample.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import com.sjbt.sdk.sample.DeviceService
 import com.sjbt.sdk.sample.base.BaseActivity
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.ui.auth.AuthActivity
@@ -21,7 +23,7 @@ class LaunchActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//      startService(Intent(this, DeviceService::class.java))
+        startService(Intent(this, DeviceService::class.java))
         installSplashScreen()
         lifecycleScope.launchWhenStarted {
             launchNavigation = viewModel.getLaunchNavigation()
@@ -29,9 +31,11 @@ class LaunchActivity : BaseActivity() {
                 LaunchNavigation.NavToSignIn -> {
                     AuthActivity.start(this@LaunchActivity)
                 }
+
                 LaunchNavigation.NavToMain -> {
                     MainActivity.start(this@LaunchActivity)
                 }
+
                 else -> {
                     throw IllegalStateException()
                 }

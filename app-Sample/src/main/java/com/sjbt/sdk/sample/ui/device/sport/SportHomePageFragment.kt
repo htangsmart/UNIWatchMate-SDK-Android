@@ -25,7 +25,6 @@ class SportHomePageFragment : BaseFragment(R.layout.fragment_sport_home_page) {
         viewBind.btnSportTestInstall.clickTrigger {
             findNavController().navigate(SportHomePageFragmentDirections.toSportLibrary())
         }
-
     }
 
 }

@@ -25,7 +25,8 @@ class DeviceInfoFragment : BaseFragment(R.layout.fragment_device_info) {
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                val it=  UNIWatchMate?.wmSync?.syncDeviceInfoData?.syncData(System.currentTimeMillis())?.await()
+                val it=  UNIWatchMate?.getDeviceInfo()?.await()
+
                 viewBind.itemDeviceInfo.text = "mac=${it.macAddress}\nbluetoothName=${it.bluetoothName}\n" +
                         "deviceName=${it.deviceName}\n" +
                         "deviceId=${it.deviceId}\n" +

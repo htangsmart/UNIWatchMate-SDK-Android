@@ -1,11 +1,11 @@
 package com.sjbt.sdk.sample.ui.device.bind
 
-import android.bluetooth.BluetoothDevice
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SortedList
 import androidx.recyclerview.widget.SortedListAdapterCallback
+import com.base.sdk.entity.WmDeviceModel
 import com.base.sdk.entity.common.WmDiscoverDevice
 import com.sjbt.sdk.sample.databinding.ItemScanDeviceBinding
 import kotlin.math.abs
@@ -47,7 +47,7 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
         return sorter.size()
     }
 
-    fun newScanResult(result: WmDiscoverDevice) {
+    fun newScanResult(result: WmDiscoverDevice, sjWatch: WmDeviceModel) {
         /**
          * ToNote:The data in [SortedList] is sorted, so the [SortedList.indexOf] method uses binary search to improve efficiency.
          * Unfortunately, this only works if the primary keys match the sort keys.That is, the [SortedListAdapterCallback.areItemsTheSame] method and [SortedListAdapterCallback.compare] need to maintain consistency.
@@ -74,12 +74,13 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
             if (nameChanged || rssiChanged) {
                 exist.name = result.device.name
                 exist.rssi = result.rss.toInt()
+                exist.mode = sjWatch
                 sorter.recalculatePositionOfItemAt(existIndex)
             }
         } else {
             val oldSize = sorter.size()
             //If it does not exist, then add
-            sorter.add(ScanDevice(result.device.address, result.device.name, result.rss.toInt()))
+            sorter.add(ScanDevice(result.device.address, result.device.name, result.rss.toInt(),sjWatch))
             listener?.onItemSizeChanged(oldSize, oldSize + 1)
         }
     }
@@ -124,7 +125,8 @@ class ScanDevicesAdapter : RecyclerView.Adapter<ScanDevicesAdapter.DeviceViewHol
 class ScanDevice(
     val address: String,
     var name: String?,
-    var rssi: Int
+    var rssi: Int,
+    var mode: WmDeviceModel
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -142,6 +144,7 @@ class ScanDevice(
     }
 
     override fun toString(): String {
-        return "ScanDevice(address='$address', name='$name', rssi=$rssi)"
+        return "ScanDevice(address='$address', name=$name, rssi=$rssi, mode=$mode)"
     }
+
 }

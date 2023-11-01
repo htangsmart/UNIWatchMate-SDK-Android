@@ -82,7 +82,7 @@
     <string name="sync_data_failed">Sync fail</string>
     <string name="sync_data_ongoing">Syncing data</string>
 
-    <string name="module_combine">Combine</string>
+    <string name="module_user">User</string>
 
 
     <!--Action-->
@@ -317,6 +317,7 @@
     <string name="ds_dial_test_install_des">Used to test install dial</string>
     <string name="tip_inner_dial_del_error">The built-in dial cannot be removed</string>
     <string name="built_in_dial">Built-in dial</string>
+    <string name="local_dial">Local dial installation</string>
     <!--Sport-->
     <string name="ds_sport">Sport</string>
     <string name="ds_sport_installed">Sport Installed</string>
@@ -324,6 +325,7 @@
     <string name="ds_sport_build_in">Sport Build-in</string>
     <string name="ds_sport_library">Sport Library</string>
 
+    <string name="ds_sport_at_most">at most 12</string>
     <string name="ds_sport_test_install_des">Used to test install sport</string>
     <string name="ds_sport_test_install">Sport Test install</string>
     <string name="tip_inner_sport_del_error">The built-in sport cannot be removed</string>
@@ -504,4 +506,33 @@
     <string name="connect_help_restart_bluetooth">Restart the bluetooth</string>
     <string name="connect_help_restart_device">Restart the watch</string>
     <string name="connect_help_restart_phone">Restart the phone</string>
+
+    <!--Notification-->
+    <string name="notification_channel_core_name">Core</string>
+    <string name="notification_channel_core_des">Reminders of core interactions</string>
+    <string name="notification_channel_device_des">Reminder of device name and connection status</string>
+    <string name="notification_channel_sport_des">Reminder of ongoing sport</string>
+
+    <string name="sport_drag_tip">Hold down and drag up and down to adjust the display order</string>
+    <string name="sport_installed_tip">Already added sports, up to 12</string>
+
+    <string name="data_step">Step</string>
+    <string name="data_sleep">Sleep</string>
+    <string name="data_heart_rate">Heart Rate</string>
+    <string name="data_oxygen">Oxygen</string>
+    <string name="data_blood_pressure">Blood Pressure</string>
+    <string name="data_temperature">Temperature</string>
+    <string name="data_pressure">Pressure</string>
+    <string name="data_ecg">ECG</string>
+    <string name="data_sport">Sport</string>
+    <string name="data_game">Game</string>
+    <string name="total_step">Total Steps：</string>
+    <string name="total_distance">Total Distance：</string>
+    <string name="total_calories">Total Calories：</string>
+    <string name="deep_sleep">Deep Sleep：</string>
+    <string name="light_sleep">Light Sleep：</string>
+    <string name="awake_sleep">Awake：</string>
+
+    <string name="hourly_data">Hourly data</string>
+    <string name="data_every_5_minutes">Data every 5 minutes</string>
 </resources>

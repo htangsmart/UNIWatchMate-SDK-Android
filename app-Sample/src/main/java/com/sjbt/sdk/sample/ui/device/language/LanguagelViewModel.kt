@@ -12,6 +12,7 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 data class DialState(
     val requestLanguages: Async<MutableList<WmLanguage>> = Uninitialized,
@@ -35,7 +36,7 @@ class LanguagelInstalledViewModel : StateEventViewModel<DialState, DialEvent>(Di
             runCatchingWithLog {
                 UNIWatchMate.wmApps.appLanguage.syncLanguageList.await()
             }.onSuccess {
-                UNIWatchMate.wmLog.logE("TAG", "language list: $it")
+                Timber.e( "language list: $it")
                 if (it is MutableList) {
                     state.copy(requestLanguages = Success(it)).newState()
                 } else {

@@ -11,7 +11,9 @@ fun uniWatchInit(application: Application) {
     //1.设置log输出
     //"UNIWatchMate"使用Timber作为日志输出，所以需要配置Timber
     if (BuildConfig.DEBUG) {
-        Timber.plant(Timber.DebugTree())
+        if (Timber.treeCount == 0) {
+            Timber.plant(Timber.DebugTree())
+        }
     } else {
         Timber.plant(object : Timber.DebugTree() {
             override fun isLoggable(tag: String?, priority: Int): Boolean {

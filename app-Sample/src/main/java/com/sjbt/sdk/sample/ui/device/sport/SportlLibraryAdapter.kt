@@ -32,7 +32,7 @@ class SportlLibraryAdapter : RecyclerView.Adapter<SportlLibraryAdapter.DialLibra
         val items = this.items ?: return
         val item = items[position]
         holder.viewBind.tvName.text=getName(item.names)
-        holder.viewBind.tvStatus.visibility=if(item.buildIn) View.VISIBLE else View.GONE
+        holder.viewBind.tvStatus.visibility=if(item.installed) View.VISIBLE else View.GONE
         holder.itemView.setOnClickListener {
             listener?.onItemClick(item,position)
         }

@@ -23,7 +23,32 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:paddingTop="4dp"
-                android:paddingBottom="4dp"/>
+                android:paddingBottom="4dp" />
+
+            <com.github.kilnn.tool.widget.item.PreferenceItem
+                android:id="@+id/item_step"
+                style="@style/Widget.Sample.PreferenceView.Item.Text"
+                app:preferenceTitle="@string/data_step" />
+
+            <com.github.kilnn.tool.widget.item.PreferenceItem
+                android:id="@+id/item_sleep"
+                style="@style/Widget.Sample.PreferenceView.Item.Text"
+                app:preferenceTitle="@string/data_sleep" />
+
+            <com.github.kilnn.tool.widget.item.PreferenceItem
+                android:id="@+id/item_heart_rate"
+                style="@style/Widget.Sample.PreferenceView.Item.Text"
+                app:preferenceTitle="@string/data_heart_rate" />
+
+            <com.github.kilnn.tool.widget.item.PreferenceItem
+                android:id="@+id/item_oxygen"
+                style="@style/Widget.Sample.PreferenceView.Item.Text"
+                app:preferenceTitle="@string/data_oxygen" />
+
+            <com.github.kilnn.tool.widget.item.PreferenceItem
+                android:id="@+id/item_sport"
+                style="@style/Widget.Sample.PreferenceView.Item.Text"
+                app:preferenceTitle="@string/data_sport" />
 
         </LinearLayout>
 

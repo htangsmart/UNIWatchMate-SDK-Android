@@ -27,6 +27,7 @@ import com.sjbt.sdk.sample.dialog.showStartTimeDialog
 import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.launch
@@ -68,7 +69,7 @@ class SedentaryConfigFragment : BaseFragment(R.layout.fragment_sedentary_config)
         viewLifecycle.launchRepeatOnStarted {
             launch {
                 deviceManager.flowStateConnected().collect {
-//                  viewBind.layoutContent.setAllChildEnabled(it)
+                  viewBind.layoutContent.setAllChildEnabled(it)
                 }
             }
             launch {

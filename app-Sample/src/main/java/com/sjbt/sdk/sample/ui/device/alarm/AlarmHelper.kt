@@ -30,9 +30,9 @@ object AlarmHelper {
         var maxAlarmId = -1
         alarms?.let {
             for (alarm in it) {
-                if (alarm.alarmId > maxAlarmId) {
-                    maxAlarmId = alarm.alarmId
-                }
+//                if (alarm.alarmId > maxAlarmId) {
+//                    maxAlarmId = alarm.alarmId
+//                }
             }
         }
         return maxAlarmId + 1
@@ -58,7 +58,7 @@ object AlarmHelper {
             wmAlarm.repeatOptions
         )
         alarm.isOn = wmAlarm.isOn
-        alarm.alarmId = wmAlarm.alarmId
+//        alarm.alarmId = wmAlarm.alarmId
         return alarm
     }
 
@@ -191,7 +191,7 @@ object AlarmHelper {
             } else if (v1 < v2) {
                 -1
             } else {
-                o1.alarmId - o2.alarmId
+                0
             }
         }
     }

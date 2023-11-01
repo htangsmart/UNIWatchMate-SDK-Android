@@ -37,7 +37,6 @@ import com.github.kilnn.tool.dialog.prompt.PromptDialogHolder
 import com.github.kilnn.tool.system.SystemUtil
 import com.github.kilnn.tool.widget.item.PreferenceItem
 import com.sjbt.sdk.sample.R
-import com.squareup.moshi.Moshi
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.functions.Action
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -337,7 +336,7 @@ fun glideShowMipmapImage(
     }
 }
 
-fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
+fun getTestWeatherdata(wmWeatherTime: WmWeatherTime, code: Int): WmWeather {
     val weatherForecastList = mutableListOf<WmWeatherForecast>()
     val todayWeatherList = mutableListOf<TodayWeather>()
 
@@ -346,7 +345,7 @@ fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
         for (index in 0..23) {
             val toDayWeather = TodayWeather(
                 10, WmUnitInfo.TemperatureUnit.CELSIUS, 66, 5,
-                0, "晴", System.currentTimeMillis(), index
+                code, "晴", System.currentTimeMillis() + index * 3600 * 1000, index
             )
             todayWeatherList.add(toDayWeather)
         }
@@ -356,11 +355,11 @@ fun getTestWeatherdata(wmWeatherTime: WmWeatherTime): WmWeather {
                 10,
                 30,
                 20,
-                WmUnitInfo.TemperatureUnit.CELSIUS,
+                 WmUnitInfo.TemperatureUnit.CELSIUS,
                 90,
                 5,
-                0,
-                0,
+                code,
+                code,
                 "白天天气描述",
                 "夜晚天气描述",
                 System.currentTimeMillis() + index * 3600 * 24 * 1000,

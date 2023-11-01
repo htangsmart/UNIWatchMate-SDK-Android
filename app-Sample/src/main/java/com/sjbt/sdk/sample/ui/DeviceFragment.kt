@@ -1,8 +1,12 @@
 package com.sjbt.sdk.sample.ui
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import androidx.annotation.StringRes
+import androidx.core.view.MenuProvider
 import androidx.navigation.fragment.findNavController
 import com.base.api.UNIWatchMate
 import com.base.sdk.entity.apps.WmConnectState
@@ -15,8 +19,12 @@ import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.FragmentDeviceBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.di.internal.CoroutinesInstance.applicationScope
+import com.sjbt.sdk.sample.dialog.CallBack
+import com.sjbt.sdk.sample.dialog.WeatherCodeTestDialog
+import com.sjbt.sdk.sample.model.WeatherCode
 import com.sjbt.sdk.sample.ui.bind.DeviceConnectDialogFragment
 import com.sjbt.sdk.sample.ui.camera.CameraActivity
+import com.sjbt.sdk.sample.ui.device.bind.DeviceBindFragmentDirections
 import com.sjbt.sdk.sample.ui.fileTrans.FileTransferActivity
 import com.sjbt.sdk.sample.utils.*
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
@@ -40,15 +48,31 @@ fun WmConnectState.toStringRes(): Int {
 }
 
 const val TAG = "DeviceFragment"
-class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDialogFragment.Listener{
+
+class DeviceFragment : BaseFragment(R.layout.fragment_device),
+    DeviceConnectDialogFragment.Listener {
 
     private val viewBind: FragmentDeviceBinding by viewBinding()
 
     private val deviceManager = Injector.getDeviceManager()
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+//        requireActivity().addMenuProvider(object : MenuProvider {
+//            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+//                menuInflater.inflate(R.menu.menu_device_add, menu)
+//            }
+//
+//            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+//                if (menuItem.itemId == R.id.menu_add_device) {
+//                    findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
+//                    return true
+//                }
+//                return false
+//            }
+//        }, viewLifecycleOwner)
+
         viewBind.itemDeviceBind.setOnClickListener(blockClick)
 //      viewBind.imgDeviceAdd.setOnClickListener(blockClick)
         viewBind.itemDeviceInfo.setOnClickListener(blockClick)
@@ -65,7 +89,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
         viewBind.itemTestWeather.setOnClickListener(blockClick)
         viewBind.itemPushDateTime.setOnClickListener(blockClick)
         viewBind.itemOtherFeatures.setOnClickListener(blockClick)
-
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
@@ -89,7 +112,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         Timber.i("flowConnectorState=$it")
                     }
                     viewBind.tvDeviceState.setText(it.toStringRes())
-                  viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
+                    viewBind.layoutContent.setAllChildEnabled(it == WmConnectState.VERIFIED)
                 }
             }
 
@@ -106,7 +129,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
         }
 
         UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe { aBoolean: Boolean ->
-            UNIWatchMate.wmLog.logE(TAG, "设备相机状态3：$aBoolean")
+            Timber.e( "设备相机状态3：$aBoolean")
         }
 
     }
@@ -116,9 +139,11 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDeviceBind -> {
                 findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
             }
-//            viewBind.imgDeviceAdd -> {
-//                findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
-//            }
+
+            viewBind.imgDeviceAdd -> {
+                findNavController().navigate(DeviceFragmentDirections.toDeviceBind())
+            }
+
             viewBind.itemDeviceInfo -> {
                 DeviceConnectDialogFragment().show(childFragmentManager, null)
             }
@@ -153,7 +178,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             }
 
             viewBind.itemContacts -> {
-                findNavController().navigate(DeviceFragmentDirections.toContacts())
+                findNavController().navigate(DeviceFragmentDirections.toPageContacts())
             }
 
             viewBind.itemTestSendNotification -> {
@@ -184,6 +209,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             viewBind.itemDial -> {
                 findNavController().navigate(DeviceFragmentDirections.toDialHomePage())
             }
+
             viewBind.itemSportPush -> {
                 findNavController().navigate(DeviceFragmentDirections.toSportHomePage())
             }
@@ -197,12 +223,22 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
             }
 
             viewBind.itemTestWeather -> {
+                showChooseWeatherDialog()
+
+            }
+        }
+    }
+
+    private fun showChooseWeatherDialog() {
+        context?.let {
+            WeatherCodeTestDialog(it
+            ) { weatherCode ->
                 applicationScope.launchWithLog {
                     val result = UNIWatchMate?.wmApps?.appWeather?.pushTodayWeather(
-                        getTestWeatherdata(WmWeatherTime.TODAY),
+                        getTestWeatherdata(WmWeatherTime.TODAY, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
-                    UNIWatchMate.wmLog.logE(TAG, "push today weather result = $result")
+                    Timber.e( "push today weather result = $result")
                     ToastUtil.showToast(
                         "push today weather test ${
                             if (result) getString(R.string.tip_success) else getString(
@@ -211,10 +247,10 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         }"
                     )
                     val result2 = UNIWatchMate?.wmApps?.appWeather?.pushSevenDaysWeather(
-                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS),
+                        getTestWeatherdata(WmWeatherTime.SEVEN_DAYS, weatherCode.code),
                         WmUnitInfo.TemperatureUnit.CELSIUS
                     )?.await()
-                    UNIWatchMate.wmLog.logE(TAG, "push seven_days weather result = $result2")
+                    Timber.e( "push seven_days weather result = $result2")
                     ToastUtil.showToast(
                         "push seven_days weather test ${
                             if (result2) getString(R.string.tip_success) else getString(
@@ -223,8 +259,7 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
                         }"
                     )
                 }
-            }
-
+            }.show()
         }
     }
 
@@ -235,7 +270,6 @@ class DeviceFragment : BaseFragment(R.layout.fragment_device) , DeviceConnectDia
     override fun navToBgRunSettings() {
         findNavController().navigate(DeviceFragmentDirections.toBgRunSettings())
     }
-
 
 
 }

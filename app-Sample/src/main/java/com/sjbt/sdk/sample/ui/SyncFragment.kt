@@ -2,10 +2,21 @@ package com.sjbt.sdk.sample.ui
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.base.api.UNIWatchMate
+import com.github.kilnn.tool.widget.ktx.clickTrigger
 import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
+import com.sjbt.sdk.sample.data.device.flowStateConnected
+import com.sjbt.sdk.sample.databinding.FragmentSyncBinding
+import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
+import com.sjbt.sdk.sample.utils.setAllChildEnabled
 import com.sjbt.sdk.sample.utils.viewLifecycle
+import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.rx3.asFlow
 
 /**
  * **Document**
@@ -56,41 +67,24 @@ import com.sjbt.sdk.sample.utils.viewLifecycle
  */
 class SyncFragment : BaseFragment(R.layout.fragment_sync) {
 
-//    private val viewBind: FragmentSyncBinding by viewBinding()
+    private val viewBind: FragmentSyncBinding by viewBinding()
 
-//  private val deviceManager = Injector.getDeviceManager()
+    private val deviceManager = Injector.getDeviceManager()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        viewBind.refreshLayout.setOnRefreshListener {
-//        }
-//        viewBind.itemStep.clickTrigger(block = blockClick)
-//        viewBind.itemSleep.clickTrigger(block = blockClick)
-//        viewBind.itemHeartRate.clickTrigger(block = blockClick)
-//        viewBind.itemOxygen.clickTrigger(block = blockClick)
-//        viewBind.itemBloodPressure.clickTrigger(block = blockClick)
-//        viewBind.itemTemperature.clickTrigger(block = blockClick)
-//        viewBind.itemPressure.clickTrigger(block = blockClick)
-//        viewBind.itemEcg.clickTrigger(block = blockClick)
-//        viewBind.itemSport.clickTrigger(block = blockClick)
-//        viewBind.itemGame.clickTrigger(block = blockClick)
+        viewBind.refreshLayout.setOnRefreshListener {
+            deviceManager.syncData()
+        }
+        viewBind.refreshLayout.setOnRefreshListener {
+        }
+        viewBind.itemStep.clickTrigger(block = blockClick)
+        viewBind.itemSleep.clickTrigger(block = blockClick)
+        viewBind.itemHeartRate.clickTrigger(block = blockClick)
+        viewBind.itemOxygen.clickTrigger(block = blockClick)
+        viewBind.itemSport.clickTrigger(block = blockClick)
 
         viewLifecycle.launchRepeatOnStarted {
-//            launch {
-//                deviceManager.configFeature.observerDeviceInfo().startWithItem(
-//                    deviceManager.configFeature.getDeviceInfo()
-//                ).asFlow().collect {
-//                    viewBind.itemHeartRate.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.HEART_RATE)//心率
-//                    viewBind.itemOxygen.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.OXYGEN)//血氧
-//                    viewBind.itemBloodPressure.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.BLOOD_PRESSURE)//血压
-//                    viewBind.itemTemperature.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.TEMPERATURE)//温度
-//                    viewBind.itemPressure.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.PRESSURE)//压力
-//                    viewBind.itemEcg.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.ECG)//心电实时
-//                    viewBind.itemSport.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.SPORT)//运动
-//                    viewBind.itemGame.isVisible = it.isSupportFeature(FcDeviceInfo.Feature.GAME)//游戏
-//                }
-//            }
 //            launch {
 //                deviceManager.flowSyncState.collect { state ->
 //                    if (state == null || state == FcSyncState.SUCCESS) {//refresh none or success
@@ -125,39 +119,28 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
 //            }
 //        }
         }
+    }
 
-        val blockClick: (View) -> Unit = { view ->
-            when (view) {
-//            viewBind.itemStep -> {
-//                findNavController().navigate(SyncFragmentDirections.toStep())
-//            }
-//            viewBind.itemSleep -> {
-//                findNavController().navigate(SyncFragmentDirections.toSleep())
-//            }
-//            viewBind.itemHeartRate -> {
-//                findNavController().navigate(SyncFragmentDirections.toHeartRate())
-//            }
-//            viewBind.itemOxygen -> {
-//                findNavController().navigate(SyncFragmentDirections.toOxygen())
-//            }
-//            viewBind.itemBloodPressure -> {
-//                findNavController().navigate(SyncFragmentDirections.toBloodPressure())
-//            }
-//            viewBind.itemTemperature -> {
-//                findNavController().navigate(SyncFragmentDirections.toTemperature())
-//            }
-//            viewBind.itemPressure -> {
-//                findNavController().navigate(SyncFragmentDirections.toPressure())
-//            }
-//            viewBind.itemEcg -> {
-//                findNavController().navigate(SyncFragmentDirections.toEcg())
-//            }
-//            viewBind.itemSport -> {
-//                findNavController().navigate(SyncFragmentDirections.toSport())
-//            }
-//            viewBind.itemGame -> {
-//                findNavController().navigate(SyncFragmentDirections.toGame())
-//            }
+    val blockClick: (View) -> Unit = { view ->
+        when (view) {
+            viewBind.itemStep -> {
+                findNavController().navigate(SyncFragmentDirections.toStep())
+            }
+
+            viewBind.itemSleep -> {
+              findNavController().navigate(SyncFragmentDirections.toSleep())
+            }
+
+            viewBind.itemHeartRate -> {
+                findNavController().navigate(SyncFragmentDirections.toHeartRateHomePage())
+            }
+
+            viewBind.itemOxygen -> {
+                findNavController().navigate(SyncFragmentDirections.toOxygen())
+            }
+
+            viewBind.itemSport -> {
+                findNavController().navigate(SyncFragmentDirections.toSport())
             }
         }
     }

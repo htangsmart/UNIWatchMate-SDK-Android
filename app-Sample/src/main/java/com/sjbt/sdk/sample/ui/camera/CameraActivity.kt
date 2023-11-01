@@ -31,12 +31,13 @@ import com.sjbt.sdk.sample.data.device.flowStateConnected
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.dialog.CallBack
 import com.sjbt.sdk.sample.dialog.CameraBusDialog
-import com.sjbt.sdk.sample.dialog.CameraBusDialog.TIP_TYPE_OPEN_CAMERA
+import com.sjbt.sdk.sample.dialog.CameraBusDialog.Companion.TIP_TYPE_OPEN_CAMERA
 import com.sjbt.sdk.sample.utils.CacheDataHelper
 import com.sjbt.sdk.sample.utils.SingleMediaScanner
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -142,7 +143,7 @@ class CameraActivity : BaseActivity() {
                 UNIWatchMate.wmApps.appCamera.observeCameraOpenState.subscribe {
                         aBoolean: Boolean ->
                     isCameraOpened = aBoolean
-                    UNIWatchMate.wmLog.logE(TAG, "设备相机状态2：$isCameraOpened")
+                    Timber.e( "设备相机状态2：$isCameraOpened")
                     if (isCameraOpened) {
                         checkCameraPreview()
                     } else {
@@ -200,8 +201,8 @@ class CameraActivity : BaseActivity() {
             mCameraBusDialog!!.dismiss()
             mCameraBusDialog = null
         }
-        mCameraBusDialog = CameraBusDialog(this, type, object : CallBack<Int?> {
-            override fun callBack(o: Int?) {
+        mCameraBusDialog = CameraBusDialog(this, type, object : CallBack<Int> {
+            override fun callBack(o: Int) {
             }
 
         })
@@ -357,8 +358,7 @@ class CameraActivity : BaseActivity() {
         var ret = 0
         val image = imageProxy.image
         val planes = image!!.planes
-        UNIWatchMate.wmLog.logD(
-            TAG,
+        Timber.d(
             "FRONT:" + front + " YUV1 Width:" + image.width + "HEIGHT:" + image.height
         )
         val yPlane = image.planes[0]
@@ -488,9 +488,9 @@ class CameraActivity : BaseActivity() {
                         localUri!!.path,
                         "image/jpeg"
                     ) { path, uri ->
-                        UNIWatchMate.wmLog.logD(TAG, "路径path1：$path")
+                        Timber.d(  "路径path1：$path")
                         if (uri != null) {
-                            UNIWatchMate.wmLog.logD(TAG, "路径path：" + path + " -- Uri:" + uri.path)
+                            Timber.d(  "路径path：" + path + " -- Uri:" + uri.path)
                         }
                     }
 
@@ -500,7 +500,7 @@ class CameraActivity : BaseActivity() {
                         .optionalTransform(transformation)
                         .into(ivTook!!)
                     Glide.with(this@CameraActivity).load(localUri).into(ivTookPic!!)
-                    UNIWatchMate.wmLog.logD(TAG, "照片存储路径:" + localUri.path)
+                    Timber.d(  "照片存储路径:" + localUri.path)
                     try {
                         vibrator!!.vibrate(10L) // 参数是震动时间(long类型)
                         mediaActionSound!!.play(MediaActionSound.SHUTTER_CLICK)
@@ -510,7 +510,7 @@ class CameraActivity : BaseActivity() {
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    UNIWatchMate.wmLog.logD(TAG, "拍照出错")
+                    Timber.d(  "拍照出错")
                     //                        Tast.makeText(CameraActivity.this, R.string.camera_err, Toast.LENGTH_SHORT).show();
                 }
             })
@@ -529,7 +529,7 @@ class CameraActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        UNIWatchMate.wmLog.logD(TAG, "$localClassName onDestroy")
+        Timber.d(  "$localClassName onDestroy")
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         unregisterSensor()
         cameraProvider?.unbindAll()
@@ -548,7 +548,7 @@ class CameraActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        UNIWatchMate.wmLog.logD(TAG, "$localClassName -> onPause")
+        Timber.d(  "$localClassName -> onPause")
         isPausedCamera = true
         isCameraOpened = false
         UNIWatchMate.wmApps.appCamera.openCloseCamera(false).subscribe().dispose()

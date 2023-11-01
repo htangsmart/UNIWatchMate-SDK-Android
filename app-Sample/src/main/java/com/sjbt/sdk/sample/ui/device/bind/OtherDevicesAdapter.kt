@@ -31,9 +31,30 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            ITEM_TYPE_TITLE -> TitleViewHolder(layoutInflater.inflate(R.layout.item_other_device_title, parent, false))
-            ITEM_TYPE_NONE -> NoneViewHolder(layoutInflater.inflate(R.layout.item_other_device_none, parent, false))
-            ITEM_TYPE_DATA -> DataViewHolder(ItemOtherDeviceDataBinding.inflate(layoutInflater, parent, false))
+            ITEM_TYPE_TITLE -> TitleViewHolder(
+                layoutInflater.inflate(
+                    R.layout.item_other_device_title,
+                    parent,
+                    false
+                )
+            )
+
+            ITEM_TYPE_NONE -> NoneViewHolder(
+                layoutInflater.inflate(
+                    R.layout.item_other_device_none,
+                    parent,
+                    false
+                )
+            )
+
+            ITEM_TYPE_DATA -> DataViewHolder(
+                ItemOtherDeviceDataBinding.inflate(
+                    layoutInflater,
+                    parent,
+                    false
+                )
+            )
+
             else -> throw IllegalArgumentException()
         }
     }
@@ -100,7 +121,8 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private class NoneViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    private class DataViewHolder(val viewBind: ItemOtherDeviceDataBinding) : RecyclerView.ViewHolder(viewBind.root) {
+    private class DataViewHolder(val viewBind: ItemOtherDeviceDataBinding) :
+        RecyclerView.ViewHolder(viewBind.root) {
         fun bind(device: ScanDevice) {
             viewBind.tvName.text = if (device.name.isNullOrEmpty()) {
                 DeviceBindFragment.UNKNOWN_DEVICE_NAME
@@ -113,7 +135,7 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private class SizeCount(
         var size: Int = 0,
-        var count: Int = 2//There is no data initially, so it is 2(1 title view and 1 empty view)
+        var count: Int = 2,//There is no data initially, so it is 2(1 title view and 1 empty view)
     ) {
         fun upgrade(list: List<*>?) {
             size = list?.size ?: 0
@@ -131,13 +153,13 @@ class OtherDevicesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private const val ITEM_TYPE_TITLE = 0
         private const val ITEM_TYPE_NONE = 1
         private const val ITEM_TYPE_DATA = 2
-        fun devices(devices: Collection<BluetoothDevice>?): List<ScanDevice>? {
-            if (devices.isNullOrEmpty()) return null
-            val list = ArrayList<ScanDevice>()
-            for (device in devices) {
-                list.add(ScanDevice(device.address, device.name,0))
-            }
-            return list
-        }
+//        fun devices(devices: Collection<BluetoothDevice>?): List<ScanDevice>? {
+//            if (devices.isNullOrEmpty()) return null
+//            val list = ArrayList<ScanDevice>()
+//            for (device in devices) {
+//                list.add(ScanDevice(device.address, device.name,0,device.))
+//            }
+//            return list
+//        }
     }
 }

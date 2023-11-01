@@ -27,6 +27,7 @@ import com.sjbt.sdk.sample.utils.FormatterUtil
 import com.sjbt.sdk.sample.utils.launchWithLog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
+import timber.log.Timber
 
 
 /**
@@ -63,11 +64,10 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
         super.onViewCreated(view, savedInstanceState)
         lifecycleScope.launchWhenStarted {
                 exerciseGoal = exerciseGoalRepository.flowCurrent.value
-//                UNIWatchMate.wmLog.logE("体育消息","exerciseGoal=$exerciseGoal")
-//                UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
-//                    UNIWatchMate.wmLog.logE("体育消息",""+it)
-//                    exerciseGoal = it
-//                }
+                UNIWatchMate.wmSettings.settingSportGoal.get().subscribe{ it->
+                    UNIWatchMate.wmLog.logE("体育消息",""+it)
+                    exerciseGoal = it
+                }
                 updateUI()
         }
         viewBind.itemStep.setOnClickListener(blockClick)
@@ -86,7 +86,7 @@ class ExerciseGoalFragment : BaseFragment(R.layout.fragment_exercise_goal),
     private fun WmSportGoal.saveConfig() {
         applicationScope.launchWithLog {
             if (deviceManager.flowConnectorState.value == WmConnectState.VERIFIED) {
-                UNIWatchMate.wmLog.logI("ExerciseGoalFragment","${this@saveConfig}")
+                Timber.i( "${this@saveConfig}")
                 UNIWatchMate.wmSettings.settingSportGoal.set(this@saveConfig).await()
             }
         }

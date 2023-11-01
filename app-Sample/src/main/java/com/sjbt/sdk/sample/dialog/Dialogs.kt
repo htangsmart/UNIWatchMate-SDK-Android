@@ -236,7 +236,7 @@ const val DIALOG_EXERCISE_STEP = "exercise_step"
 fun Fragment.showExerciseStepDialog(value: Int) {
     SelectIntDialogFragment.newInstance(
         min = 1,
-        max = 50,
+        max = 20,
         multiples = 1000,
         value = value,
         title = getString(R.string.exercise_goal_step),
@@ -248,8 +248,8 @@ const val DIALOG_EXERCISE_CALORIE = "exercise_calorie"
 fun Fragment.showExerciseCalorieDialog(value: Int) {
     SelectIntDialogFragment.newInstance(
         min = 1,
-        max = 50,
-        multiples = 30,
+        max = 200,
+        multiples = 10,
         value = value.toInt(),
         title = getString(R.string.exercise_goal_calories),
         des = getString(R.string.unit_k_calories)

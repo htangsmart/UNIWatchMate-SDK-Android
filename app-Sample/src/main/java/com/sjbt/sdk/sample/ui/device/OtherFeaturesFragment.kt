@@ -27,7 +27,6 @@ import com.sjbt.sdk.sample.databinding.FragmentOtherFeaturesBinding
 import com.sjbt.sdk.sample.di.Injector
 import com.sjbt.sdk.sample.utils.CacheDataHelper.setTransferring
 import com.sjbt.sdk.sample.utils.PermissionHelper
-import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.ToastUtil.showToast
 import com.sjbt.sdk.sample.utils.launchRepeatOnStarted
 import com.sjbt.sdk.sample.utils.launchWithLog
@@ -37,14 +36,12 @@ import com.sjbt.sdk.sample.utils.viewLifecycle
 import com.sjbt.sdk.sample.utils.viewLifecycleScope
 import com.sjbt.sdk.sample.utils.viewbinding.viewBinding
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.asFlow
 import kotlinx.coroutines.rx3.await
-import kotlinx.coroutines.rx3.awaitFirst
+import timber.log.Timber
 import java.io.File
 
 class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
-
     private val viewBind: FragmentOtherFeaturesBinding by viewBinding()
     private val deviceManager = Injector.getDeviceManager()
     private var isLocalUpdate = false
@@ -54,7 +51,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycle.launchRepeatOnStarted {
             kotlin.run {
-                deviceManager.flowStateConnected().collect{
+                deviceManager.flowStateConnected().collect {
                     viewBind.layoutContent.setAllChildEnabled(it)
                     if (!it) {
                         promptProgress.dismiss()
@@ -65,15 +62,15 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
 
         viewBind.itemFindDevice.clickTrigger {
             viewLifecycleScope.launchWhenStarted {
-              val appFind =  UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
-                ToastUtil.showToast("appFind $appFind")
+                val appFind = UNIWatchMate.wmApps.appFind.findWatch(WmFind(5, 5)).await()
+                showToast("appFind $appFind")
             }
         }
 
         viewBind.itemStopFindDevice.clickTrigger {
             viewLifecycleScope.launchWhenStarted {
-                val stopFind=   UNIWatchMate.wmApps.appFind.stopFindWatch().await()
-                ToastUtil.showToast("stopFind $stopFind")
+                val stopFind = UNIWatchMate.wmApps.appFind.stopFindWatch().await()
+                showToast("stopFind $stopFind")
             }
         }
 
@@ -180,13 +177,13 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                 }
                 val fileList = mutableListOf<File>()
                 otaFile?.let { otaFile ->
-                    promptProgress.showProgress(getString(R.string.action_updating))
+                    showInfoDialog(getString(R.string.action_updating))
                     fileList.add(otaFile)
                     val extension: String = FileUtils.getFileExtension(otaFile)
                     if (extension == BTConfig.UP) {
                         UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA, fileList).asFlow()
                             .catch {
-                                promptProgress.dismiss()
+                                hideInfoDialog()
                                 showToast(it.message, true)
                             }
                             .collect {
@@ -196,7 +193,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                         UNIWatchMate.wmTransferFile.startTransfer(FileType.OTA_UPEX, fileList)
                             .asFlow()
                             .catch {
-                                promptProgress.dismiss()
+                                hideInfoDialog()
                                 showToast(it.message, true)
                             }
                             .collect {
@@ -210,7 +207,7 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
     }
 
     private fun otaFileResult(it: WmTransferState) {
-        UNIWatchMate.wmLog.logI("OtherFeaturesFragment", "WmTransferState = ${it}")
+        Timber.i("WmTransferState = ${it}")
         when (it.state) {
             State.PRE_TRANSFER -> {
             }
@@ -224,15 +221,18 @@ class OtherFeaturesFragment : BaseFragment(R.layout.fragment_other_features) {
                     ) + "%"
                 )
                 if (isLocalUpdate) {
-//                   promptProgress.showProgress(getString(R.string.action_updating_progress) + NumberUtils.format(
-//                        it.progress.toDouble(),
-//                        2
-//                    ) + "%")
+                    showInfoDialog(
+                        getString(R.string.action_updating_progress) + NumberUtils.format(
+                            it.progress.toDouble(),
+                            2
+                        ) + "%"
+                    )
+//                   promptProgress.showProgress()
                 }
             }
 
             State.FINISH -> {
-                promptProgress.dismiss()
+                hideInfoDialog()
                 showToast(getString(R.string.tip_success))
 //                applicationScope.launchWithLog {
 //                    runCatchingWithLog {

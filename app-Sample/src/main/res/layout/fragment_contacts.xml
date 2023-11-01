@@ -12,35 +12,11 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/ll_emergency"
-        android:orientation="vertical">
-
-        <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_emergency_contact_switch"
-            style="@style/Widget.Sample.PreferenceView.Item.Switch"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:preferenceTitle="@string/ds_emergency_contacts" />
-
-        <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_emergency_contact"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:preferenceTitle="@string/ds_no_data" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/color_25000000" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/dp_150"
+        android:layout_marginTop="@dimen/dp_60"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -51,11 +27,12 @@
         android:layout_marginBottom="16dp"
         android:src="@drawable/ic_baseline_add_24"
         app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior" />
+
     <com.github.kilnn.tool.widget.item.PreferenceItem
         android:id="@+id/item_add_test100"
-        android:layout_gravity="bottom"
-        android:visibility="gone"
-        android:layout_marginBottom="@dimen/dp_100"
         style="@style/Widget.Sample.PreferenceView.Item.Text"
+        android:layout_gravity="top"
+        android:layout_marginBottom="@dimen/dp_100"
+        android:visibility="gone"
         app:preferenceTitle="@string/ds_contacts_test_add_100" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

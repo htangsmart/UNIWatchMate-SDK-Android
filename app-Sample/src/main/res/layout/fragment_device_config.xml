@@ -13,12 +13,6 @@
         android:showDividers="middle|end">
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
-            android:id="@+id/item_notification"
-            android:visibility="gone"
-            style="@style/Widget.Sample.PreferenceView.Item.Text"
-            app:preferenceTitle="@string/ds_notification_config" />
-
-        <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_unit_config"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_unit_config" />
@@ -30,19 +24,16 @@
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_sedentary"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_sedentary_config" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_drink_water"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_drink_water_config" />
 
         <com.github.kilnn.tool.widget.item.PreferenceItem
             android:id="@+id/item_heart_rate"
-            android:visibility="gone"
             style="@style/Widget.Sample.PreferenceView.Item.Text"
             app:preferenceTitle="@string/ds_heart_rate_config" />
 

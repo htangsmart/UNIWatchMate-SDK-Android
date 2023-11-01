@@ -50,10 +50,12 @@ class AlarmListAdapter() : RecyclerView.Adapter<AlarmListAdapter.ItemViewHolder>
         holder.viewBind.tvRepeat.text = AlarmHelper.repeatToSimpleStr(alarm.repeatOptions,context)
         holder.viewBind.switchIsEnabled.setOnCheckedChangeListener(null)
         holder.viewBind.switchIsEnabled.isChecked = alarm.isOn
-        holder.viewBind.switchIsEnabled.setOnCheckedChangeListener { _, isChecked -> //Copy the array, excluding the alarm to be deleted
-            listener?.onItemModified(holder.bindingAdapterPosition, AlarmHelper.newAlarm(alarm).apply {
-                isOn = isChecked
-            })
+        holder.viewBind.switchIsEnabled.setOnCheckedChangeListener { button, isChecked -> //Copy the array, excluding the alarm to be deleted
+            if (button.isPressed) {
+                listener?.onItemModified(holder.bindingAdapterPosition, AlarmHelper.newAlarm(alarm).apply {
+                    isOn = isChecked
+                })
+            }
         }
         holder.viewBind.imgDelete.setOnClickListener {
             listener?.onItemDelete(holder.bindingAdapterPosition)

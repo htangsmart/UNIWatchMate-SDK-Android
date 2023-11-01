@@ -44,8 +44,8 @@
             android:id="@+id/item_is_mute"
             style="@style/Widget.Sample.PreferenceView.Item.Switch"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:visibility="gone"
+            android:layout_height="wrap_content"
             app:preferenceTitle="@string/ds_is_mute" />
         <!--
                 <com.github.kilnn.tool.widget.item.PreferenceItem
