@@ -13,7 +13,7 @@ abstract class WmBaseSyncData(
  * 运动小结
  */
 class WmSportSummaryData(
-    timestamp: Long,
+    timestamp: Long,//开始时间，运动时长在valueType中
     val sportId: Int,
     /**
      * 基本参数类型
@@ -60,7 +60,7 @@ class WmOxygenData(
  */
 class WmStepData(
     timestamp: Long,
-    val intervalTime: Long,
+    val intervalTime: Long,//间隔时间5分钟或1小时，单位：秒
     /**
      * Step value
      */

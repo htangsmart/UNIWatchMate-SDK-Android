@@ -128,7 +128,7 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
             }
 
             viewBind.itemSleep -> {
-//              findNavController().navigate(SyncFragmentDirections.toSleep())
+              findNavController().navigate(SyncFragmentDirections.toSleep())
             }
 
             viewBind.itemHeartRate -> {
@@ -136,11 +136,11 @@ class SyncFragment : BaseFragment(R.layout.fragment_sync) {
             }
 
             viewBind.itemOxygen -> {
-//                findNavController().navigate(SyncFragmentDirections.toOxygen())
+                findNavController().navigate(SyncFragmentDirections.toOxygen())
             }
 
             viewBind.itemSport -> {
-//                findNavController().navigate(SyncFragmentDirections.toSport())
+                findNavController().navigate(SyncFragmentDirections.toSport())
             }
         }
     }

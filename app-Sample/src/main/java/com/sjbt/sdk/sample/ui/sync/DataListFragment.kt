@@ -24,7 +24,7 @@ abstract class DataListFragment<T> : BaseFragment() {
     protected val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     protected val syncDataRepository = Injector.getSyncDataRepository()
     private var selectDate: Date = Date()
-    private lateinit var adapter: DataListAdapter<T>
+    protected lateinit var adapter: DataListAdapter<T>
     protected abstract val valueFormat: DataListAdapter.ValueFormat<T>
     protected open val layoutId = R.layout.fragment_data_list
     protected val authedUserId = Injector.requireAuthedUserId()

@@ -174,7 +174,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                             Timber.i("requestContacts: contacts$contacts ]")
                             adapter.sources = contacts
                             adapter.notifyDataSetChanged()
-//                            emergencyModel.requestEmegencyCall()
+                            viewBind.fabAdd.show()
 
                         }
 

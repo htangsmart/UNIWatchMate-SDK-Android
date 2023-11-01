@@ -16,7 +16,6 @@ import com.sjbt.sdk.sample.base.Uninitialized
 import com.sjbt.sdk.sample.model.LocalSportLibrary
 import com.sjbt.sdk.sample.utils.ToastUtil
 import com.sjbt.sdk.sample.utils.runCatchingWithLog
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 
@@ -92,32 +91,6 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
         return wmSports
     }
 
-    fun getNameById(id: Int): String {
-        localSportLibrary?.let {
-            val locale = MyApplication.instance.resources.configuration.locale;
-            val language = locale.language;
-            for (bean in it.sports) {
-                if (bean.id == id) {
-                    if (bean.names.contains(language)) {
-                        return bean.names[language] ?: ""
-                    }
-                    val iterator = bean.names.iterator()
-                    while (iterator.hasNext()) {
-                        val entity = iterator.next()
-                        if (entity.key.lowercase() == language.lowercase() || entity.key.lowercase() == locale.toLanguageTag()
-                                .lowercase()
-                        ) {
-                            return entity.value
-                        }
-                    }
-//        如果没有的话，就去获取en的
-                    return bean.names["en"] ?: ""
-                }
-            }
-        }
-        return ""
-    }
-
     /**
      * @param position Delete position
      */
@@ -161,7 +134,7 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
             val wmSports = state.requestSports()
 
             wmSports?.let {
-                if (it.size >= 12) {
+                if (it.size >= 20) {
                     SportEvent.SportInstallFail(MyApplication.instance.resources.getString(R.string.ds_sport_at_most)).newEvent()
                     return@launch
                 }
@@ -180,5 +153,9 @@ class SportInstalledViewModel : StateEventViewModel<SportState, SportEvent>(Spor
                 }
             }
         }
+    }
+
+    fun getNameById(id: Int): String {
+        return localSportLibrary?.getNameById(id)?:""
     }
 }
