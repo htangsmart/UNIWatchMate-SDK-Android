@@ -51,10 +51,11 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
 
         viewLifecycle.launchRepeatOnStarted {
             launch {
-                UNIWatchMate.wmSettings.settingSoundAndHaptic.get().toObservable().asFlow().collect{
+                UNIWatchMate.wmSettings.settingSoundAndHaptic.get().toObservable().asFlow()
+                    .collect {
                         config = it
                         updateUI()
-                }
+                    }
             }
             launch {
                 UNIWatchMate.observeConnectState.asFlow().collect {
@@ -64,14 +65,14 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
             }
             launch {
                 UNIWatchMate.wmSettings.settingSoundAndHaptic.observeChange().asFlow().collect {
-                        config = it
-                        updateUI()
+                    config = it
+                    updateUI()
                 }
             }
         }
 
         viewBind.itemIsCrownHasTactileFeedback.getSwitchView().setOnCheckedChangeListener(this)
-//        viewBind.itemIsMute.getSwitchCompat().setOnCheckedChangeListener(this)
+        viewBind.itemIsMute.getSwitchView().setOnCheckedChangeListener(this)
         viewBind.itemIsNotificationTouch.getSwitchView().setOnCheckedChangeListener(this)
         viewBind.itemIsSystemHasTactileFeedback.getSwitchView().setOnCheckedChangeListener(this)
         viewBind.itemRingWhenCallComeIn.getSwitchView().setOnCheckedChangeListener(this)
@@ -82,29 +83,34 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
             when (buttonView) {
                 viewBind.itemIsCrownHasTactileFeedback.getSwitchView() -> {
                     config?.let {
-                        it.isCrownHapticFeedback =isChecked
+                        it.isCrownHapticFeedback = isChecked
                     }
                 }
-//                viewBind.itemIsMute.getSwitchCompat() -> {
-//                    config?.let {
-//                        it.isMuted=isChecked
-//                    }
-//                }
+
+                viewBind.itemIsMute.getSwitchView() -> {
+                    config?.let {
+                        it.isMuted = isChecked
+                    }
+                }
+
                 viewBind.itemIsNotificationTouch.getSwitchView() -> {
                     config?.let {
-                        it.isNotificationHaptic=isChecked
+                        it.isNotificationHaptic = isChecked
                     }
                 }
+
                 viewBind.itemIsSystemHasTactileFeedback.getSwitchView() -> {
                     config?.let {
-                        it.isSystemHapticFeedback=isChecked
+                        it.isSystemHapticFeedback = isChecked
                     }
                 }
+
                 viewBind.itemRingWhenCallComeIn.getSwitchView() -> {
                     config?.let {
-                        it.isRingtoneEnabled=isChecked
+                        it.isRingtoneEnabled = isChecked
                     }
                 }
+
                 else -> {
                     throw IllegalArgumentException()
                 }
@@ -130,8 +136,8 @@ class SoundTouchFeedbackConfigFragment : BaseFragment(R.layout.fragment_sound_to
                 it.isSystemHapticFeedback
             viewBind.itemIsCrownHasTactileFeedback.getSwitchView().isChecked =
                 it.isCrownHapticFeedback
-//            viewBind.itemIsMute.getSwitchCompat().isChecked =
-//                it.isMuted
+            viewBind.itemIsMute.getSwitchView().isChecked =
+                it.isMuted
             viewBind.itemIsNotificationTouch.getSwitchView().isChecked =
                 it.isNotificationHaptic
         }

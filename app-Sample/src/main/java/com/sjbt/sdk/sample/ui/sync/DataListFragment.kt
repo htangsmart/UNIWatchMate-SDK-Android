@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +16,10 @@ import com.sjbt.sdk.sample.R
 import com.sjbt.sdk.sample.base.BaseFragment
 import com.sjbt.sdk.sample.databinding.ItemDataListBinding
 import com.sjbt.sdk.sample.di.Injector
+import com.sjbt.sdk.sample.utils.launchWithLog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +33,7 @@ abstract class DataListFragment<T> : BaseFragment() {
     protected abstract val valueFormat: DataListAdapter.ValueFormat<T>
     protected open val layoutId = R.layout.fragment_data_list
     protected val authedUserId = Injector.requireAuthedUserId()
+    protected val applicationScope = Injector.getApplicationScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,8 +80,12 @@ abstract class DataListFragment<T> : BaseFragment() {
     private fun loadData(date: Date) {
         this.selectDate = date
         btnDate.text = dateFormat.format(date)
-        adapter.sources = queryData(date)
-        adapter.notifyDataSetChanged()
+        applicationScope.launchWithLog {
+            adapter.sources = queryData(date)
+            withContext(Dispatchers.Main){
+                adapter.notifyDataSetChanged()
+            }
+        }
     }
 
     protected abstract fun queryData(date: Date): List<T>?

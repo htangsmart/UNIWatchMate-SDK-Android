@@ -89,7 +89,7 @@
 
     <fragment
         android:id="@+id/sleepFragment"
-        android:name="com.topstep.fitcloud.sample2.ui.sync.SleepFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.SleepFragment"
         android:label="@string/data_sleep"
         tools:layout="@layout/fragment_sleep" />
 
@@ -101,7 +101,7 @@
 
     <fragment
         android:id="@+id/oxygenFragment"
-        android:name="com.topstep.fitcloud.sample2.ui.sync.OxygenFragment"
+        android:name="com.sjbt.sdk.sample.ui.sync.OxygenFragment"
         android:label="@string/data_oxygen"
         tools:layout="@layout/fragment_data_list" />
 
