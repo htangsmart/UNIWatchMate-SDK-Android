@@ -67,7 +67,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
                 override fun onNext(t: MsgBean) {
                     msgList.add(t)
-                    sjUniWatch.wmLog.logE(TAG, "返回消息个数：" + msgList.size)
                 }
 
                 override fun onError(e: Throwable) {
@@ -174,14 +173,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             val businessArray = businessList[k]
 
-            sjUniWatch.wmLog.logE(
-                TAG,
-                "业务分包数据 长度：" + businessArray.size + "->" + String(
-                    businessArray,
-                    StandardCharsets.UTF_8
-                )
-            )
-
             //每一个单元再做数据分包
             var count = businessArray.size / mtu
             var lastCount = businessArray.size % mtu
@@ -207,8 +198,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         divideType = DIVIDE_Y_M_2
                     }
                 }
-
-                sjUniWatch.wmLog.logE(TAG, "分包数据payload：" + BtUtils.bytesToHexString(payload))
 
                 val cmdArray = CmdHelper.constructCmd(
                     HEAD_NODE_TYPE,
@@ -255,15 +244,6 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
 
             }
         }
-
-//        msgPkMap.get(order)?.let { msgBean ->
-//            sjUniWatch.sendAndObserveNode04(msgBean.originData).subscribe { order ->
-//                sjUniWatch.wmLog.logE(TAG, "success order id：" + order)
-//                sjUniWatch.wmLog.logE(TAG, "success order contacts：" + String(msgBean.originData))
-//
-//                sendObserveNode(order % MAX_ORDER_ID + 1)
-//            }
-//        }
     }
 
     fun contactBusiness(
