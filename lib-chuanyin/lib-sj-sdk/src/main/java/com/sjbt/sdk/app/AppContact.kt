@@ -307,8 +307,7 @@ class AppContact(val sjUniWatch: SJUniWatch) : AbAppContact() {
                         mEmergencyCall.isEnabled = enable
                         mEmergencyCall.emergencyContacts.clear()
                         val name = String(
-                            emergencyByteArray.copyOf(NAME_BYTES_LIMIT)
-                                .takeWhile { it.toInt() != 0 }.toByteArray(),
+                            emergencyByteArray.copyOfRange(1, NAME_BYTES_LIMIT + 1),
                             StandardCharsets.UTF_8
                         )
 
